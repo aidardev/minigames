@@ -1,0 +1,13 @@
+@use './base';
+
+:root {
+    --color-background: #f9f8f3;
+    --color-text-primary: #ffd02b;
+    --font-family-primary: 'Roboto', sans-serif;
+}
+
+body {
+    font-family: var(--font-family-primary);
+    color: var(--color-text-primary);
+    background-color: var(--color-background);
+}
