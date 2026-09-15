@@ -1,15 +1,21 @@
-import js from "@eslint/js";
-import { defineConfig } from "eslint/config";
-import globals from "globals";
-import unicorn from "eslint-plugin-unicorn";
-import tseslint from "typescript-eslint";
+import js from '@eslint/js';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
+import unicorn from 'eslint-plugin-unicorn';
+import { defineConfig } from 'eslint/config';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig({
-    ignores: ["dist/**", "node_modules/**", "coverage/**"],
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**'],
 
-    files: ["**/*.ts"],
+    files: ['**/*.ts'],
 
-    extends: [js.configs.recommended, tseslint.configs.recommended, unicorn.configs.recommended],
+    extends: [
+        js.configs.recommended,
+        tseslint.configs.recommended,
+        unicorn.configs.recommended,
+        eslintConfigPrettier,
+    ],
 
     languageOptions: {
         globals: {
@@ -20,13 +26,13 @@ export default defineConfig({
 
     linterOptions: {
         noInlineConfig: true,
-        reportUnusedDisableDirectives: "error",
+        reportUnusedDisableDirectives: 'error',
     },
 
     rules: {
-        "@typescript-eslint/no-explicit-any": "error",
-        "no-console": "error",
+        '@typescript-eslint/no-explicit-any': 'error',
+        'no-console': 'error',
 
-        "unicorn/prevent-abbreviations": "off",
+        'unicorn/prevent-abbreviations': 'off',
     },
 });
