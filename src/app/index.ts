@@ -1,5 +1,5 @@
-import { HomePage } from '../pages/home/home';
-import { LibraryPage } from '../pages/library/library';
+import { HomePage } from '@/pages/home/home';
+import { LibraryPage } from '@/pages/library/library';
 import { Router } from './router';
 
 export function startApp(): void {

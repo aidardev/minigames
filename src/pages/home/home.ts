@@ -1,10 +1,10 @@
-import { BaseComponent } from '../../components/base-component';
+import { BaseComponent } from '@/components/base-component';
 
 export class HomePage extends BaseComponent {
     public constructor() {
         super('main', 'home-page');
 
-        this.element.innerHTML = `
+        this.element.innerHTML = /* HTML */ `
             <h1>Home</h1>
             <a href="/library" data-link>Library</a>
         `;
