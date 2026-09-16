@@ -1,0 +1,86 @@
+@use 'functions' as f;
+
+:root {
+    // Base
+    --color-white: #fff;
+    --color-black: #000;
+
+    // General
+    --color-bg: #f9f8f3;
+    --color-on-bg: #5f5d75;
+    --color-on-bg-low: #737380;
+    --color-bg-footer: #1e1b3a;
+    --color-bg-footer-low: #2a264f;
+    --color-bg-footer-lowest: #3c376e;
+    --color-on-bg-footer: #b9b5c9;
+    --color-surface: #fff9e5;
+    --color-surface-low: #fffcf5;
+    --color-primary: #ffd02b;
+    --color-primary-low: #fde047;
+    --color-primary-high: #e5bb00;
+    --color-on-primary: #242145;
+    --color-secondary: #f0eeff;
+    --color-tertiary: #3a2ebf;
+    --color-like: #ff4b4b;
+    --color-error: #b3261e;
+    --color-price-free: #0b8a8f;
+
+    // Borders
+    --color-outline: #e5e7eb;
+    --color-outline-variant: #d2d2d2;
+
+    // Additional
+    --color-avatar-random-1: #e9eef6;
+    --color-avatar-random-2: #a3e2c9;
+    --color-avatar-random-3: #bce3ff;
+    --color-avatar-random-4: #ffc6ff;
+    --color-avatar-random-5: #e8dff5;
+
+    // Typography
+    --fs-display-large: #{f.rem(56px)};
+    --fs-display-medium: #{f.rem(36px)};
+    --fs-display-small: #{f.rem(24px)};
+    --fs-headline-large: #{f.rem(32px)};
+    --fs-headline-medium: #{f.rem(24px)};
+    --fs-headline-small: #{f.rem(20px)};
+    --fs-body-large: #{f.rem(18px)};
+    --fs-body-medium: #{f.rem(16px)};
+    --fs-body-small: #{f.rem(14px)};
+    --fs-label-extra-large: #{f.rem(16px)};
+    --fs-label-large: #{f.rem(14px)};
+    --fs-label-medium: #{f.rem(12px)};
+    --fs-label-small: #{f.rem(10px)};
+
+    // Font Weight
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-bold: 700;
+    --font-weight-extra-bold: 800;
+
+    // Fonts
+    --font-family-primary: 'Inter', sans-serif;
+    --font-family-secondary: 'Roboto', sans-serif;
+
+    // Size
+    --size-05: #{f.rem(4px)};
+    @for $i from 1 through 15 {
+        --size-#{$i}: #{f.rem($i * 8px)};
+    }
+
+    // Corner
+    --corner-extra-small: #{f.rem(4px)};
+    --corner-small: #{f.rem(8px)};
+    --corner-medium: #{f.rem(12px)};
+    --corner-large: #{f.rem(16px)};
+    --corner-extra-large: #{f.rem(24px)};
+    --corner-full: 9999px;
+
+    // Shadows
+    --shadow-level-1: 4px 4px 0 var(--color-on-primary);
+    --shadow-level-2: 6px 6px 0 var(--color-on-primary);
+    --shadow-level-3: 8px 8px 0 var(--color-on-primary);
+
+    // Container
+    --container-width: #{f.rem(1680px)};
+    --container-padding-x: #{f.rem(40px)};
+}
