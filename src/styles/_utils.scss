@@ -13,3 +13,9 @@
     padding-inline: var(--container-padding-x);
     margin-inline: auto;
 }
+
+.list-unstyled {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
