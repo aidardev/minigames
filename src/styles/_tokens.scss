@@ -95,10 +95,15 @@
     --btn-padding-small: var(--size-1) var(--size-2);
     --btn-padding-icon: var(--size-1);
 
+    --btn-border: inset 0 0 0 var(--border-width-medium) var(--color-on-primary);
+
     // Shadows
     --shadow-level-1: 4px 4px 0 var(--color-on-primary);
     --shadow-level-2: 6px 6px 0 var(--color-on-primary);
     --shadow-level-3: 8px 8px 0 var(--color-on-primary);
+
+    --shadow-card: 0 2px 8px -4px rgba(0, 0, 0, 0.04), 0 14px 30px -10px rgba(0, 0, 0, 0.08);
+    --shadow-btn: 0 10px 20px -10px rgba(0, 0, 0, 0.1);
 
     // Transitions
     --transition-base: 0.25s ease;
