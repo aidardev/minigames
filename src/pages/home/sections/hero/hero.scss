@@ -1,0 +1,122 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .section-hero {
+        position: relative;
+        padding-block: var(--size-14);
+        @include styles.max-width(styles.$br-lg) {
+            padding-block: var(--size-9);
+        }
+        @include styles.max-width(styles.$br-sm) {
+            padding-block: var(--size-8);
+        }
+        &::before,
+        &::after {
+            content: '';
+            display: block;
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+
+        &::after {
+            background-image: url(@/assets/images/bg-hero.jpg);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.2;
+        }
+
+        &::before {
+            background: var(--color-bg-footer);
+            opacity: 0.65;
+        }
+    }
+
+    .hero {
+        position: relative;
+        z-index: 2;
+        &__card {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--size-3);
+            padding: var(--size-6);
+            box-shadow:
+                inset 0 0 0 var(--border-width-thick) var(--color-on-primary),
+                var(--shadow-level-3);
+            border-radius: var(--corner-extra-large);
+            background: var(--color-bg);
+            width: 100%;
+            // Hero card layout width from Figma spec (no standard size token applies for 640px layout container)
+            max-width: styles.rem(640px);
+            @include styles.max-width(styles.$br-lg) {
+                max-width: styles.rem(480px);
+                padding: var(--size-3);
+                border-radius: var(--corner-large);
+                gap: var(--size-2);
+                box-shadow:
+                    inset 0 0 0 var(--border-width-thick) var(--color-on-primary),
+                    var(--shadow-level-2);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                border-radius: var(--corner-medium);
+                box-shadow:
+                    inset 0 0 0 var(--border-width-medium) var(--color-on-primary),
+                    var(--shadow-level-1);
+            }
+        }
+        &__title {
+            font-size: var(--fs-display-large);
+            line-height: var(--lh-tight);
+            margin-bottom: 0;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-display-medium);
+                // Figma spec: tablet title line-height adjustment
+                line-height: 1.15;
+            }
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-display-small);
+                line-height: var(--lh-heading);
+            }
+        }
+        &__text {
+            font-size: var(--fs-body-large);
+            font-weight: var(--font-weight-medium);
+            color: var(--color-on-bg);
+            margin-bottom: 0;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-body-small);
+                // Figma spec: tablet text line-height adjustment
+                line-height: 1.4;
+            }
+
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-label-medium);
+            }
+
+            &--desktop {
+                @include styles.max-width(styles.$br-sm) {
+                    display: none;
+                }
+            }
+
+            &--mobile {
+                @include styles.min-width(styles.$br-sm) {
+                    display: none;
+                }
+            }
+        }
+        &__btn {
+            font-size: var(--fs-body-large);
+            @include styles.max-width(styles.$br-lg) {
+                padding: var(--btn-padding-medium);
+                font-size: var(--fs-body-small);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                padding: var(--btn-padding-small);
+                font-size: var(--fs-label-medium);
+            }
+        }
+    }
+}
