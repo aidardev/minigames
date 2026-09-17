@@ -129,6 +129,6 @@
     --lh-body: 1.5;
 
     @include m.max-width(b.$br-md) {
-        --container-padding-x: 1rem;
+        --container-padding-x: var(--size-2);
     }
 }
