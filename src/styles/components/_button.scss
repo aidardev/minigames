@@ -12,6 +12,7 @@
         user-select: none;
         border-radius: var(--corner-small);
         font-weight: var(--font-weight-bold);
+        line-height: var(--lh-heading);
         transition:
             background-color var(--transition-base),
             color var(--transition-base),
