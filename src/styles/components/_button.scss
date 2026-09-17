@@ -3,6 +3,7 @@
 @layer primitives {
     .btn {
         display: inline-flex;
+        gap: var(--size-1);
         vertical-align: top;
         align-items: center;
         justify-content: center;
@@ -69,6 +70,13 @@
             &:hover {
                 background-color: var(--color-primary-high);
             }
+        }
+
+        // Button icon
+        svg {
+            flex-shrink: 0;
+            width: var(--size-3);
+            height: var(--size-3);
         }
     }
 }
