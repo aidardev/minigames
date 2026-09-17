@@ -2,6 +2,7 @@ import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
 import { BaseComponent } from '../base-component';
+import './header.scss';
 
 export class Header extends BaseComponent {
     public constructor() {
@@ -23,17 +24,22 @@ export class Header extends BaseComponent {
                     </div>
                     <nav class="header__navbar navbar">
                         <ul class="navbar__list list-unstyled">
-                            <li><a href="#">Home</a></li>
+                            <li class="is-active"><a href="#">Home</a></li>
                             <li><a href="#">Library</a></li>
                             <li><a href="#">Tournaments</a></li>
                             <li><a href="#">Community</a></li>
                         </ul>
                     </nav>
                     <div class="header__btns">
-                        <button class="header__btn btn btn--outline-primary" type="button">
+                        <button
+                            class="header__btn btn btn--medium btn--outline-on-primary"
+                            type="button"
+                        >
                             Log In
                         </button>
-                        <button class="header__btn btn btn--primary" type="button">Sign Up</button>
+                        <button class="header__btn btn btn--medium btn--primary" type="button">
+                            Sign Up
+                        </button>
                     </div>
                 </div>
                 <button class="header__hamburger-btn btn btn--icon" type="button">

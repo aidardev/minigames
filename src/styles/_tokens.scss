@@ -98,4 +98,14 @@
     // Container
     --container-width: #{f.rem(1680px)};
     --container-padding-x: #{f.rem(40px)};
+
+    --container-header-width: #{f.rem(1760px)};
+
+    // Borders Widths
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 3px;
+
+    // Focus / Outline
+    --outline-offset: 3px;
 }
