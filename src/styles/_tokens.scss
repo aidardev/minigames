@@ -87,6 +87,12 @@
     --corner-extra-large: #{f.rem(24px)};
     --corner-full: 9999px;
 
+    // Buttons
+    --btn-padding-large: var(--size-2) var(--size-3);
+    --btn-padding-medium: #{f.rem(10px)} #{f.rem(20px)};
+    --btn-padding-small: var(--size-1) var(--size-2);
+    --btn-padding-icon: var(--size-1);
+
     // Shadows
     --shadow-level-1: 4px 4px 0 var(--color-on-primary);
     --shadow-level-2: 6px 6px 0 var(--color-on-primary);
@@ -94,6 +100,7 @@
 
     // Transitions
     --transition-base: 0.25s ease;
+    --transition-fast: 0.15s ease;
 
     // Container
     --container-width: #{f.rem(1680px)};
