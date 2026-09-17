@@ -10,8 +10,10 @@
         -webkit-font-smoothing: antialiased;
         font-family: var(--font-family-primary);
         font-size: var(--fs-body-medium);
+        line-height: var(--lh-body);
         color: var(--color-on-primary);
         background-color: var(--color-bg);
+        font-optical-sizing: none;
     }
 
     img {
@@ -23,8 +25,18 @@
     h3,
     h4,
     h5,
-    h6 {
+    h6,
+    p {
         margin-top: 0;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        line-height: var(--lh-heading);
     }
 
     button,

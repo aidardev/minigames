@@ -1,4 +1,6 @@
 @use 'functions' as f;
+@use 'mixins' as m;
+@use 'breakpoints' as b;
 
 :root {
     // Base
@@ -115,4 +117,13 @@
 
     // Focus / Outline
     --outline-offset: 3px;
+
+    // Line Height
+    --lh-tight: 1.1;
+    --lh-heading: 1.2;
+    --lh-body: 1.5;
+
+    @include m.max-width(b.$br-md) {
+        --container-padding-x: 1rem;
+    }
 }
