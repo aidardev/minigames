@@ -1,12 +1,10 @@
 import { BaseComponent } from '@/components/base-component';
+import { HeroSection } from './sections/hero/hero';
 
 export class HomePage extends BaseComponent {
     public constructor() {
         super('main', 'home-page');
 
-        this.element.innerHTML = /* HTML */ `
-            <h1>Home</h1>
-            <a href="/library" data-link>Library</a>
-        `;
+        this.element.append(new HeroSection().element);
     }
 }
