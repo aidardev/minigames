@@ -63,9 +63,21 @@
 
     // Size
     --size-05: #{f.rem(4px)};
-    @for $i from 1 through 15 {
-        --size-#{$i}: #{f.rem($i * 8px)};
-    }
+    --size-1: #{f.rem(8px)};
+    --size-2: #{f.rem(16px)};
+    --size-3: #{f.rem(24px)};
+    --size-4: #{f.rem(32px)};
+    --size-5: #{f.rem(40px)};
+    --size-6: #{f.rem(48px)};
+    --size-7: #{f.rem(56px)};
+    --size-8: #{f.rem(64px)};
+    --size-9: #{f.rem(72px)};
+    --size-10: #{f.rem(80px)};
+    --size-11: #{f.rem(88px)};
+    --size-12: #{f.rem(96px)};
+    --size-13: #{f.rem(104px)};
+    --size-14: #{f.rem(112px)};
+    --size-15: #{f.rem(120px)};
 
     // Corner
     --corner-extra-small: #{f.rem(4px)};
@@ -75,12 +87,32 @@
     --corner-extra-large: #{f.rem(24px)};
     --corner-full: 9999px;
 
+    // Buttons
+    --btn-padding-large: var(--size-2) var(--size-3);
+    --btn-padding-medium: #{f.rem(10px)} #{f.rem(20px)};
+    --btn-padding-small: var(--size-1) var(--size-2);
+    --btn-padding-icon: var(--size-1);
+
     // Shadows
     --shadow-level-1: 4px 4px 0 var(--color-on-primary);
     --shadow-level-2: 6px 6px 0 var(--color-on-primary);
     --shadow-level-3: 8px 8px 0 var(--color-on-primary);
 
+    // Transitions
+    --transition-base: 0.25s ease;
+    --transition-fast: 0.15s ease;
+
     // Container
     --container-width: #{f.rem(1680px)};
     --container-padding-x: #{f.rem(40px)};
+
+    --container-header-width: #{f.rem(1760px)};
+
+    // Borders Widths
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 3px;
+
+    // Focus / Outline
+    --outline-offset: 3px;
 }

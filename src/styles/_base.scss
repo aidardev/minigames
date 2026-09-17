@@ -1,31 +1,41 @@
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
+@layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
 
-body {
-    margin: 0;
-    -webkit-font-smoothing: antialiased;
-    font-family: var(--font-family-primary);
-    font-style: var(--fs-body-medium);
-    color: var(--color-on-primary);
-    background-color: var(--color-bg);
-}
+    body {
+        margin: 0;
+        -webkit-font-smoothing: antialiased;
+        font-family: var(--font-family-primary);
+        font-size: var(--fs-body-medium);
+        color: var(--color-on-primary);
+        background-color: var(--color-bg);
+    }
 
-img {
-    display: block;
-    max-width: 100%;
-}
+    img {
+        vertical-align: middle;
+    }
 
-button,
-input,
-textarea,
-select {
-    font: inherit;
-}
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        margin-top: 0;
+    }
 
-a {
-    color: inherit;
-    text-decoration: none;
+    button,
+    input,
+    textarea,
+    select {
+        font: inherit;
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
 }
