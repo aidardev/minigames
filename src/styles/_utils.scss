@@ -1,21 +1,23 @@
-.sr-only {
-    clip: rect(0 0 0 0);
-    clip-path: inset(50%);
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    width: 1px;
-}
+@layer utils {
+    .sr-only {
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        width: 1px;
+    }
 
-.container {
-    max-width: calc(var(--container-width) + var(--container-padding-x) * 2);
-    padding-inline: var(--container-padding-x);
-    margin-inline: auto;
-}
+    .container {
+        max-width: calc(var(--container-width) + var(--container-padding-x) * 2);
+        padding-inline: var(--container-padding-x);
+        margin-inline: auto;
+    }
 
-.list-unstyled {
-    margin: 0;
-    padding: 0;
-    list-style: none;
+    .list-unstyled {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
 }
