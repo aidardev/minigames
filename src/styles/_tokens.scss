@@ -92,6 +92,9 @@
     --shadow-level-2: 6px 6px 0 var(--color-on-primary);
     --shadow-level-3: 8px 8px 0 var(--color-on-primary);
 
+    // Transitions
+    --transition-base: 0.25s ease;
+
     // Container
     --container-width: #{f.rem(1680px)};
     --container-padding-x: #{f.rem(40px)};
