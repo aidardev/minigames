@@ -1,3 +1,4 @@
+import { Footer } from '@/components/footer/footer';
 import { Header } from '@/components/header/header';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
@@ -8,11 +9,12 @@ export function startApp(): void {
     appRoot.className = 'app';
 
     const header = new Header();
+    const footer = new Footer();
 
     const pageOutlet = document.createElement('div');
     pageOutlet.className = 'app__outlet';
 
-    appRoot.append(header.element, pageOutlet);
+    appRoot.append(header.element, pageOutlet, footer.element);
 
     document.body.prepend(appRoot);
 

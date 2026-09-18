@@ -38,24 +38,6 @@
         }
     }
 
-    .logo {
-        display: inline-flex;
-        vertical-align: top;
-        align-items: center;
-        gap: var(--size-1);
-        &__img {
-        }
-        &__text {
-            font-size: var(--fs-headline-medium);
-            font-weight: var(--font-weight-bold);
-        }
-
-        &--dark {
-        }
-        &--white {
-        }
-    }
-
     .navbar {
         &__list {
             display: flex;
