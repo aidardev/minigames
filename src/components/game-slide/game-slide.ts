@@ -1,6 +1,7 @@
 import heartIcon from '@/assets/icons/favorite.svg?raw';
 import starIcon from '@/assets/icons/star.svg?raw';
 import type { GameSlideData } from '@/types/game.types';
+import { formatCompactNumber } from '@/utils/formatters';
 import { BaseComponent } from '../base-component';
 import './game-slide.scss';
 
@@ -25,7 +26,9 @@ export class GameSlide extends BaseComponent {
                     </div>
                     <div class="game-slide__meta-item game-slide__meta-item--likes">
                         ${heartIcon}
-                        <span class="game-slide__meta-value">${game.likesCount}</span>
+                        <span class="game-slide__meta-value"
+                            >${formatCompactNumber(game.likesCount)}</span
+                        >
                     </div>
                 </div>
             </div>
