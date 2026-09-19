@@ -120,6 +120,7 @@
     // Transitions
     --transition-base: 0.25s ease;
     --transition-fast: 0.15s ease;
+    --transition-slower: 0.45s ease;
 
     // Container
     --container-width: #{f.rem(1680px)};
@@ -145,6 +146,8 @@
     --z-base: 0;
     --z-docked: 10;
     --z-sticky: 20;
+    --z-overlay: 30;
+    --z-modal: 40;
 
     @include m.max-width(b.$br-md) {
         --container-padding-x: var(--size-2);
