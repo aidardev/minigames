@@ -5,7 +5,7 @@ import './developer-cta.scss';
 
 export class DeveloperCtaSection extends BaseComponent {
     constructor() {
-        super('section', 'section-developer-cta');
+        super('section', 'section section-developer-cta');
 
         this.element.innerHTML = /* HTML */ `
             <div class="developer-cta container">
