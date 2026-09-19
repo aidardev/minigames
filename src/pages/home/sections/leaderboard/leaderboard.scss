@@ -1,0 +1,230 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .section-leaderboard {
+        &__title-extra {
+            @include styles.max-width(styles.$br-sm) {
+                display: none;
+            }
+        }
+    }
+
+    .leaderboard-table-container {
+        border: var(--border-width-medium) solid var(--color-on-primary);
+        border-radius: var(--corner-large);
+        box-shadow: var(--shadow-level-2);
+        overflow-x: auto;
+        @include styles.max-width(styles.$br-lg) {
+            box-shadow: var(--shadow-level-1);
+        }
+    }
+
+    .leaderboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: center;
+        font-family: var(--font-family-secondary);
+        @include styles.max-width(styles.$br-lg) {
+            font-size: var(--fs-body-small);
+        }
+
+        &__head {
+            color: var(--color-white);
+            text-transform: uppercase;
+            background-color: var(--color-tertiary);
+            border-bottom: var(--border-width-medium) solid var(--color-on-primary);
+            .leaderboard-table__col:first-child {
+                padding-left: var(--size-2);
+            }
+            .leaderboard-table__col:last-child {
+                padding-right: var(--size-2);
+            }
+        }
+
+        &__col,
+        &__cell {
+            vertical-align: middle;
+            line-height: var(--lh-heading);
+        }
+
+        &__col {
+            font-weight: var(--font-weight-extra-bold);
+            // Subtract border width to match Figma padding exactly
+            padding: calc(var(--size-3) - var(--border-width-medium)) var(--size-1);
+            @include styles.max-width(styles.$br-lg) {
+                padding: calc(var(--size-2) - var(--border-width-medium)) calc(var(--size-1-5) / 2);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                padding: calc(var(--size-2) - var(--border-width-medium)) var(--size-05);
+            }
+        }
+
+        &__cell {
+            padding: var(--size-2) var(--size-1);
+        }
+
+        &__body {
+            .leaderboard-table__col--rank {
+                font-weight: var(--font-weight-extra-bold);
+            }
+            .leaderboard-table__col--games {
+                font-weight: var(--font-weight-semi-bold);
+            }
+            .leaderboard-table__col--score,
+            .leaderboard-table__col--streak {
+                font-weight: var(--font-weight-bold);
+            }
+        }
+
+        &__text-short {
+            display: none;
+        }
+
+        &__row {
+            border-bottom: var(--border-width-thin) solid var(--color-outline);
+            &:nth-child(odd) {
+                background-color: var(--color-bg);
+            }
+            &:nth-child(even) {
+                background-color: var(--color-white);
+            }
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &:nth-child(1) {
+                .leaderboard-table__avatar {
+                    background-color: var(--color-primary);
+                }
+                .leaderboard-table__rank-val {
+                    color: var(--color-primary);
+                    @include styles.max-width(styles.$br-lg) {
+                        color: var(--color-tertiary);
+                    }
+                }
+            }
+            &:nth-child(2) .leaderboard-table__avatar {
+                background-color: var(--color-avatar-random-2);
+            }
+            &:nth-child(3) .leaderboard-table__avatar {
+                background-color: var(--color-avatar-random-3);
+            }
+            &:nth-child(4) .leaderboard-table__avatar {
+                background-color: var(--color-avatar-random-4);
+            }
+            &:nth-child(5) .leaderboard-table__avatar {
+                background-color: var(--color-avatar-random-5);
+            }
+
+            @include styles.max-width(styles.$br-lg) {
+                &:nth-child(n + 4) {
+                    display: none;
+                }
+            }
+        }
+
+        &__player-info {
+            display: flex;
+            align-items: center;
+            gap: var(--size-1-5);
+            text-align: left;
+            @include styles.max-width(styles.$br-lg) {
+                gap: var(--size-1);
+            }
+        }
+
+        &__avatar {
+            width: var(--size-5);
+            height: var(--size-5);
+            border-radius: var(--corner-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--fs-body-small);
+            font-weight: var(--font-weight-bold);
+            border: var(--border-width-thin) solid var(--color-on-primary);
+            line-height: var(--lh-body);
+            flex-shrink: 0;
+            @include styles.max-width(styles.$br-lg) {
+                // Hardcoded from figma: no Figma token exists & single token is overkill.
+                width: styles.rem(28px);
+                height: styles.rem(28px);
+                font-size: var(--fs-label-small);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                width: var(--size-3);
+                height: var(--size-3);
+                font-size: var(--fs-label-small);
+            }
+        }
+
+        &__username {
+            font-weight: var(--font-weight-bold);
+        }
+
+        &__badge {
+            display: inline-block;
+            padding: var(--size-05) var(--size-1-5);
+            border-radius: var(--corner-larger);
+            box-shadow: inset 0 0 0 var(--border-width-medium) var(--color-on-primary);
+            font-size: var(--fs-label-medium);
+            font-weight: var(--font-weight-bold);
+        }
+
+        @include styles.max-width(styles.$br-lg) {
+            &__col--favorite {
+                display: none;
+            }
+
+            &__col--games {
+                .leaderboard-table__text-full {
+                    display: none;
+                }
+                .leaderboard-table__text-short {
+                    display: inline;
+                }
+            }
+
+            &__col--streak {
+                .leaderboard-table__text-full {
+                    display: none;
+                }
+                .leaderboard-table__text-short {
+                    display: inline;
+                }
+            }
+
+            .leaderboard-table__head {
+                .leaderboard-table__col--score {
+                    .leaderboard-table__text-full {
+                        display: none;
+                    }
+                    .leaderboard-table__text-short {
+                        display: inline;
+                    }
+                }
+
+                .leaderboard-table__col--streak {
+                    padding-right: var(--size-2);
+                    padding-left: var(--size-2);
+                }
+            }
+        }
+
+        @include styles.max-width(styles.$br-sm) {
+            &__col--games {
+                display: none;
+            }
+
+            &__col--score {
+                .leaderboard-table__text-full {
+                    display: none;
+                }
+                .leaderboard-table__text-short {
+                    display: inline;
+                }
+            }
+        }
+    }
+}

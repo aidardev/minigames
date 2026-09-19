@@ -1,6 +1,7 @@
 import { BaseComponent } from '@/components/base-component';
 import { DeveloperCtaSection } from './sections/developer-cta/developer-cta';
 import { HeroSection } from './sections/hero/hero';
+import { LeaderboardSection } from './sections/leaderboard/leaderboard';
 import { NewGamesSection } from './sections/new-games/new-games';
 
 export class HomePage extends BaseComponent {
@@ -10,6 +11,7 @@ export class HomePage extends BaseComponent {
         this.element.append(
             new HeroSection().element,
             new NewGamesSection().element,
+            new LeaderboardSection().element,
             new DeveloperCtaSection().element,
         );
     }
