@@ -1,8 +1,20 @@
+@use '@/styles/index' as styles;
+
 @layer components {
     .header {
+        display: flex;
+        align-items: center;
         padding-block: var(--size-3);
         background: var(--color-bg);
         box-shadow: inset 0 calc(var(--border-width-medium) * -1) 0 0 var(--color-on-primary);
+        @include styles.max-width(styles.$br-lg) {
+            padding-block: var(--size-2);
+            min-height: var(--size-9);
+        }
+        @include styles.max-width(styles.$br-sm) {
+            min-height: var(--size-8);
+        }
+
         &__inner,
         &__menu,
         &__btns {
@@ -10,31 +22,108 @@
             align-items: center;
         }
         &__inner {
+            width: 100%;
             max-width: calc(var(--container-header-width) + var(--container-padding-x) * 2);
+            gap: var(--size-2);
         }
         &__logo {
             margin-right: auto;
         }
         &__menu {
             gap: var(--size-4);
+            // Mobile Burger Menu
+            @include styles.max-width(styles.$br-lg) {
+                padding: var(--size-3);
+                flex-direction: column;
+                align-items: normal;
+                background: var(--color-bg-footer);
+                color: var(--color-on-bg-footer);
+                position: fixed;
+                z-index: var(--z-overlay);
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                overflow-y: auto;
+                transform: translateX(100%);
+                visibility: hidden;
+                transition:
+                    transform var(--transition-slower),
+                    visibility var(--transition-slower);
+                &.is-open {
+                    transform: translateX(0);
+                    visibility: visible;
+                }
+
+                .btn--outline-on-primary {
+                    background-color: transparent;
+                    box-shadow: inset 0 0 0 var(--border-width-medium) var(--color-white);
+                    color: var(--color-white);
+                    &:hover {
+                        background-color: transparent;
+                    }
+
+                    &:active {
+                        background-color: transparent;
+                    }
+                }
+            }
         }
         &__mobile-topbar {
-            display: none;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            @include styles.min-width(styles.$br-lg) {
+                display: none;
+            }
         }
         &__logo-mobile {
+            flex-shrink: 0;
         }
         &__close {
+            width: var(--size-4);
+            height: var(--size-4);
+            background-color: var(--color-bg-footer-low);
+            color: var(--color-white);
+            svg {
+                // Hardcoded from figma: no Figma token exists & single token is overkill.
+                width: styles.rem(10px);
+                height: styles.rem(10px);
+            }
         }
         &__navbar {
         }
         &__btns {
             gap: var(--size-2);
+            @include styles.max-width(styles.$br-lg) {
+                flex-direction: column;
+                align-items: normal;
+                margin-top: auto;
+            }
         }
         &__btn {
             font-size: var(--fs-body-small);
+            &--tablet {
+                @include styles.min-width(styles.$br-lg) {
+                    display: none;
+                }
+                @include styles.max-width(styles.$br-sm) {
+                    display: none;
+                }
+            }
         }
         &__hamburger-btn {
-            display: none;
+            background-color: var(--color-white);
+            height: var(--size-4);
+            @include styles.min-width(styles.$br-lg) {
+                display: none;
+            }
+
+            svg {
+                width: var(--size-2);
+                // Hardcoded from figma: no Figma token exists & single token is overkill.
+                height: styles.rem(10px);
+            }
         }
     }
 
@@ -43,20 +132,38 @@
             display: flex;
             flex-wrap: wrap;
             gap: var(--size-5);
+            @include styles.max-width(styles.$br-lg) {
+                flex-direction: column;
+                gap: var(--size-3);
+            }
             li {
                 font-weight: var(--font-weight-medium);
+                @include styles.max-width(styles.$br-lg) {
+                    font-size: var(--fs-body-large);
+                    line-height: var(--lh-heading);
+                }
                 &.is-active {
                     font-weight: var(--font-weight-bold);
+                    @include styles.max-width(styles.$br-lg) {
+                        color: var(--color-primary);
+                    }
                     a {
-                        color: var(--color-on-primary);
+                        @include styles.min-width(styles.$br-lg) {
+                            color: var(--color-on-primary);
+                        }
                     }
                 }
             }
             a {
-                color: var(--color-on-bg);
                 transition: color var(--transition-base);
+                @include styles.min-width(styles.$br-lg) {
+                    color: var(--color-on-bg);
+                }
                 &:hover {
-                    color: var(--color-on-primary);
+                    color: var(--color-white);
+                    @include styles.min-width(styles.$br-lg) {
+                        color: var(--color-on-primary);
+                    }
                 }
             }
         }

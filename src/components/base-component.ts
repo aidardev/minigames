@@ -12,4 +12,8 @@ export abstract class BaseComponent {
     public destroy(): void {
         this.element.remove();
     }
+
+    protected query<E extends HTMLElement>(selector: string): E | undefined {
+        return this.element.querySelector<E>(selector) || undefined;
+    }
 }
