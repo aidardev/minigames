@@ -26,4 +26,24 @@
         max-width: 100%;
         height: auto;
     }
+
+    .focusable-parent {
+        position: relative;
+        &:focus-within {
+            outline: var(--border-width-medium) solid var(--color-tertiary);
+            :focus {
+                outline: none;
+            }
+        }
+    }
+
+    .focusable-link {
+        &::before {
+            content: '';
+            display: block;
+            position: absolute;
+            z-index: var(--z-docked);
+            inset: 0;
+        }
+    }
 }

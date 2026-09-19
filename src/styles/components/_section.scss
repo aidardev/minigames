@@ -1,0 +1,13 @@
+@use '@/styles/index' as styles;
+
+@layer primitives {
+    .section {
+        padding-block: var(--size-5);
+        @include styles.max-width(styles.$br-lg) {
+            padding-block: var(--size-3);
+        }
+        @include styles.max-width(styles.$br-sm) {
+            padding-block: var(--size-2);
+        }
+    }
+}
