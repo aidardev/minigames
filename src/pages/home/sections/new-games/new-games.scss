@@ -1,0 +1,56 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .slider-new-games {
+        --slide-width-far: var(--size-15);
+        --slide-width-compact: #{styles.rem(288px)};
+        --slide-width-active: 100%;
+        padding-inline: var(--size-1);
+        padding-bottom: var(--size-1);
+        @include styles.max-width(styles.$br-lg) {
+            --slide-width-compact: var(--size-13);
+        }
+
+        @include styles.max-width(styles.$br-sm) {
+            --slide-width-compact: var(--size-7);
+            padding-inline: var(--size-05);
+            // Hardcoded from figma: no Figma token exists & single token is overkill.
+            padding-bottom: styles.rem(6px);
+        }
+
+        &__track {
+            gap: var(--size-1);
+            @include styles.max-width(styles.$br-sm) {
+                // Hardcoded from figma: no Figma token exists & single token is overkill.
+                gap: styles.rem(5px);
+            }
+        }
+
+        &__slide {
+            transition:
+                flex-basis var(--transition-base),
+                width var(--transition-base);
+
+            &.is-far-prev,
+            &.is-far-next {
+                flex: 0 0 var(--slide-width-far);
+                @include styles.max-width(styles.$br-xxl) {
+                    display: none;
+                }
+            }
+
+            &.is-prev,
+            &.is-next {
+                flex: 0 0 var(--slide-width-compact);
+                @include styles.between(styles.$br-lg, styles.$br-xxl) {
+                    flex-shrink: 1;
+                }
+            }
+
+            &.is-active {
+                flex: 1 1 var(--slide-width-active);
+                max-width: var(--slide-width-active);
+            }
+        }
+    }
+}

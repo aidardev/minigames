@@ -38,6 +38,14 @@
     --color-avatar-random-4: #ffc6ff;
     --color-avatar-random-5: #e8dff5;
 
+    // Gradients
+    --gradient-game-slide: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.4) 17.31%,
+        rgba(0, 0, 0, 0.85) 46.15%
+    );
+
     // Typography
     --fs-display-large: #{f.rem(56px)};
     --fs-display-medium: #{f.rem(36px)};
@@ -128,6 +136,12 @@
     --lh-tight: 1.1;
     --lh-heading: 1.2;
     --lh-body: 1.5;
+
+    // z-index
+    --z-below: -1;
+    --z-base: 0;
+    --z-docked: 10;
+    --z-sticky: 20;
 
     @include m.max-width(b.$br-md) {
         --container-padding-x: var(--size-2);

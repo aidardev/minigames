@@ -1,13 +1,6 @@
 @use '@/styles/index' as styles;
 
 @layer components {
-    .section-developer-cta {
-        padding-block: var(--size-5);
-        @include styles.max-width(styles.$br-lg) {
-            padding-block: var(--size-3);
-        }
-    }
-
     .developer-cta {
         display: flex;
         gap: var(--size-5);
@@ -49,7 +42,7 @@
             box-shadow:
                 inset 0 0 0 var(--border-width-medium) var(--color-on-primary),
                 var(--shadow-card);
-            flex: 1 1 0;
+            flex: 1 1 auto;
             min-width: 0;
             @include styles.max-width(styles.$br-lg) {
                 padding: var(--size-4);
