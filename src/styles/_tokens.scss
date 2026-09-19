@@ -64,6 +64,7 @@
     // Font Weight
     --font-weight-regular: 400;
     --font-weight-medium: 500;
+    --font-weight-semi-bold: 600;
     --font-weight-bold: 700;
     --font-weight-extra-bold: 800;
 
@@ -74,6 +75,7 @@
     // Size
     --size-05: #{f.rem(4px)};
     --size-1: #{f.rem(8px)};
+    --size-1-5: #{f.rem(12px)};
     --size-2: #{f.rem(16px)};
     --size-2-5: #{f.rem(20px)};
     --size-3: #{f.rem(24px)};
@@ -95,6 +97,7 @@
     --corner-small: #{f.rem(8px)};
     --corner-medium: #{f.rem(12px)};
     --corner-large: #{f.rem(16px)};
+    --corner-larger: #{f.rem(20px)};
     --corner-extra-large: #{f.rem(24px)};
     --corner-full: 9999px;
 
