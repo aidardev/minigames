@@ -40,7 +40,7 @@ export class NewGamesSection extends BaseComponent {
     }
 
     private renderCards(): void {
-        const track = this.element.querySelector('.slider__track');
+        const track = this.query('.slider__track');
         if (!track) return;
 
         for (const [index, game] of NEW_GAMES_MOCK.entries()) {
