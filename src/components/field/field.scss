@@ -25,8 +25,8 @@
 
         &__icon {
             display: block;
-            width: var(--size-3);
-            height: var(--size-3);
+            width: var(--size-2-5);
+            height: var(--size-2-5);
             left: var(--size-2);
             pointer-events: none;
             svg {
@@ -43,6 +43,7 @@
             border: none;
             background: var(--color-white);
             height: var(--size-6);
+            font-size: var(--fs-body-small);
             font-weight: var(--font-weight-medium);
             box-shadow: var(--ring-medium-on-primary);
             border-radius: var(--corner-small);
@@ -64,7 +65,7 @@
 
         &__toggle {
             border: none;
-            right: var(--size-1);
+            right: calc(var(--size-2) - ((var(--size-5) - var(--size-2-5)) / 2));
             display: flex;
             background: none;
             justify-content: center;
@@ -77,8 +78,8 @@
 
         &__toggle-icon {
             display: block;
-            width: var(--size-3);
-            height: var(--size-3);
+            width: var(--size-2-5);
+            height: var(--size-2-5);
             svg {
                 display: block;
                 width: 100%;
