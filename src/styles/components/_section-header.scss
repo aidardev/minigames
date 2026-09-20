@@ -1,0 +1,28 @@
+@use '@/styles/index' as styles;
+
+@layer primitives {
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: var(--size-1);
+        margin-bottom: var(--size-5);
+        @include styles.max-width(styles.$br-lg) {
+            margin-bottom: var(--size-3);
+        }
+        @include styles.max-width(styles.$br-sm) {
+            margin-bottom: var(--size-2);
+        }
+        &__title {
+            flex: 1 1 auto;
+            margin-bottom: 0;
+        }
+        &__slider-controls {
+            display: flex;
+            gap: var(--size-2);
+            flex-shrink: 0;
+            @include styles.max-width(styles.$br-sm) {
+                display: none;
+            }
+        }
+    }
+}

@@ -1,0 +1,31 @@
+@use '@/styles/index' as styles;
+
+@layer primitives {
+    .logo {
+        display: inline-flex;
+        vertical-align: top;
+        align-items: center;
+        gap: var(--size-1);
+        &__img {
+            flex-shrink: 0;
+            width: var(--size-4);
+            height: auto;
+        }
+        &__text {
+            font-size: var(--fs-headline-medium);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--lh-heading);
+            flex: 1 1 auto;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-headline-small);
+            }
+        }
+
+        &--dark {
+            color: var(--color-on-primary);
+        }
+        &--white {
+            color: var(--color-white);
+        }
+    }
+}

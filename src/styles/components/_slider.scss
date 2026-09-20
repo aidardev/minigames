@@ -1,0 +1,41 @@
+@use '@/styles/index' as styles;
+
+@layer primitives {
+    .slider {
+        &__track {
+            display: flex;
+        }
+        &__arrow {
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: none;
+            border-radius: var(--corner-full);
+            background: var(--color-white);
+            box-shadow: var(--ring-medium-on-primary);
+            width: var(--size-6);
+            height: var(--size-6);
+            flex-shrink: 0;
+            transition: background var(--transition-base);
+            @include styles.max-width(styles.$br-lg) {
+                width: var(--size-5);
+                height: var(--size-5);
+            }
+
+            svg {
+                flex-shrink: 0;
+                width: var(--size-3);
+                height: var(--size-3);
+                @include styles.max-width(styles.$br-lg) {
+                    width: var(--size-2);
+                    height: var(--size-2);
+                }
+            }
+
+            @include styles.hover {
+                background: var(--color-primary);
+            }
+        }
+    }
+}

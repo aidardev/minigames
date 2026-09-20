@@ -1,0 +1,124 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .developer-cta {
+        display: flex;
+        gap: var(--size-5);
+        @include styles.min-width(styles.$br-xl) {
+            align-items: center;
+        }
+
+        @include styles.max-width(styles.$br-xl) {
+            flex-direction: column;
+        }
+
+        @include styles.max-width(styles.$br-lg) {
+            gap: var(--size-3);
+        }
+
+        @include styles.max-width(styles.$br-sm) {
+            gap: var(--size-2);
+        }
+
+        &__img {
+            border-radius: var(--corner-extra-large);
+            flex-shrink: 0;
+            // Image width from Figma spec (no standard size token applies for 680px layout container)
+            width: styles.rem(680px);
+            @include styles.max-width(styles.$br-xl) {
+                width: 100%;
+                aspect-ratio: 688 / 300;
+                object-fit: cover;
+            }
+            @include styles.max-width(styles.$br-sm) {
+                aspect-ratio: 343 / 227;
+            }
+        }
+
+        &__card {
+            background-color: var(--color-white);
+            padding: var(--size-5);
+            border-radius: var(--corner-extra-large);
+            box-shadow: var(--ring-medium-on-primary), var(--shadow-card);
+            flex: 1 1 auto;
+            min-width: 0;
+            @include styles.max-width(styles.$br-lg) {
+                padding: var(--size-4);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                padding: var(--size-3);
+            }
+        }
+
+        &__card-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-3);
+            // Figma spec: card text layout bound
+            max-width: styles.rem(586px);
+            @include styles.max-width(styles.$br-lg) {
+                gap: var(--size-2);
+                max-width: styles.rem(451px);
+            }
+        }
+
+        &__title,
+        &__text {
+            margin-bottom: 0;
+        }
+
+        &__title {
+            font-size: var(--fs-headline-large);
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-display-small);
+            }
+        }
+
+        &__text {
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-large);
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-body-small);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-label-medium);
+            }
+        }
+
+        &__btn {
+            font-size: var(--fs-body-large);
+            align-self: flex-start;
+            box-shadow: var(--shadow-btn), var(--ring-medium-on-primary);
+            border-radius: var(--corner-medium);
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-body-small);
+                padding: var(--btn-padding-medium);
+                svg {
+                    width: var(--size-2);
+                    height: var(--size-2);
+                }
+            }
+            @include styles.max-width(styles.$br-sm) {
+                padding: var(--btn-padding-small);
+                font-size: var(--fs-label-medium);
+            }
+        }
+
+        &__hint {
+            font-size: var(--fs-body-small);
+            line-height: var(--lh-heading);
+            color: var(--color-on-bg-low);
+            margin-bottom: 0;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-label-medium);
+            }
+
+            a {
+                transition: color var(--transition-base);
+                @include styles.hover {
+                    color: var(--color-tertiary);
+                }
+            }
+        }
+    }
+}

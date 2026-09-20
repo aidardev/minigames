@@ -1,0 +1,53 @@
+@layer utils {
+    .sr-only {
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        height: 1px;
+        overflow: hidden;
+        position: absolute;
+        white-space: nowrap;
+        width: 1px;
+    }
+
+    .container {
+        max-width: calc(var(--container-width) + var(--container-padding-x) * 2);
+        padding-inline: var(--container-padding-x);
+        margin-inline: auto;
+    }
+
+    .list-unstyled {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    .img-responsive {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    .focusable-parent {
+        position: relative;
+        &:focus-within {
+            outline: var(--border-width-medium) solid var(--color-tertiary);
+            :focus {
+                outline: none;
+            }
+        }
+    }
+
+    .focusable-link {
+        &::before {
+            content: '';
+            display: block;
+            position: absolute;
+            z-index: var(--z-docked);
+            inset: 0;
+        }
+    }
+
+    .is-locked {
+        overflow: hidden;
+    }
+}

@@ -1,0 +1,28 @@
+@use '@/styles/index' as styles;
+
+@layer primitives {
+    .section-title {
+        --accent-bar-y-offset: 3.5px;
+        --accent-bar-border-width: 1.5px;
+        --accent-bar-left-offset: var(--size-2);
+        font-size: var(--fs-headline-large);
+        position: relative;
+        padding-left: var(--accent-bar-left-offset);
+        @include styles.max-width(styles.$br-lg) {
+            --accent-bar-y-offset: 2.5px;
+            font-size: var(--fs-headline-medium);
+        }
+        &::before {
+            content: '';
+            display: block;
+            width: var(--size-1);
+            background: var(--color-primary);
+            box-shadow: inset 0 0 0 var(--accent-bar-border-width) var(--color-on-primary);
+            border-radius: var(--corner-extra-small);
+            position: absolute;
+            top: var(--accent-bar-y-offset);
+            bottom: var(--accent-bar-y-offset);
+            left: 0;
+        }
+    }
+}

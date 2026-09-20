@@ -1,0 +1,156 @@
+@use 'functions' as f;
+@use 'mixins' as m;
+@use 'breakpoints' as b;
+
+:root {
+    // Base
+    --color-white: #fff;
+    --color-black: #000;
+
+    // General
+    --color-bg: #f9f8f3;
+    --color-on-bg: #5f5d75;
+    --color-on-bg-low: #737380;
+    --color-bg-footer: #1e1b3a;
+    --color-bg-footer-low: #2a264f;
+    --color-bg-footer-lowest: #3c376e;
+    --color-on-bg-footer: #b9b5c9;
+    --color-surface: #fff9e5;
+    --color-surface-low: #fffcf5;
+    --color-primary: #ffd02b;
+    --color-primary-low: #fde047;
+    --color-primary-high: #e5bb00;
+    --color-on-primary: #242145;
+    --color-secondary: #f0eeff;
+    --color-tertiary: #3a2ebf;
+    --color-like: #ff4b4b;
+    --color-error: #b3261e;
+    --color-price-free: #0b8a8f;
+
+    // Borders
+    --color-outline: #e5e7eb;
+    --color-outline-variant: #d2d2d2;
+
+    // Additional
+    --color-avatar-random-1: #e9eef6;
+    --color-avatar-random-2: #a3e2c9;
+    --color-avatar-random-3: #bce3ff;
+    --color-avatar-random-4: #ffc6ff;
+    --color-avatar-random-5: #e8dff5;
+
+    // Gradients
+    --gradient-game-slide: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0) 0%,
+        rgba(0, 0, 0, 0.4) 17.31%,
+        rgba(0, 0, 0, 0.85) 46.15%
+    );
+
+    // Typography
+    --fs-display-large: #{f.rem(56px)};
+    --fs-display-medium: #{f.rem(36px)};
+    --fs-display-small: #{f.rem(24px)};
+    --fs-headline-large: #{f.rem(32px)};
+    --fs-headline-medium: #{f.rem(24px)};
+    --fs-headline-small: #{f.rem(20px)};
+    --fs-body-large: #{f.rem(18px)};
+    --fs-body-medium: #{f.rem(16px)};
+    --fs-body-small: #{f.rem(14px)};
+    --fs-label-extra-large: #{f.rem(16px)};
+    --fs-label-large: #{f.rem(14px)};
+    --fs-label-medium: #{f.rem(12px)};
+    --fs-label-small: #{f.rem(10px)};
+
+    // Font Weight
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semi-bold: 600;
+    --font-weight-bold: 700;
+    --font-weight-extra-bold: 800;
+
+    // Fonts
+    --font-family-primary: 'Inter', sans-serif;
+    --font-family-secondary: 'Roboto', sans-serif;
+
+    // Size
+    --size-05: #{f.rem(4px)};
+    --size-1: #{f.rem(8px)};
+    --size-1-5: #{f.rem(12px)};
+    --size-2: #{f.rem(16px)};
+    --size-2-5: #{f.rem(20px)};
+    --size-3: #{f.rem(24px)};
+    --size-4: #{f.rem(32px)};
+    --size-5: #{f.rem(40px)};
+    --size-6: #{f.rem(48px)};
+    --size-7: #{f.rem(56px)};
+    --size-8: #{f.rem(64px)};
+    --size-9: #{f.rem(72px)};
+    --size-10: #{f.rem(80px)};
+    --size-11: #{f.rem(88px)};
+    --size-12: #{f.rem(96px)};
+    --size-13: #{f.rem(104px)};
+    --size-14: #{f.rem(112px)};
+    --size-15: #{f.rem(120px)};
+
+    // Corner
+    --corner-extra-small: #{f.rem(4px)};
+    --corner-small: #{f.rem(8px)};
+    --corner-medium: #{f.rem(12px)};
+    --corner-large: #{f.rem(16px)};
+    --corner-larger: #{f.rem(20px)};
+    --corner-extra-large: #{f.rem(24px)};
+    --corner-full: 9999px;
+
+    // Buttons
+    --btn-padding-large: var(--size-2) var(--size-3);
+    --btn-padding-medium: #{f.rem(10px)} #{f.rem(20px)};
+    --btn-padding-small: var(--size-1) var(--size-2);
+    --btn-padding-icon: var(--size-1);
+
+    // Shadows
+    --shadow-level-1: 4px 4px 0 var(--color-on-primary);
+    --shadow-level-2: 6px 6px 0 var(--color-on-primary);
+    --shadow-level-3: 8px 8px 0 var(--color-on-primary);
+
+    --shadow-card: 0 2px 8px -4px rgba(0, 0, 0, 0.04), 0 14px 30px -10px rgba(0, 0, 0, 0.08);
+    --shadow-btn: 0 10px 20px -10px rgba(0, 0, 0, 0.1);
+
+    // Transitions
+    --transition-base: 0.25s ease;
+    --transition-fast: 0.15s ease;
+    --transition-slower: 0.45s ease;
+
+    // Container
+    --container-width: #{f.rem(1680px)};
+    --container-padding-x: #{f.rem(40px)};
+
+    --container-header-width: #{f.rem(1760px)};
+
+    // Borders Widths
+    --border-width-thin: 1px;
+    --border-width-medium: 2px;
+    --border-width-thick: 3px;
+
+    // Ring Borders
+    --ring-medium-on-primary: inset 0 0 0 var(--border-width-medium) var(--color-on-primary);
+
+    // Focus / Outline
+    --outline-offset: 3px;
+
+    // Line Height
+    --lh-tight: 1.1;
+    --lh-heading: 1.2;
+    --lh-body: 1.5;
+
+    // z-index
+    --z-below: -1;
+    --z-base: 0;
+    --z-docked: 10;
+    --z-sticky: 20;
+    --z-overlay: 30;
+    --z-modal: 40;
+
+    @include m.max-width(b.$br-md) {
+        --container-padding-x: var(--size-2);
+    }
+}

@@ -1,0 +1,141 @@
+@use '@/styles/index' as styles;
+
+$google-btn-height: styles.rem(50px);
+
+@layer components {
+    .auth {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-3);
+        padding: var(--size-4);
+        &__tabs {
+            display: flex;
+            border: var(--border-width-medium) solid var(--color-on-primary);
+            border-radius: var(--corner-medium);
+            background-color: var(--color-white);
+            overflow: hidden;
+            height: var(--size-6);
+        }
+        &__tab {
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-weight: var(--font-weight-bold);
+            color: var(--color-on-bg);
+            border-radius: var(--corner-small);
+            flex: 1;
+            transition:
+                background-color var(--transition-base),
+                color var(--transition-base);
+
+            @include styles.hover {
+                background-color: color-mix(in srgb, var(--color-surface) 60%, transparent);
+                color: var(--color-on-primary);
+            }
+
+            &[aria-selected='true'] {
+                color: var(--color-white);
+                background-color: var(--color-bg-footer-low);
+            }
+
+            &:focus-visible {
+                outline: var(--border-width-medium) solid var(--color-tertiary);
+                outline-offset: calc(-1 * var(--size-05));
+            }
+
+            &[aria-selected='true']:focus-visible {
+                outline-color: var(--color-primary);
+            }
+        }
+        &__panel {
+            animation: auth-panel-in var(--transition-slower);
+        }
+    }
+
+    @keyframes auth-panel-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-3);
+        &__head {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-1);
+        }
+        &__title {
+            font-size: var(--fs-display-small);
+            margin: 0;
+        }
+        &__subtitle {
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-small);
+            line-height: var(--lh-heading);
+            margin: 0;
+        }
+        &__fields,
+        &__actions {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-2);
+        }
+        &__link {
+            background: none;
+            padding: 0;
+            border: none;
+            font-size: var(--fs-body-small);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--lh-heading);
+            cursor: pointer;
+            color: var(--color-on-primary);
+            text-decoration: underline;
+            text-decoration-thickness: var(--border-width-thin);
+            text-underline-offset: var(--size-05);
+            transition: color var(--transition-base);
+            @include styles.hover {
+                color: var(--color-tertiary);
+            }
+
+            &--forgot {
+                text-align: right;
+                align-self: flex-end;
+            }
+        }
+        &__btn {
+            &--submit {
+                box-shadow: var(--ring-medium-on-primary), var(--shadow-level-1);
+            }
+            &--google {
+                background-color: var(--color-white);
+                min-height: $google-btn-height;
+            }
+        }
+        &__divider {
+            display: flex;
+            gap: var(--size-2);
+            align-items: center;
+            font-size: var(--fs-label-medium);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--lh-heading);
+            color: var(--color-on-bg);
+            &::before,
+            &::after {
+                content: '';
+                flex: 1;
+                border-top: var(--border-width-thin) solid var(--color-on-primary);
+                opacity: 0.2;
+            }
+        }
+        &__switch {
+            font-size: var(--fs-body-small);
+            line-height: var(--lh-heading);
+            text-align: center;
+            color: var(--color-on-bg);
+            margin-bottom: 0;
+        }
+    }
+}
