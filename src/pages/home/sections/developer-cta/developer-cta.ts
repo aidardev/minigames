@@ -15,6 +15,7 @@ export class DeveloperCtaSection extends BaseComponent {
                     class="developer-cta__img img-responsive"
                     width="680"
                     height="480"
+                    loading="lazy"
                 >
                 <div class="developer-cta__card">
                     <div class="developer-cta__card-content">
