@@ -115,7 +115,7 @@
 
             a {
                 transition: color var(--transition-base);
-                &:hover {
+                @include styles.hover {
                     color: var(--color-tertiary);
                 }
             }

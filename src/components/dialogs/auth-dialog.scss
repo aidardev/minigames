@@ -26,7 +26,7 @@
                 background-color var(--transition-base),
                 color var(--transition-base);
 
-            &:hover {
+            @include styles.hover {
                 background-color: color-mix(in srgb, var(--color-surface) 60%, transparent);
                 color: var(--color-on-primary);
             }
@@ -94,7 +94,7 @@
             text-decoration-thickness: var(--border-width-thin);
             text-underline-offset: var(--size-05);
             transition: color var(--transition-base);
-            &:hover {
+            @include styles.hover {
                 color: var(--color-tertiary);
             }
 
