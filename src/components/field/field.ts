@@ -26,7 +26,7 @@ export function renderField(options: FieldOptions): string {
     } = options;
 
     return /* HTML */ `
-        <div class="field">
+        <div class="field${passwordToggle ? ' field--has-password-toggle' : ''}">
             <label class="field__label" for="${id}">${label}</label>
             <div class="field__control">
                 <span class="field__icon" aria-hidden="true">${icon}</span>
