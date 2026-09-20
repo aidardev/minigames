@@ -1,5 +1,7 @@
 @use '@/styles/index' as styles;
 
+$google-btn-height: styles.rem(50px);
+
 @layer components {
     .auth {
         display: flex;
@@ -109,8 +111,7 @@
             }
             &--google {
                 background-color: var(--color-white);
-                // Hardcoded from figma: no Figma token exists & single token is overkill.
-                min-height: styles.rem(50px);
+                min-height: $google-btn-height;
             }
         }
         &__divider {
