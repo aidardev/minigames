@@ -52,7 +52,7 @@
         // Styles
         &--outline-on-primary {
             background-color: transparent;
-            box-shadow: var(--btn-border);
+            box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
             &:hover {
                 background-color: var(--color-surface);
@@ -64,7 +64,7 @@
         }
         &--primary {
             background-color: var(--color-primary);
-            box-shadow: var(--btn-border);
+            box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
 
             &:hover {

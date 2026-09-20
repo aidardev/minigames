@@ -107,8 +107,6 @@
     --btn-padding-small: var(--size-1) var(--size-2);
     --btn-padding-icon: var(--size-1);
 
-    --btn-border: inset 0 0 0 var(--border-width-medium) var(--color-on-primary);
-
     // Shadows
     --shadow-level-1: 4px 4px 0 var(--color-on-primary);
     --shadow-level-2: 6px 6px 0 var(--color-on-primary);
@@ -132,6 +130,9 @@
     --border-width-thin: 1px;
     --border-width-medium: 2px;
     --border-width-thick: 3px;
+
+    // Ring Borders
+    --ring-medium-on-primary: inset 0 0 0 var(--border-width-medium) var(--color-on-primary);
 
     // Focus / Outline
     --outline-offset: 3px;
