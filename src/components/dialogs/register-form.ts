@@ -18,7 +18,7 @@ export class RegisterForm extends BaseComponent<'form'> {
         this.element.innerHTML = /* HTML */ `
             <div class="auth-form__head">
                 <h2 class="auth-form__title">Create Account</h2>
-                <p class="auth-form__subtitle">Join MiniGames to track your score & streak.</p>
+                <p class="auth-form__subtitle">Join MiniGames to track your score &amp; streak.</p>
             </div>
 
             <div class="auth-form__fields">

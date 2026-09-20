@@ -4,7 +4,7 @@ import googleIcon from '@/assets/images/google.svg';
 import { BaseComponent } from '../base-component';
 import { renderField } from '../field/field';
 
-export class Loginform extends BaseComponent<'form'> {
+export class LoginForm extends BaseComponent<'form'> {
     private handleSubmit = (event: SubmitEvent) => {
         event.preventDefault();
     };

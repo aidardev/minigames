@@ -1,6 +1,6 @@
 @use 'functions' as f;
 
-// Base
+// Media
 @mixin min-width($breakpoint) {
     @media (min-width: f.rem($breakpoint)) {
         @content;
@@ -16,5 +16,14 @@
 @mixin between($min, $max) {
     @media (min-width: f.rem($min)) and (max-width: f.rem($max - 0.02px)) {
         @content;
+    }
+}
+
+// Other
+@mixin hover {
+    @media (hover: hover) {
+        &:hover {
+            @content;
+        }
     }
 }

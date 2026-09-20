@@ -54,7 +54,7 @@
             background-color: transparent;
             box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
-            &:hover {
+            @include styles.hover {
                 background-color: var(--color-surface);
             }
 
@@ -67,7 +67,7 @@
             box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
 
-            &:hover {
+            @include styles.hover {
                 background-color: var(--color-primary-high);
             }
         }

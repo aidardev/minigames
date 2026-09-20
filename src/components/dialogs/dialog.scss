@@ -13,6 +13,8 @@
         border-radius: var(--corner-extra-large);
         width: var(--dialog-width);
         max-width: 100%;
+        margin: auto;
+        border: none;
         padding: 0;
         opacity: 0;
         transform: translateY(var(--dialog-shift)) scale(var(--dialog-scale));
@@ -79,5 +81,13 @@
             --dialog-shift: 0px;
             --dialog-scale: 1;
         }
+    }
+
+    html {
+        scrollbar-gutter: stable;
+    }
+
+    body:has(dialog[open]) {
+        overflow: hidden;
     }
 }
