@@ -2,6 +2,7 @@ import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
 import { BaseComponent } from '../base-component';
+import { AuthDialog, toAuthTab, type AuthTab } from '../dialogs/auth-dialog';
 import './header.scss';
 
 export class Header extends BaseComponent {
@@ -25,6 +26,18 @@ export class Header extends BaseComponent {
         if (event.key === 'Escape') {
             this.closeMenu();
         }
+    };
+
+    private handleAuthClick = (event: Event) => {
+        if (!(event.target instanceof Element)) return;
+
+        const trigger = event.target.closest<HTMLElement>('[data-auth-tab]');
+        if (!trigger) return;
+
+        const tab: AuthTab = toAuthTab(trigger.dataset.authTab);
+
+        this.closeMenu();
+        new AuthDialog(tab).open();
     };
 
     public constructor() {
@@ -58,10 +71,15 @@ export class Header extends BaseComponent {
                         <button
                             class="header__btn btn btn--medium btn--outline-on-primary"
                             type="button"
+                            data-auth-tab="login"
                         >
                             Log In
                         </button>
-                        <button class="header__btn btn btn--medium btn--primary" type="button">
+                        <button
+                            class="header__btn btn btn--medium btn--primary"
+                            type="button"
+                            data-auth-tab="register"
+                        >
                             Sign Up
                         </button>
                     </div>
@@ -69,6 +87,7 @@ export class Header extends BaseComponent {
                 <button
                     class="header__btn header__btn--tablet btn btn--small btn--primary"
                     type="button"
+                    data-auth-tab="register"
                 >
                     Sign Up
                 </button>
@@ -95,6 +114,7 @@ export class Header extends BaseComponent {
     private bindEvents() {
         this.burgerBtn?.addEventListener('click', () => this.openMenu());
         this.closeBtn?.addEventListener('click', () => this.closeMenu());
+        this.element.addEventListener('click', this.handleAuthClick);
     }
 
     public openMenu() {

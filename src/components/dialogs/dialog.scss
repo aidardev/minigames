@@ -1,0 +1,83 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .dialog {
+        --dialog-scrollbar-thumb: color-mix(in srgb, var(--color-on-primary) 40%, transparent);
+        --dialog-width: #{styles.rem(420px)};
+        --dialog-shift: var(--size-1-5);
+        --dialog-scale: 0.96;
+        --dialog-blur: var(--size-1);
+        --dialog-backdrop-strength: 50%;
+        background-color: var(--color-bg);
+        color: var(--color-on-primary);
+        border-radius: var(--corner-extra-large);
+        width: var(--dialog-width);
+        max-width: 100%;
+        padding: 0;
+        opacity: 0;
+        transform: translateY(var(--dialog-shift)) scale(var(--dialog-scale));
+        transition:
+            opacity var(--transition-fast),
+            transform var(--transition-fast),
+            overlay var(--transition-fast) allow-discrete,
+            display var(--transition-fast) allow-discrete;
+
+        scrollbar-width: thin;
+        scrollbar-color: var(--dialog-scrollbar-thumb) transparent;
+
+        &[open] {
+            opacity: 1;
+            transform: none;
+            transition:
+                opacity var(--transition-base),
+                transform var(--transition-base);
+        }
+
+        &::backdrop {
+            background-color: transparent;
+            backdrop-filter: blur(0);
+            transition:
+                background-color var(--transition-fast),
+                backdrop-filter var(--transition-fast),
+                overlay var(--transition-fast) allow-discrete,
+                display var(--transition-fast) allow-discrete;
+        }
+
+        &[open]::backdrop {
+            background-color: color-mix(
+                in srgb,
+                var(--color-on-primary) var(--dialog-backdrop-strength),
+                transparent
+            );
+            backdrop-filter: blur(var(--dialog-blur));
+            transition:
+                background-color var(--transition-base),
+                backdrop-filter var(--transition-base);
+        }
+
+        &--auth {
+            box-shadow:
+                inset 0 0 0 var(--border-width-thick) var(--color-on-primary),
+                var(--shadow-level-3);
+        }
+    }
+
+    @starting-style {
+        .dialog[open] {
+            opacity: 0;
+            transform: translateY(var(--dialog-shift)) scale(var(--dialog-scale));
+        }
+
+        .dialog[open]::backdrop {
+            background-color: transparent;
+            backdrop-filter: blur(0);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .dialog {
+            --dialog-shift: 0px;
+            --dialog-scale: 1;
+        }
+    }
+}

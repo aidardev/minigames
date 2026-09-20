@@ -1,7 +1,9 @@
-export abstract class BaseComponent {
-    public readonly element: HTMLElement;
+export abstract class BaseComponent<
+    K extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap,
+> {
+    public readonly element: HTMLElementTagNameMap[K];
 
-    constructor(tagName: keyof HTMLElementTagNameMap, className?: string) {
+    constructor(tagName: K, className?: string) {
         this.element = document.createElement(tagName);
 
         if (className) {
