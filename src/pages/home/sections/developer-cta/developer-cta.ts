@@ -21,8 +21,8 @@ export class DeveloperCtaSection extends BaseComponent {
                         <h2 class="developer-cta__title">Are You a Game Developer?</h2>
                         <p class="developer-cta__text">
                             Want to see your game on MiniGames? We're always looking for fun,
-                            engaging mini games to add to our platform. Submit your game and reach
-                            thousands of players!
+                            engaging mini games to add to our platform. Submit your game
+                            and&nbsp;reach thousands of players!
                         </p>
                         <button
                             class="developer-cta__btn btn btn--large btn--primary"

@@ -1,6 +1,6 @@
 import './auth-dialog.scss';
 import { Dialog } from './dialog';
-import { Loginform } from './login-form';
+import { LoginForm } from './login-form';
 import { RegisterForm } from './register-form';
 
 export type AuthTab = 'login' | 'register';
@@ -73,7 +73,7 @@ export class AuthDialog extends Dialog {
     }
 
     private mountForms() {
-        this.query('[data-auth-panel="login"]')?.append(new Loginform().element);
+        this.query('[data-auth-panel="login"]')?.append(new LoginForm().element);
         this.query('[data-auth-panel="register"]')?.append(new RegisterForm().element);
     }
 

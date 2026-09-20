@@ -16,7 +16,7 @@ export class Footer extends BaseComponent {
                 <div class="footer__top">
                     <div class="footer__brand">
                         <a href="/" class="footer__logo logo logo--white" data-link>
-                            <img src="${logo}" alt="Logo" class="logo__img" width="32" height="32">
+                            <img src="${logo}" alt="" class="logo__img" width="32" height="32">
                             <span class="logo__text">MiniGames</span>
                         </a>
                         <p class="footer__text">
@@ -27,7 +27,7 @@ export class Footer extends BaseComponent {
 
                     <nav class="footer__nav">
                         <div class="footer__group">
-                            <h3 class="footer__title">Explore</h3>
+                            <h2 class="footer__title">Explore</h2>
                             <ul class="footer__list list-unstyled">
                                 <li><a href="/" data-link>Home</a></li>
                                 <li>
@@ -43,7 +43,7 @@ export class Footer extends BaseComponent {
                         </div>
 
                         <div class="footer__group">
-                            <h3 class="footer__title">Company</h3>
+                            <h2 class="footer__title">Company</h2>
                             <ul class="footer__list list-unstyled">
                                 <li>
                                     <a href="/" data-link>About Us</a>
@@ -61,35 +61,38 @@ export class Footer extends BaseComponent {
                         </div>
 
                         <div class="footer__group footer__group--community">
-                            <h3 class="footer__title">Community</h3>
+                            <h2 class="footer__title">Community</h2>
                             <ul class="footer__socials list-unstyled">
                                 <li>
                                     <a
-                                        href="#"
+                                        href="/"
                                         class="footer__social-btn"
                                         aria-label="Share"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        data-link
                                         >${shareIcon}</a
                                     >
                                 </li>
                                 <li>
                                     <a
-                                        href="#"
+                                        href="/"
                                         class="footer__social-btn"
                                         aria-label="Community Chat"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        data-link
                                         >${chatIcon}</a
                                     >
                                 </li>
                                 <li>
                                     <a
-                                        href="#"
+                                        href="/"
                                         class="footer__social-btn"
                                         aria-label="RSS Feed"
                                         target="_blank"
                                         rel="noopener noreferrer"
+                                        data-link
                                         >${rssIcon}</a
                                     >
                                 </li>
@@ -109,7 +112,7 @@ export class Footer extends BaseComponent {
                     >
                         <img
                             src="${rsLogo}"
-                            alt="RS School Logo"
+                            alt=""
                             class="footer__credit-icon"
                             width="24"
                             height="24"

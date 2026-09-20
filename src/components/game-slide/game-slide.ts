@@ -10,7 +10,7 @@ export class GameSlide extends BaseComponent {
         super('article', 'game-slide focusable-parent');
 
         this.element.innerHTML = /* HTML */ `
-            <img src="${game.cardImage}" alt="${game.name}" class="game-slide__img" loading="lazy">
+            <img src="${game.cardImage}" alt="" class="game-slide__img" loading="lazy">
 
             <div class="game-slide__overlay">
                 <h3 class="game-slide__title">

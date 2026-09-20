@@ -55,7 +55,7 @@
             flex-direction: column;
             gap: var(--size-3);
             // Figma spec: card text layout bound
-            max-width: styles.rem(580px);
+            max-width: styles.rem(586px);
             @include styles.max-width(styles.$br-lg) {
                 gap: var(--size-2);
                 max-width: styles.rem(451px);
