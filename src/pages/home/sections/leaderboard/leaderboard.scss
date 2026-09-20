@@ -60,7 +60,8 @@
         }
 
         &__cell {
-            padding: var(--size-2) var(--size-1);
+            // Compensate for bottom border to match Figma
+            padding: var(--size-2) var(--size-1) calc(var(--size-2) - var(--border-width-thin));
         }
 
         &__body {
