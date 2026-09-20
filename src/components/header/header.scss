@@ -1,5 +1,7 @@
 @use '@/styles/index' as styles;
 
+$icon-size: styles.rem(10px);
+
 @layer components {
     .header {
         display: flex;
@@ -95,9 +97,8 @@
             }
 
             svg {
-                // Hardcoded from figma: no Figma token exists & single token is overkill.
-                width: styles.rem(10px);
-                height: styles.rem(10px);
+                width: $icon-size;
+                height: $icon-size;
             }
         }
         &__btns {
@@ -132,8 +133,7 @@
 
             svg {
                 width: var(--size-2);
-                // Hardcoded from figma: no Figma token exists & single token is overkill.
-                height: styles.rem(10px);
+                height: $icon-size;
             }
         }
     }
