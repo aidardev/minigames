@@ -40,19 +40,28 @@ export class Header extends BaseComponent {
         new AuthDialog(tab).open();
     };
 
+    private handleLinksClick = (event: Event) => {
+        if (!(event.target instanceof Element)) return;
+
+        const trigger = event.target.closest<HTMLElement>('a');
+        if (!trigger) return;
+
+        this.closeMenu();
+    };
+
     public constructor() {
         super('header', 'header');
 
         this.element.innerHTML = /* HTML */ `
             <div class="header__inner container">
                 <a href="/" class="header__logo logo logo--dark" data-link>
-                    <img src="${logo}" alt="Logo" class="logo__img" width="32" height="32">
+                    <img src="${logo}" alt="" class="logo__img" width="32" height="32">
                     <span class="logo__text">MiniGames</span>
                 </a>
-                <div class="header__menu">
+                <div class="header__menu" id="mobile-menu">
                     <div class="header__mobile-topbar">
                         <a href="/" class="header__logo-mobile logo logo--white" data-link>
-                            <img src="${logo}" alt="Logo" class="logo__img" width="32" height="32">
+                            <img src="${logo}" alt="" class="logo__img" width="32" height="32">
                             <span class="logo__text">MiniGames</span>
                         </a>
                         <button class="header__close btn" type="button" aria-label="Close menu">
@@ -95,6 +104,8 @@ export class Header extends BaseComponent {
                     class="header__hamburger-btn btn btn--icon btn--outline-on-primary"
                     type="button"
                     aria-label="Open menu"
+                    aria-expanded="false"
+                    aria-controls="mobile-menu"
                 >
                     ${burgerIcon}
                 </button>
@@ -115,6 +126,7 @@ export class Header extends BaseComponent {
         this.burgerBtn?.addEventListener('click', () => this.openMenu());
         this.closeBtn?.addEventListener('click', () => this.closeMenu());
         this.element.addEventListener('click', this.handleAuthClick);
+        this.menuContainer?.addEventListener('click', this.handleLinksClick);
     }
 
     public openMenu() {
@@ -123,6 +135,7 @@ export class Header extends BaseComponent {
         this.isMenuOpen = true;
         this.menuContainer?.classList.add('is-open');
         this.burgerBtn?.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('is-locked');
 
         document.addEventListener('click', this.handleDocumentClick);
         document.addEventListener('keydown', this.handleEscKey);
@@ -134,6 +147,7 @@ export class Header extends BaseComponent {
         this.isMenuOpen = false;
         this.menuContainer?.classList.remove('is-open');
         this.burgerBtn?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('is-locked');
 
         document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('keydown', this.handleEscKey);
