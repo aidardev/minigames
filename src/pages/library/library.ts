@@ -1,12 +1,10 @@
 import { BaseComponent } from '@/components/base-component';
+import { CatalogSection } from './blocks/catalog/catalog';
 
 export class LibraryPage extends BaseComponent {
     public constructor() {
         super('main', 'library-page');
 
-        this.element.innerHTML = /* HTML */ `
-            <h1>Library</h1>
-            <a href="/" data-link>Home</a>
-        `;
+        this.element.append(new CatalogSection().element);
     }
 }
