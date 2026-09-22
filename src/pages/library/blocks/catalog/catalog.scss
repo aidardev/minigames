@@ -1,0 +1,15 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .catalog {
+        &__controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--size-2);
+        }
+
+        &__chip-group {
+            flex: 1 1 auto;
+        }
+    }
+}

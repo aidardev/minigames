@@ -1,0 +1,34 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .chip {
+        border: none;
+        cursor: pointer;
+        background: var(--color-white);
+        padding: var(--size-1) var(--size-2);
+        border-radius: var(--corner-extra-large);
+        box-shadow: var(--ring-medium-on-primary);
+        font-size: var(--fs-body-small);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-on-primary);
+        transition: background var(--transition-base);
+        @include styles.hover {
+            &:not(.chip--active) {
+                background: var(--color-surface);
+            }
+        }
+
+        &--active {
+            background: var(--color-primary);
+        }
+    }
+
+    .chip-group {
+        display: flex;
+        gap: var(--size-2);
+        overflow-x: auto;
+        &__chip {
+            flex-shrink: 0;
+        }
+    }
+}
