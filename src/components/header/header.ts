@@ -71,7 +71,7 @@ export class Header extends BaseComponent {
                     <nav class="header__navbar navbar">
                         <ul class="navbar__list list-unstyled">
                             <li class="is-active"><a href="/" data-link>Home</a></li>
-                            <li><a href="/" data-link>Library</a></li>
+                            <li><a href="/library" data-link>Library</a></li>
                             <li><a href="/" data-link>Tournaments</a></li>
                             <li><a href="/" data-link>Community</a></li>
                         </ul>
