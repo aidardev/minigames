@@ -1,0 +1,205 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    $card-min-height-desktop: styles.rem(200px);
+    $card-min-height-compact: styles.rem(152px);
+    $card-img-aspect-ratio: 343 / 160;
+
+    $cq-compact: 720px;
+    $cq-mobile: 460px;
+
+    .game-card {
+        container-type: inline-size;
+        container-name: game-card;
+        width: 100%;
+        display: flex;
+        &__inner {
+            width: 100%;
+            display: flex;
+            position: relative;
+            background: var(--color-white);
+            border-radius: var(--corner-large);
+            overflow: hidden;
+            min-height: $card-min-height-desktop;
+            box-shadow: var(--shadow-level-1);
+            &::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                box-shadow: var(--ring-medium-on-primary);
+                pointer-events: none;
+            }
+        }
+
+        &__img {
+            flex-shrink: 0;
+            width: clamp(#{styles.rem(200px)}, 39cqw, #{styles.rem(320px)});
+            height: 100%;
+            object-fit: cover;
+        }
+
+        &__body {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: var(--size-2);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: var(--size-2);
+        }
+
+        &__heading {
+            display: flex;
+            align-items: center;
+            gap: var(--size-1) var(--size-2);
+        }
+
+        &__title {
+            font-size: var(--fs-display-small);
+            font-weight: var(--font-weight-bold);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 0;
+        }
+
+        &__category {
+            font-size: var(--fs-label-medium);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--lh-heading);
+            padding: var(--size-05) var(--size-1);
+            background: var(--color-secondary);
+            box-shadow: var(--ring-medium-on-primary);
+            border-radius: var(--corner-extra-large);
+            text-transform: capitalize;
+        }
+
+        &__price {
+            font-size: var(--fs-display-small);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--lh-heading);
+            margin-left: auto;
+
+            &--free {
+                color: var(--color-price-free);
+            }
+
+            &--mobile {
+                display: none;
+            }
+        }
+
+        &__description {
+            font-weight: var(--font-weight-medium);
+            color: var(--color-on-bg);
+            line-height: var(--lh-medium);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 0;
+        }
+
+        &__footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--size-2);
+        }
+
+        &__meta {
+            display: flex;
+            gap: var(--size-3);
+        }
+
+        &__meta-item {
+            font-size: var(--fs-body-small);
+
+            @include styles.max-width(styles.$br-lg) {
+                font-style: var(--fs-label-medium);
+            }
+        }
+
+        &__details {
+            font-size: var(--fs-body-small);
+        }
+
+        @container game-card (max-width: #{$cq-compact}) {
+            &__inner {
+                min-height: $card-min-height-compact;
+            }
+
+            &__body {
+                gap: var(--size-1);
+            }
+
+            &__title {
+                font-size: var(--fs-headline-small);
+            }
+
+            &__description {
+                font-size: var(--fs-body-small);
+                -webkit-line-clamp: 2;
+            }
+
+            &__price {
+                font-size: var(--fs-headline-small);
+            }
+
+            &__details {
+                padding: var(--size-1) var(--size-2);
+            }
+
+            &__meta {
+                gap: var(--size-2);
+            }
+
+            &__meta-item {
+                font-size: var(--fs-label-medium);
+            }
+        }
+
+        @container game-card (max-width: #{$cq-mobile}) {
+            &__inner {
+                flex-direction: column;
+            }
+
+            &__img {
+                aspect-ratio: $card-img-aspect-ratio;
+                width: 100%;
+                height: auto;
+            }
+
+            &__body {
+                gap: var(--size-2);
+            }
+
+            &__heading {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            &__category {
+                padding: styles.rem(2px) var(--size-1);
+            }
+
+            &__price--desktop {
+                display: none;
+            }
+
+            &__price--mobile {
+                display: block;
+            }
+
+            &__footer {
+                flex-wrap: wrap;
+            }
+
+            &__details {
+                width: 100%;
+                padding-block: var(--size-1-25);
+            }
+        }
+    }
+}
