@@ -1,0 +1,30 @@
+@use '../index' as styles;
+
+@layer primitives {
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: var(--size-05);
+        svg {
+            width: var(--size-3);
+            height: var(--size-3);
+            flex-shrink: 0;
+        }
+
+        &__value {
+            font-weight: var(--font-weight-bold);
+        }
+
+        &--rating {
+            svg {
+                color: var(--color-primary);
+            }
+        }
+
+        &--likes {
+            svg {
+                color: var(--color-like);
+            }
+        }
+    }
+}
