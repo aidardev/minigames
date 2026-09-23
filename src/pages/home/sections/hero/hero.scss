@@ -85,8 +85,7 @@
             margin-bottom: 0;
             @include styles.max-width(styles.$br-lg) {
                 font-size: var(--fs-body-small);
-                // Figma spec: tablet text line-height adjustment
-                line-height: 1.4;
+                line-height: var(--lh-medium);
             }
 
             @include styles.max-width(styles.$br-sm) {
