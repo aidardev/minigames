@@ -75,6 +75,7 @@
     // Size
     --size-05: #{f.rem(4px)};
     --size-1: #{f.rem(8px)};
+    --size-1-25: #{f.rem(10px)};
     --size-1-5: #{f.rem(12px)};
     --size-2: #{f.rem(16px)};
     --size-2-5: #{f.rem(20px)};
@@ -103,7 +104,7 @@
 
     // Buttons
     --btn-padding-large: var(--size-2) var(--size-3);
-    --btn-padding-medium: #{f.rem(10px)} #{f.rem(20px)};
+    --btn-padding-medium: #{var(--size-1-25)} #{var(--size-2-5)};
     --btn-padding-small: var(--size-1) var(--size-2);
     --btn-padding-icon: var(--size-1);
 
