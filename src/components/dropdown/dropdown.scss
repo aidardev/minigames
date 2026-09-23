@@ -21,6 +21,7 @@ $dropdown-width: styles.rem(200px);
             align-items: center;
             gap: var(--size-1);
             transition: background var(--transition-base);
+            user-select: none;
             @include styles.hover {
                 background: var(--color-surface);
             }
@@ -34,6 +35,7 @@ $dropdown-width: styles.rem(200px);
             border-radius: var(--corner-medium);
             border: var(--border-width-medium) solid var(--color-on-primary);
             overflow: hidden;
+            z-index: var(--z-overlay);
             position: absolute;
             top: calc(100% + var(--size-05));
             right: 0;
