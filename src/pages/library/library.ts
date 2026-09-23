@@ -1,4 +1,5 @@
 import { getCategories } from '@/api/categories';
+import { getGames } from '@/api/games';
 import { BaseComponent } from '@/components/base-component';
 import { PageTitle } from '@/components/page-title/page-title';
 import { CatalogSection } from './blocks/catalog/catalog';
@@ -18,7 +19,8 @@ export class LibraryPage extends BaseComponent {
     }
 
     private async loadLibrary(): Promise<void> {
-        const categories = await getCategories();
-        this.element.append(new CatalogSection(categories).element);
+        const [games, categories] = await Promise.all([getGames(), getCategories()]);
+
+        this.element.append(new CatalogSection(games, categories).element);
     }
 }

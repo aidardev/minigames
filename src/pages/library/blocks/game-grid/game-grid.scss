@@ -1,0 +1,28 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .game-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--size-3);
+        @include styles.max-width(styles.$br-xl) {
+            grid-template-columns: 1fr;
+        }
+        @include styles.max-width(styles.$br-sm) {
+            gap: var(--size-2);
+        }
+
+        &__item {
+            display: flex;
+
+            &--empty {
+                grid-column: 1 / -1;
+            }
+        }
+
+        &__empty {
+            text-align: center;
+            width: 100%;
+        }
+    }
+}
