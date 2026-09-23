@@ -1,5 +1,7 @@
 import type { DropdownOption } from '@/components/dropdown/dropdown';
 
+export const GAMES_PER_PAGE = 6;
+
 export const SORT_OPTIONS: DropdownOption[] = [
     {
         id: 'rating-asc',

@@ -1,9 +1,10 @@
 import { BaseComponent } from '@/components/base-component';
 import { ChipGroup } from '@/components/chip-group/chip-group';
 import { Dropdown } from '@/components/dropdown/dropdown';
+import { Pagination } from '@/components/pagination/pagination';
 import type { Game, GameCategory } from '@/types/game.types';
 import { GameGrid } from '../game-grid/game-grid';
-import { SORT_OPTIONS } from './catalog.constants';
+import { GAMES_PER_PAGE, SORT_OPTIONS } from './catalog.constants';
 import './catalog.scss';
 
 export class CatalogSection extends BaseComponent {
@@ -37,12 +38,20 @@ export class CatalogSection extends BaseComponent {
             modifier: 'catalog__sort',
         });
 
-        const grid = new GameGrid({ games });
+        const totalPages = Math.ceil(games.length / GAMES_PER_PAGE);
+
+        const pagination = new Pagination({
+            totalPages,
+            currentPage: 1,
+        });
+
+        const grid = new GameGrid({ games: games.slice(0, GAMES_PER_PAGE) });
 
         this.element
             .querySelector('.catalog__controls')
             ?.append(chipGroup.element, dropdown.element);
 
         this.element.querySelector('.catalog__grid')?.append(grid.element);
+        this.element.querySelector('.catalog__pagination')?.append(pagination.element);
     }
 }
