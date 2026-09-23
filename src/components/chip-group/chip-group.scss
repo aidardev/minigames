@@ -10,12 +10,17 @@
         box-shadow: var(--ring-medium-on-primary);
         font-size: var(--fs-body-small);
         font-weight: var(--font-weight-bold);
+        line-height: var(--lh-heading);
         color: var(--color-on-primary);
         transition: background var(--transition-base);
         @include styles.hover {
             &:not(.chip--active) {
                 background: var(--color-surface);
             }
+        }
+
+        @include styles.max-width(styles.$br-sm) {
+            font-size: var(--fs-label-medium);
         }
 
         &--active {
@@ -27,6 +32,16 @@
         display: flex;
         gap: var(--size-2);
         overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        @include styles.max-width(styles.$br-lg) {
+            gap: var(--size-1);
+        }
+
         &__chip {
             flex-shrink: 0;
         }

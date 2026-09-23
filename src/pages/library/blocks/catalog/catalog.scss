@@ -4,6 +4,7 @@
     .catalog {
         &__controls {
             display: flex;
+            align-items: center;
             flex-wrap: wrap;
             gap: var(--size-2);
             padding-block: var(--size-2);
@@ -15,6 +16,19 @@
 
         &__sort {
             flex-shrink: 0;
+            @include styles.max-width(styles.$br-lg) {
+                .dropdown__list {
+                    right: auto;
+                    left: 0;
+                }
+            }
+            @include styles.max-width(styles.$br-sm) {
+                width: 100%;
+                .dropdown__list {
+                    width: 100%;
+                    right: 0;
+                }
+            }
         }
 
         &__pagination {

@@ -1,4 +1,5 @@
 import checkIcon from '@/assets/icons/check.svg?raw';
+import filterIcon from '@/assets/icons/filter.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import './dropdown.scss';
 
@@ -76,6 +77,7 @@ export class Dropdown extends BaseComponent {
         this.element.innerHTML = /* HTML */ `
             <button type="button" class="dropdown__btn" aria-expanded="false">
                 <span class="dropdown__label">${label}: <span class="dropdown__value"></span></span>
+                ${filterIcon}
             </button>
             <ul class="dropdown__list list-unstyled"></ul>
         `;

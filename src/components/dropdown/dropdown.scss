@@ -7,6 +7,7 @@ $dropdown-width: styles.rem(200px);
     .dropdown {
         position: relative;
         &__btn {
+            width: 100%;
             border: none;
             cursor: pointer;
             background: var(--color-white);
@@ -19,11 +20,26 @@ $dropdown-width: styles.rem(200px);
             line-height: var(--lh-heading);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: var(--size-1);
             transition: background var(--transition-base);
             user-select: none;
             @include styles.hover {
                 background: var(--color-surface);
+            }
+
+            @include styles.max-width(styles.$br-lg) {
+                padding: var(--size-1) var(--size-2);
+            }
+
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-label-medium);
+            }
+
+            svg {
+                flex-shrink: 0;
+                width: var(--size-3);
+                height: var(--size-3);
             }
         }
         &__list {
@@ -35,7 +51,7 @@ $dropdown-width: styles.rem(200px);
             border-radius: var(--corner-medium);
             border: var(--border-width-medium) solid var(--color-on-primary);
             overflow: hidden;
-            z-index: var(--z-overlay);
+            z-index: var(--z-docked);
             position: absolute;
             top: calc(100% + var(--size-05));
             right: 0;
