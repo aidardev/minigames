@@ -1,6 +1,8 @@
 import { BaseComponent } from '@/components/base-component';
 import { ChipGroup } from '@/components/chip-group/chip-group';
+import { Dropdown } from '@/components/dropdown/dropdown';
 import type { GameCategory } from '@/types/game.types';
+import { SORT_OPTIONS } from './catalog.constants';
 import './catalog.scss';
 
 export class CatalogSection extends BaseComponent {
@@ -28,6 +30,14 @@ export class CatalogSection extends BaseComponent {
             modifier: 'catalog__chip-group',
         });
 
-        this.element.querySelector('.catalog__controls')?.append(chipGroup.element);
+        const dropdown = new Dropdown({
+            options: SORT_OPTIONS,
+            activeId: SORT_OPTIONS[0].id,
+            modifier: 'catalog__sort',
+        });
+
+        this.element
+            .querySelector('.catalog__controls')
+            ?.append(chipGroup.element, dropdown.element);
     }
 }

@@ -11,5 +11,9 @@
         &__chip-group {
             flex: 1 1 auto;
         }
+
+        &__sort {
+            flex-shrink: 0;
+        }
     }
 }
