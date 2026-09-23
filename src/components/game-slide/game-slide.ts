@@ -20,13 +20,13 @@ export class GameSlide extends BaseComponent {
                 </h3>
 
                 <div class="game-slide__meta">
-                    <div class="game-slide__meta-item game-slide__meta-item--rating">
+                    <div class="game-slide__meta-item meta-item meta-item--rating">
                         ${starIcon}
-                        <span class="game-slide__meta-value">${game.rating}</span>
+                        <span class="meta-item__value">${game.rating}</span>
                     </div>
-                    <div class="game-slide__meta-item game-slide__meta-item--likes">
+                    <div class="game-slide__meta-item meta-item meta-item--likes">
                         ${heartIcon}
-                        <span class="game-slide__meta-value"
+                        <span class="meta-item__value"
                             >${formatCompactNumber(game.likesCount)}</span
                         >
                     </div>

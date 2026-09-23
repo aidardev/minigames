@@ -69,30 +69,9 @@ $threshold-compact-mobile: styles.rem(150px);
         }
 
         &__meta-item {
-            display: flex;
-            align-items: center;
-            gap: var(--size-05);
-            svg {
-                width: var(--size-3);
-                height: var(--size-3);
-                flex-shrink: 0;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-body-small);
             }
-
-            &--rating {
-                svg {
-                    color: var(--color-primary);
-                }
-            }
-
-            &--likes {
-                svg {
-                    color: var(--color-like);
-                }
-            }
-        }
-
-        &__meta-value {
-            font-weight: var(--font-weight-bold);
             @include styles.max-width(styles.$br-sm) {
                 font-size: var(--fs-label-medium);
             }

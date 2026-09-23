@@ -31,7 +31,7 @@ export class Footer extends BaseComponent {
                             <ul class="footer__list list-unstyled">
                                 <li><a href="/" data-link>Home</a></li>
                                 <li>
-                                    <a href="/" data-link>Library</a>
+                                    <a href="/library" data-link>Library</a>
                                 </li>
                                 <li>
                                     <a href="/" data-link>Categories</a>
