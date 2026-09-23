@@ -3,7 +3,7 @@
 @layer components {
     $card-min-height-desktop: styles.rem(200px);
     $card-min-height-compact: styles.rem(152px);
-    $card-img-aspect-ratio: 343 / 160;
+    $card-img-aspect-ratio: #{343 / 160};
 
     $cq-compact: 720px;
     $cq-mobile: 460px;
