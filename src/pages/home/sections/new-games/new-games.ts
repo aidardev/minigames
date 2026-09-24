@@ -1,6 +1,9 @@
+import { getComments } from '@/api/comments';
+import { getGameDetails } from '@/api/game-details';
 import leftArrowIcon from '@/assets/icons/arrow-back.svg?raw';
 import rightArrowIcon from '@/assets/icons/arrow-forward.svg?raw';
 import { BaseComponent } from '@/components/base-component';
+import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { GameSlide } from '@/components/game-slide/game-slide';
 import { NEW_GAMES_MOCK } from './new-games.mock';
 import './new-games.scss';
@@ -44,7 +47,12 @@ export class NewGamesSection extends BaseComponent {
         if (!track) return;
 
         for (const [index, game] of NEW_GAMES_MOCK.entries()) {
-            const card = new GameSlide(game).element;
+            const card = new GameSlide({
+                game,
+                onClick: () => {
+                    this.openGameDetails();
+                },
+            }).element;
             const li = document.createElement('li');
             li.classList.add('slider-new-games__slide', 'slider__slide', this.getSlideClass(index));
             li.append(card);
@@ -73,5 +81,14 @@ export class NewGamesSection extends BaseComponent {
                 return '';
             }
         }
+    }
+
+    private async openGameDetails(): Promise<void> {
+        const [game, comments] = await Promise.all([getGameDetails(), getComments()]);
+
+        new GameDetailsDialog({
+            game,
+            comments,
+        }).open();
     }
 }

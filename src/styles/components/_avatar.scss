@@ -1,0 +1,13 @@
+@use '../index' as styles;
+
+@layer primitives {
+    .avatar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        flex-shrink: 0;
+        border-radius: var(--corner-full);
+        text-transform: uppercase;
+    }
+}

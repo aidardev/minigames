@@ -85,7 +85,7 @@
             margin-bottom: 0;
             @include styles.max-width(styles.$br-lg) {
                 font-size: var(--fs-body-small);
-                line-height: var(--lh-medium);
+                line-height: var(--lh-normal);
             }
 
             @include styles.max-width(styles.$br-sm) {

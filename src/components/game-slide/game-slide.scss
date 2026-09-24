@@ -15,6 +15,8 @@ $threshold-compact-mobile: styles.rem(150px);
         display: flex;
         align-items: flex-end;
         box-shadow: var(--ring-medium-on-primary), var(--shadow-level-1);
+        position: relative;
+        cursor: pointer;
         @include styles.max-width(styles.$br-lg) {
             --game-slide-height: #{styles.rem(280px)};
             border-radius: var(--corner-large);
@@ -31,6 +33,7 @@ $threshold-compact-mobile: styles.rem(150px);
             object-fit: cover;
             border-radius: inherit;
             z-index: var(--z-below);
+            transition: var(--transition-slower);
         }
 
         &__overlay {
@@ -94,6 +97,12 @@ $threshold-compact-mobile: styles.rem(150px);
                     opacity: 0;
                     visibility: hidden;
                 }
+            }
+        }
+
+        @include styles.hover {
+            .game-slide__img {
+                transform: scale(1.05);
             }
         }
     }

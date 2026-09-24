@@ -2,7 +2,7 @@ import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
 import { BaseComponent } from '../base-component';
-import { AuthDialog, toAuthTab, type AuthTab } from '../dialogs/auth-dialog';
+import { AuthDialog, toAuthTab, type AuthTab } from '../dialogs/auth-dialog/auth-dialog';
 import './header.scss';
 
 export class Header extends BaseComponent {

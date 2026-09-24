@@ -1,5 +1,5 @@
+import { Dialog } from '../dialog';
 import './auth-dialog.scss';
-import { Dialog } from './dialog';
 import { LoginForm } from './login-form';
 import { RegisterForm } from './register-form';
 

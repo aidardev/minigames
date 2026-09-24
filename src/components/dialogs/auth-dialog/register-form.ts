@@ -1,10 +1,11 @@
 import lockIcon from '@/assets/icons/lock.svg?raw';
 import mailIcon from '@/assets/icons/mail.svg?raw';
+import userIcon from '@/assets/icons/person.svg?raw';
 import googleIcon from '@/assets/images/google.svg';
-import { BaseComponent } from '../base-component';
-import { renderField } from '../field/field';
+import { BaseComponent } from '@/components/base-component';
+import { renderField } from '@/components/field/field';
 
-export class LoginForm extends BaseComponent<'form'> {
+export class RegisterForm extends BaseComponent<'form'> {
     private handleSubmit = (event: SubmitEvent) => {
         event.preventDefault();
     };
@@ -16,33 +17,47 @@ export class LoginForm extends BaseComponent<'form'> {
 
         this.element.innerHTML = /* HTML */ `
             <div class="auth-form__head">
-                <h2 class="auth-form__title">Welcome Back!</h2>
-                <p class="auth-form__subtitle">Sign in to resume your games and progress.</p>
+                <h2 class="auth-form__title">Create Account</h2>
+                <p class="auth-form__subtitle">Join MiniGames to track your score &amp; streak.</p>
             </div>
 
             <div class="auth-form__fields">
                 ${renderField({
-                    id: 'login-email',
+                    id: 'register-username',
+                    name: 'username',
+                    label: 'Username',
+                    type: 'text',
+                    placeholder: 'e.g. CozyGamer_99',
+                    icon: userIcon,
+                    autocomplete: 'username',
+                })}
+                ${renderField({
+                    id: 'register-email',
                     name: 'email',
                     label: 'Email Address',
                     type: 'email',
-                    placeholder: 'e.g. alex@minigames.com',
+                    placeholder: 'your.email@domain.com',
                     icon: mailIcon,
                     autocomplete: 'email',
                 })}
                 ${renderField({
-                    id: 'login-password',
+                    id: 'register-password',
                     name: 'password',
                     label: 'Password',
                     type: 'password',
-                    placeholder: '••••••••',
+                    placeholder: 'Min. 8 characters',
                     icon: lockIcon,
-                    autocomplete: 'current-password',
-                    passwordToggle: true,
+                    autocomplete: 'new-password',
                 })}
-                <button class="auth-form__link auth-form__link--forgot" type="button">
-                    Forgot Password?
-                </button>
+                ${renderField({
+                    id: 'register-confirm-password',
+                    name: 'confirmPassword',
+                    label: 'Confirm Password',
+                    type: 'password',
+                    placeholder: 'Repeat your password',
+                    icon: lockIcon,
+                    autocomplete: 'new-password',
+                })}
             </div>
 
             <div class="auth-form__actions">
@@ -50,7 +65,7 @@ export class LoginForm extends BaseComponent<'form'> {
                     class="auth-form__btn auth-form__btn--submit btn btn--large btn--primary"
                     type="submit"
                 >
-                    Login
+                    Create Account
                 </button>
                 <div class="auth-form__divider" aria-hidden="true"><span>OR</span></div>
                 <button
@@ -58,15 +73,13 @@ export class LoginForm extends BaseComponent<'form'> {
                     type="button"
                 >
                     <img src="${googleIcon}" alt="" width="24" height="24">
-                    Continue with Google
+                    Sign up with Google
                 </button>
             </div>
 
             <p class="auth-form__switch">
-                Don't have an account?
-                <button class="auth-form__link" type="button" data-auth-tab="register">
-                    Register
-                </button>
+                Already have an account?
+                <button class="auth-form__link" type="button" data-auth-tab="login">Login</button>
             </p>
         `;
 
