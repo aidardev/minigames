@@ -52,7 +52,7 @@ export class Pagination extends BaseComponent {
         }
     };
 
-    public constructor({ totalPages, currentPage = 1, onChange }: PaginationProperties) {
+    constructor({ totalPages, currentPage = 1, onChange }: PaginationProperties) {
         super('nav', 'pagination');
 
         this.totalPages = Math.max(1, Math.floor(totalPages));
@@ -73,7 +73,7 @@ export class Pagination extends BaseComponent {
 
         const pageButtons = Array.from(
             { length: visiblePagesCount },
-            () => /* HTML */ `<button type="button" class="pagination__page"></button>`,
+            (): string => /* HTML */ `<button type="button" class="pagination__page"></button>`,
         ).join('');
 
         this.element.innerHTML = /* HTML */ `
@@ -142,7 +142,7 @@ export class Pagination extends BaseComponent {
 
         start = Math.max(1, Math.min(start, maxStart));
 
-        return Array.from({ length: visiblePagesCount }, (_, index) => start + index);
+        return Array.from({ length: visiblePagesCount }, (_, index): number => start + index);
     }
 
     private goTo(page: number): void {

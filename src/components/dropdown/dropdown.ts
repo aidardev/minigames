@@ -106,7 +106,7 @@ export class Dropdown extends BaseComponent {
     private renderOptions(): void {
         this.listEl.innerHTML = this.options
             .map(
-                (option) => /* HTML */ `
+                (option): string => /* HTML */ `
                     <li>
                         <button
                             type="button"
@@ -122,7 +122,8 @@ export class Dropdown extends BaseComponent {
     }
 
     private updateValueLabel(): void {
-        this.valueEl.textContent = this.options.find((o) => o.id === this.activeId)?.label ?? '';
+        this.valueEl.textContent =
+            this.options.find((o): boolean => o.id === this.activeId)?.label ?? '';
     }
 
     private open(): void {

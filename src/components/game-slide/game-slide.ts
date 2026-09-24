@@ -19,7 +19,7 @@ export class GameSlide extends BaseComponent {
         this.onClick?.(this.game.slug);
     };
 
-    public constructor({ game, onClick }: GameSlideProperties) {
+    constructor({ game, onClick }: GameSlideProperties) {
         super('article', 'game-slide');
 
         this.game = game;

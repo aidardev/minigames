@@ -51,7 +51,7 @@ export class CatalogSection extends BaseComponent {
         const grid = new GameGrid({
             games: games.slice(0, GAMES_PER_PAGE),
 
-            onGameDetailsClick: async () => {
+            onGameDetailsClick: async (): Promise<void> => {
                 const [game, comments] = await Promise.all([getGameDetails(), getComments()]);
 
                 new GameDetailsDialog({

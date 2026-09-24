@@ -77,7 +77,7 @@ export class GameDetailsDialog extends Dialog {
         });
 
         this.game = game;
-        this.comments = comments.map((comment) => ({ ...comment }));
+        this.comments = comments.map((comment): Comment => ({ ...comment }));
 
         this.isFavorite = game.isLikedByCurrentUser;
 
@@ -208,7 +208,7 @@ export class GameDetailsDialog extends Dialog {
                     Top Records
                 </h3>
                 <ol class="game-details__records-list list-unstyled">
-                    ${this.game.topRecords.map((record) => this.renderRecord(record)).join('')}
+                    ${this.game.topRecords.map((record): string => this.renderRecord(record)).join('')}
                 </ol>
             </section>
         `;
@@ -258,7 +258,7 @@ export class GameDetailsDialog extends Dialog {
                 </form>
 
                 <ul class="game-details__comments-list list-unstyled">
-                    ${this.comments.map((comment) => this.renderComment(comment)).join('')}
+                    ${this.comments.map((comment): string => this.renderComment(comment)).join('')}
                 </ul>
             </section>
         `;
@@ -329,7 +329,7 @@ export class GameDetailsDialog extends Dialog {
         button.setAttribute('aria-label', isLiked ? 'Like comment' : 'Unlike comment');
         button.classList.toggle('is-active', !isLiked);
 
-        const comment = this.comments.find((item) => item.commentId === commentId);
+        const comment = this.comments.find((item): boolean => item.commentId === commentId);
         if (!comment) return;
 
         const count = comment.likesCount + (isLiked ? 0 : 1);

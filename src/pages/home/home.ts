@@ -5,7 +5,7 @@ import { LeaderboardSection } from './sections/leaderboard/leaderboard';
 import { NewGamesSection } from './sections/new-games/new-games';
 
 export class HomePage extends BaseComponent {
-    public constructor() {
+    constructor() {
         super('main', 'home-page');
 
         this.element.append(

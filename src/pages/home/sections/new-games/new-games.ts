@@ -49,7 +49,7 @@ export class NewGamesSection extends BaseComponent {
         for (const [index, game] of NEW_GAMES_MOCK.entries()) {
             const card = new GameSlide({
                 game,
-                onClick: () => {
+                onClick: (): void => {
                     this.openGameDetails();
                 },
             }).element;
@@ -60,7 +60,7 @@ export class NewGamesSection extends BaseComponent {
         }
     }
 
-    private getSlideClass(index: number) {
+    private getSlideClass(index: number): string {
         switch (index) {
             case 0: {
                 return 'is-far-prev';

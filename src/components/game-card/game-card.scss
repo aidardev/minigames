@@ -4,6 +4,9 @@
     $card-min-height-desktop: styles.rem(200px);
     $card-min-height-compact: styles.rem(152px);
     $card-img-aspect-ratio: #{343 / 160};
+    $card-img-min-width: #{styles.rem(200px)};
+    $card-img-dynamic-width: 39cqw;
+    $card-img-max-width: #{styles.rem(320px)};
 
     $cq-compact: 720px;
     $cq-mobile: 460px;
@@ -34,7 +37,11 @@
 
         &__img {
             flex-shrink: 0;
-            width: clamp(#{styles.rem(200px)}, 39cqw, #{styles.rem(320px)});
+            width: clamp(
+                #{$card-img-min-width},
+                #{$card-img-dynamic-width},
+                #{$card-img-max-width}
+            );
             height: 100%;
             object-fit: cover;
         }

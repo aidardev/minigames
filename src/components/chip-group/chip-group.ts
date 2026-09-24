@@ -32,7 +32,7 @@ export class ChipGroup extends BaseComponent {
         this.onChange?.(id);
     };
 
-    public constructor({ options, activeId, onChange, modifier }: ChipGroupProperties) {
+    constructor({ options, activeId, onChange, modifier }: ChipGroupProperties) {
         super('div', 'chip-group');
         this.activeId = activeId;
         this.onChange = onChange;
@@ -42,7 +42,7 @@ export class ChipGroup extends BaseComponent {
         this.element.innerHTML = /* HTML */ `
             ${options
                 .map(
-                    (option) => /* HTML */ `
+                    (option): string => /* HTML */ `
                         <button
                             type="button"
                             class="chip-group__chip chip ${option.id === this.activeId ? this.activeClass : ''}"

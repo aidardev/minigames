@@ -10,7 +10,7 @@ export function toAuthTab(value: string | undefined): AuthTab {
 }
 
 export class AuthDialog extends Dialog {
-    private handleSwitchClick = (event: MouseEvent) => {
+    private handleSwitchClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
 
         const trigger = event.target.closest<HTMLElement>('[data-auth-tab]');
@@ -72,16 +72,16 @@ export class AuthDialog extends Dialog {
         this.bindTabEvents();
     }
 
-    private mountForms() {
+    private mountForms(): void {
         this.query('[data-auth-panel="login"]')?.append(new LoginForm().element);
         this.query('[data-auth-panel="register"]')?.append(new RegisterForm().element);
     }
 
-    private bindTabEvents() {
+    private bindTabEvents(): void {
         this.element.addEventListener('click', this.handleSwitchClick);
     }
 
-    private showTab(tab: AuthTab) {
+    private showTab(tab: AuthTab): void {
         for (const button of this.element.querySelectorAll<HTMLButtonElement>('[role="tab"]')) {
             button.setAttribute('aria-selected', String(button.dataset.authTab === tab));
         }
