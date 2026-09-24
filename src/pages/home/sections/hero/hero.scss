@@ -35,8 +35,10 @@
 
     .hero {
         position: relative;
-        z-index: 2;
+        z-index: var(--z-docked);
         &__card {
+            // Hero card layout width from Figma spec (no standard size token applies for 640px/480px layout container)
+            --card-width: #{styles.rem(640px)};
             display: flex;
             flex-direction: column;
             align-items: flex-start;
@@ -48,10 +50,9 @@
             border-radius: var(--corner-extra-large);
             background: var(--color-bg);
             width: 100%;
-            // Hero card layout width from Figma spec (no standard size token applies for 640px layout container)
-            max-width: styles.rem(640px);
+            max-width: var(--card-width);
             @include styles.max-width(styles.$br-lg) {
-                max-width: styles.rem(480px);
+                --card-width: #{styles.rem(480px)};
                 padding: var(--size-3);
                 border-radius: var(--corner-large);
                 gap: var(--size-2);
