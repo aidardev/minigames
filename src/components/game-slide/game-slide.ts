@@ -5,18 +5,32 @@ import { formatCompactNumber } from '@/utils/formatters';
 import { BaseComponent } from '../base-component';
 import './game-slide.scss';
 
+export interface GameSlideProperties {
+    game: GameSlideData;
+    onClick?: (slug: string) => void;
+}
+
 export class GameSlide extends BaseComponent {
-    public constructor(game: GameSlideData) {
-        super('article', 'game-slide focusable-parent');
+    private readonly game: GameSlideData;
+
+    private readonly onClick?: (slug: string) => void;
+
+    private handleClick = (): void => {
+        this.onClick?.(this.game.slug);
+    };
+
+    public constructor({ game, onClick }: GameSlideProperties) {
+        super('article', 'game-slide');
+
+        this.game = game;
+        this.onClick = onClick;
 
         this.element.innerHTML = /* HTML */ `
             <img src="${game.cardImage}" alt="" class="game-slide__img" loading="lazy">
 
             <div class="game-slide__overlay">
                 <h3 class="game-slide__title">
-                    <a href="/" class="game-slide__link focusable-link">
-                        <span class="game-slide__title-text">${game.name}</span>
-                    </a>
+                    <span class="game-slide__title-text">${game.name}</span>
                 </h3>
 
                 <div class="game-slide__meta">
@@ -33,5 +47,12 @@ export class GameSlide extends BaseComponent {
                 </div>
             </div>
         `;
+
+        this.element.addEventListener('click', this.handleClick);
+    }
+
+    public destroy(): void {
+        this.element.removeEventListener('click', this.handleClick);
+        super.destroy();
     }
 }
