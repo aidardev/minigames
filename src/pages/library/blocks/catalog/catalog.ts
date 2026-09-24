@@ -1,5 +1,8 @@
+import { getComments } from '@/api/comments';
+import { getGameDetails } from '@/api/game-details';
 import { BaseComponent } from '@/components/base-component';
 import { ChipGroup } from '@/components/chip-group/chip-group';
+import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { Dropdown } from '@/components/dropdown/dropdown';
 import { Pagination } from '@/components/pagination/pagination';
 import type { Game, GameCategory } from '@/types/game.types';
@@ -45,7 +48,18 @@ export class CatalogSection extends BaseComponent {
             currentPage: 1,
         });
 
-        const grid = new GameGrid({ games: games.slice(0, GAMES_PER_PAGE) });
+        const grid = new GameGrid({
+            games: games.slice(0, GAMES_PER_PAGE),
+
+            onGameDetailsClick: async () => {
+                const [game, comments] = await Promise.all([getGameDetails(), getComments()]);
+
+                new GameDetailsDialog({
+                    game,
+                    comments,
+                }).open();
+            },
+        });
 
         this.element
             .querySelector('.catalog__controls')

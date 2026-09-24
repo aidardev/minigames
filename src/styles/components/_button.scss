@@ -19,7 +19,8 @@
             color var(--transition-base),
             box-shadow var(--transition-base),
             transform var(--transition-base),
-            outline-offset var(--transition-fast);
+            outline-offset var(--transition-fast),
+            opacity var(--transition-base);
 
         &:focus-visible {
             outline: var(--border-width-medium) solid var(--color-tertiary);
@@ -66,9 +67,22 @@
             background-color: var(--color-primary);
             box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
-
             @include styles.hover {
                 background-color: var(--color-primary-high);
+            }
+        }
+        &--on-primary {
+            background-color: var(--color-on-primary);
+            color: var(--color-white);
+            @include styles.hover {
+                background-color: var(--color-tertiary);
+            }
+
+            &:disabled,
+            &.is-disabled {
+                background-color: var(--color-outline-variant);
+                color: var(--color-on-bg);
+                opacity: 0.5;
             }
         }
 
@@ -77,6 +91,7 @@
             flex-shrink: 0;
             width: var(--size-3);
             height: var(--size-3);
+            transition: color var(--transition-base);
         }
     }
 }
