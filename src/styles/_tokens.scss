@@ -73,6 +73,8 @@
     --font-family-secondary: 'Roboto', sans-serif;
 
     // Size
+    --size-px: 1px;
+    --size-025: #{f.rem(2px)};
     --size-05: #{f.rem(4px)};
     --size-1: #{f.rem(8px)};
     --size-1-25: #{f.rem(10px)};
@@ -141,8 +143,9 @@
     // Line Height
     --lh-tight: 1.1;
     --lh-heading: 1.2;
-    --lh-medium: 1.4;
-    --lh-body: 1.5;
+    --lh-snug: 1.25;
+    --lh-normal: 1.4;
+    --lh-relaxed: 1.5;
 
     // z-index
     --z-below: -1;

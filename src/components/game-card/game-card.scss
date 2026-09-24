@@ -93,7 +93,7 @@
         &__description {
             font-weight: var(--font-weight-medium);
             color: var(--color-on-bg);
-            line-height: var(--lh-medium);
+            line-height: var(--lh-normal);
             display: -webkit-box;
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
@@ -181,7 +181,7 @@
             }
 
             &__category {
-                padding: styles.rem(2px) var(--size-1);
+                padding: var(--size-025) var(--size-1);
             }
 
             &__price--desktop {
