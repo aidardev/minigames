@@ -16,6 +16,11 @@ Live demo: [https://minigames-sand-delta.vercel.app/](https://minigames-sand-del
 
 Requires a current Node.js LTS.
 
+```bash
+npm install
+npm run dev
+```
+
 ## Scripts
 
 | Script                 | Description                              |
