@@ -40,6 +40,7 @@ $dropdown-width: styles.rem(200px);
                 flex-shrink: 0;
                 width: var(--size-3);
                 height: var(--size-3);
+                transition: transform var(--transition-base);
             }
         }
         &__list {
@@ -145,6 +146,9 @@ $dropdown-width: styles.rem(200px);
             }
             .dropdown__btn {
                 background: var(--color-surface);
+                svg {
+                    transform: rotate(-180deg);
+                }
             }
         }
     }
