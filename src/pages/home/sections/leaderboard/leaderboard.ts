@@ -70,7 +70,7 @@ export class LeaderboardSection extends BaseComponent {
     }
 
     private renderRows(): string {
-        return LEADERBOARD_MOCK.map((player) => {
+        return LEADERBOARD_MOCK.map((player): string => {
             const initials = getInitials(player.playerName);
             const formattedScore = formatNumber(player.totalScore);
             const shortScore = formatCompactNumber(player.totalScore);
@@ -82,7 +82,7 @@ export class LeaderboardSection extends BaseComponent {
                     </td>
                     <td class="leaderboard-table__cell leaderboard-table__col--player">
                         <div class="leaderboard-table__player-info">
-                            <span class="leaderboard-table__avatar">${initials}</span>
+                            <span class="leaderboard-table__avatar avatar">${initials}</span>
                             <span class="leaderboard-table__username">${player.playerName}</span>
                         </div>
                     </td>

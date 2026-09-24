@@ -8,7 +8,7 @@ import { BaseComponent } from '../base-component';
 import './footer.scss';
 
 export class Footer extends BaseComponent {
-    public constructor() {
+    constructor() {
         super('footer', 'footer');
 
         this.element.innerHTML = /* HTML */ `

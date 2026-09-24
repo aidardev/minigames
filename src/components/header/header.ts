@@ -12,7 +12,7 @@ export class Header extends BaseComponent {
     private closeBtn: HTMLButtonElement | undefined = undefined;
     private menuContainer: HTMLElement | undefined = undefined;
 
-    private handleDocumentClick = (event: MouseEvent) => {
+    private handleDocumentClick = (event: MouseEvent): void => {
         const target = event.target;
         if (!(target instanceof Node)) return;
 
@@ -22,13 +22,13 @@ export class Header extends BaseComponent {
         }
     };
 
-    private handleEscKey = (event: KeyboardEvent) => {
+    private handleEscKey = (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
             this.closeMenu();
         }
     };
 
-    private handleAuthClick = (event: Event) => {
+    private handleAuthClick = (event: Event): void => {
         if (!(event.target instanceof Element)) return;
 
         const trigger = event.target.closest<HTMLElement>('[data-auth-tab]');
@@ -40,7 +40,7 @@ export class Header extends BaseComponent {
         new AuthDialog(tab).open();
     };
 
-    private handleLinksClick = (event: Event) => {
+    private handleLinksClick = (event: Event): void => {
         if (!(event.target instanceof Element)) return;
 
         const trigger = event.target.closest<HTMLElement>('a');
@@ -49,7 +49,7 @@ export class Header extends BaseComponent {
         this.closeMenu();
     };
 
-    public constructor() {
+    constructor() {
         super('header', 'header');
 
         this.element.innerHTML = /* HTML */ `
@@ -116,20 +116,20 @@ export class Header extends BaseComponent {
         this.bindEvents();
     }
 
-    private initElements() {
+    private initElements(): void {
         this.burgerBtn = this.query('.header__hamburger-btn');
         this.closeBtn = this.query('.header__close');
         this.menuContainer = this.query('.header__menu');
     }
 
-    private bindEvents() {
-        this.burgerBtn?.addEventListener('click', () => this.openMenu());
-        this.closeBtn?.addEventListener('click', () => this.closeMenu());
+    private bindEvents(): void {
+        this.burgerBtn?.addEventListener('click', (): void => this.openMenu());
+        this.closeBtn?.addEventListener('click', (): void => this.closeMenu());
         this.element.addEventListener('click', this.handleAuthClick);
         this.menuContainer?.addEventListener('click', this.handleLinksClick);
     }
 
-    public openMenu() {
+    public openMenu(): void {
         if (this.isMenuOpen) return;
 
         this.isMenuOpen = true;
@@ -141,7 +141,7 @@ export class Header extends BaseComponent {
         document.addEventListener('keydown', this.handleEscKey);
     }
 
-    public closeMenu() {
+    public closeMenu(): void {
         if (!this.isMenuOpen) return;
 
         this.isMenuOpen = false;

@@ -5,7 +5,7 @@ import { PageTitle } from '@/components/page-title/page-title';
 import { CatalogSection } from './blocks/catalog/catalog';
 
 export class LibraryPage extends BaseComponent {
-    public constructor() {
+    constructor() {
         super('main', 'library-page');
 
         this.element.append(

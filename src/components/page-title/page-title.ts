@@ -7,7 +7,7 @@ export interface PageTitleProperties {
 }
 
 export class PageTitle extends BaseComponent {
-    public constructor({ title, subtitle }: PageTitleProperties) {
+    constructor({ title, subtitle }: PageTitleProperties) {
         super('div', 'page-title container');
 
         this.element.innerHTML = /* HTML */ `

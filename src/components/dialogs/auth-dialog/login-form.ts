@@ -5,11 +5,11 @@ import { BaseComponent } from '@/components/base-component';
 import { renderField } from '@/components/field/field';
 
 export class LoginForm extends BaseComponent<'form'> {
-    private handleSubmit = (event: SubmitEvent) => {
+    private handleSubmit = (event: SubmitEvent): void => {
         event.preventDefault();
     };
 
-    public constructor() {
+    constructor() {
         super('form', 'auth-form');
 
         this.element.noValidate = true;
