@@ -1,17 +1,17 @@
 import heartIcon from '@/assets/icons/favorite.svg?raw';
 import starIcon from '@/assets/icons/star.svg?raw';
-import type { GameSlideData } from '@/types/game.types';
+import type { Game } from '@/types/game.types';
 import { formatCompactNumber } from '@/utils/formatters';
 import { BaseComponent } from '../base-component';
 import './game-slide.scss';
 
 export interface GameSlideProperties {
-    game: GameSlideData;
+    game: Game;
     onClick?: (slug: string) => void;
 }
 
 export class GameSlide extends BaseComponent {
-    private readonly game: GameSlideData;
+    private readonly game: Game;
 
     private readonly onClick?: (slug: string) => void;
 

@@ -1,14 +1,18 @@
 import { getComments } from '@/api/comments';
 import { getGameDetails } from '@/api/game-details';
+import { getGames } from '@/api/games';
 import leftArrowIcon from '@/assets/icons/arrow-back.svg?raw';
 import rightArrowIcon from '@/assets/icons/arrow-forward.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { GameSlide } from '@/components/game-slide/game-slide';
-import { NEW_GAMES_MOCK } from './new-games.mock';
+import { Slider } from '@/components/slider/slider';
+import type { Game } from '@/types/game.types';
 import './new-games.scss';
 
 export class NewGamesSection extends BaseComponent {
+    private readonly slider: Slider;
+
     constructor() {
         super('section', 'section section-new-games');
 
@@ -33,31 +37,43 @@ export class NewGamesSection extends BaseComponent {
                         </button>
                     </div>
                 </div>
-                <div class="slider-new-games slider">
-                    <ul class="slider-new-games__track slider__track list-unstyled"></ul>
-                </div>
             </div>
         `;
 
-        this.renderCards();
+        this.slider = new Slider({
+            className: 'slider-new-games',
+            trackClassName: 'slider-new-games__track',
+            slideClassName: 'slider-new-games__slide',
+        });
+
+        const container = this.query('.container');
+        if (!container) return;
+
+        container.append(this.slider.element);
+
+        this.loadGames();
     }
 
-    private renderCards(): void {
-        const track = this.query('.slider__track');
-        if (!track) return;
+    private async loadGames(): Promise<void> {
+        const games = await getGames();
 
-        for (const [index, game] of NEW_GAMES_MOCK.entries()) {
-            const card = new GameSlide({
-                game,
-                onClick: (): void => {
-                    this.openGameDetails();
-                },
-            }).element;
-            const li = document.createElement('li');
-            li.classList.add('slider-new-games__slide', 'slider__slide', this.getSlideClass(index));
-            li.append(card);
-            track.append(li);
-        }
+        const featuredGames = games.filter((game: Game): boolean => game.featured);
+
+        this.renderCards(featuredGames);
+    }
+
+    private renderCards(games: readonly Game[]): void {
+        const slides = games.map(
+            (game): HTMLElement =>
+                new GameSlide({
+                    game,
+                    onClick: (): void => {
+                        void this.openGameDetails();
+                    },
+                }).element,
+        );
+
+        this.slider.addSlides(slides);
     }
 
     private getSlideClass(index: number): string {
