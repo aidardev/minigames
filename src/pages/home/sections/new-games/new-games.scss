@@ -3,53 +3,61 @@
 @layer components {
     .slider-new-games {
         --slide-width-far: var(--size-15);
-        --slide-width-compact: #{styles.rem(288px)};
-        --slide-width-active: 100%;
-        padding-inline: var(--size-1);
+        --slide-width-near: #{styles.rem(288px)};
+        --slide-transition-duration: 1s;
+        --slide-transition-easing: cubic-bezier(0.25, 1, 0.2, 1);
         padding-bottom: var(--size-1);
+        @include styles.min-width(styles.$br-xxl) {
+            padding-inline: var(--size-05);
+        }
+        @include styles.max-width(styles.$br-xxl) {
+            --slide-width-near: #{styles.rem(190px)};
+            margin-inline: calc(var(--size-05) * -1);
+        }
         @include styles.max-width(styles.$br-lg) {
-            --slide-width-compact: var(--size-13);
+            --slide-width-near: var(--size-13);
         }
 
         @include styles.max-width(styles.$br-sm) {
-            --slide-width-compact: var(--size-7);
-            padding-inline: var(--size-05);
-            // Hardcoded from figma: no Figma token exists & single token is overkill.
-            padding-bottom: styles.rem(6px);
-        }
-
-        &__track {
-            gap: var(--size-1);
-            @include styles.max-width(styles.$br-sm) {
-                // Hardcoded from figma: no Figma token exists & single token is overkill.
-                gap: styles.rem(5px);
-            }
+            --slide-width-near: var(--size-7);
+            margin-inline: calc(var(--size-075) * -1);
+            padding-bottom: var(--size-075);
         }
 
         &__slide {
             transition:
-                flex-basis var(--transition-base),
-                width var(--transition-base);
-
-            &.is-far-prev,
-            &.is-far-next {
-                flex: 0 0 var(--slide-width-far);
-                @include styles.max-width(styles.$br-xxl) {
-                    display: none;
-                }
-            }
-
-            &.is-prev,
-            &.is-next {
-                flex: 0 0 var(--slide-width-compact);
-                @include styles.between(styles.$br-lg, styles.$br-xxl) {
-                    flex-shrink: 1;
-                }
-            }
+                flex var(--slide-transition-duration) var(--slide-transition-easing),
+                opacity var(--slide-transition-duration) var(--slide-transition-easing);
 
             &.is-active {
-                flex: 1 1 var(--slide-width-active);
-                max-width: var(--slide-width-active);
+                flex: 1 1 0%;
+            }
+
+            &.is-near {
+                flex: 0 0 var(--slide-width-near);
+            }
+
+            &.is-far {
+                flex: 0 0 var(--slide-width-far);
+                @include styles.max-width(styles.$br-xxl) {
+                    flex: 0 0 0;
+                    opacity: 0;
+                    pointer-events: none;
+                }
+            }
+
+            &.is-hidden {
+                flex: 0 0 0;
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            &:not(.is-hidden) {
+                margin-inline: var(--size-05);
+                @include styles.max-width(styles.$br-sm) {
+                    // Hardcoded from figma: no Figma token exists & single token is overkill.
+                    margin-inline: styles.rem(2.5px);
+                }
             }
         }
     }

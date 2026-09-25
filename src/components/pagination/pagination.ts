@@ -160,7 +160,7 @@ export class Pagination extends BaseComponent {
         return Math.min(Math.max(Math.floor(page), 1), this.totalPages);
     }
 
-    public destroy(): void {
+    public override destroy(): void {
         this.element.removeEventListener('click', this.handleClick);
         this.mediaQuery.removeEventListener('change', this.handleBreakpointChange);
 

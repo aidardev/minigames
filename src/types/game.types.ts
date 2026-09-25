@@ -10,14 +10,6 @@ export interface Game {
     featured: boolean;
 }
 
-export interface GameSlideData {
-    slug: string;
-    name: string;
-    rating: number;
-    likesCount: number;
-    cardImage: string;
-}
-
 export interface GameCategory {
     slug: string;
     label: string;
