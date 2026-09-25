@@ -16,7 +16,7 @@ export class HeroSection extends BaseComponent {
                     <p class="hero__text hero__text--mobile">
                         Discover hundreds of curated casual mini-games right in your browser.
                     </p>
-                    <a href="/" class="hero__btn btn btn--large btn--primary" data-link>
+                    <a href="/library" class="hero__btn btn btn--large btn--primary" data-link>
                         Browse Library
                     </a>
                 </div>

@@ -26,9 +26,9 @@ export class Router {
     }
 
     public start(): void {
-        addEventListener('popstate', () => this.render());
+        addEventListener('popstate', (): void => this.render());
 
-        document.addEventListener('click', (event) => {
+        document.addEventListener('click', (event): void => {
             const target = event.target;
             if (!(target instanceof HTMLElement)) return;
 
