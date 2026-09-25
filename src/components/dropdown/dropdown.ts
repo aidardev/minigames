@@ -138,7 +138,7 @@ export class Dropdown extends BaseComponent {
         this.element.classList.remove('dropdown--open');
     }
 
-    public destroy(): void {
+    public override destroy(): void {
         document.removeEventListener('click', this.handleOutsideClick);
         document.removeEventListener('keydown', this.handleKeydown);
         super.destroy();
