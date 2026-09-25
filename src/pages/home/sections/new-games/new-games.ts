@@ -10,6 +10,8 @@ import { Slider } from '@/components/slider/slider';
 import type { Game } from '@/types/game.types';
 import './new-games.scss';
 
+const AUTOPLAY_INTERVAL_MS = 4000;
+
 export class NewGamesSection extends BaseComponent {
     private readonly slider: Slider;
 
@@ -44,6 +46,7 @@ export class NewGamesSection extends BaseComponent {
             className: 'slider-new-games',
             trackClassName: 'slider-new-games__track',
             slideClassName: 'slider-new-games__slide',
+            autoplayInterval: AUTOPLAY_INTERVAL_MS,
         });
 
         const container = this.query('.container');
@@ -51,7 +54,16 @@ export class NewGamesSection extends BaseComponent {
 
         container.append(this.slider.element);
 
+        this.bindControls();
         this.loadGames();
+    }
+
+    private bindControls(): void {
+        const previousButton = this.query<HTMLButtonElement>('.slider__arrow--prev');
+        const nextButton = this.query<HTMLButtonElement>('.slider__arrow--next');
+
+        previousButton?.addEventListener('click', (): void => this.slider.prev());
+        nextButton?.addEventListener('click', (): void => this.slider.next());
     }
 
     private async loadGames(): Promise<void> {
@@ -68,35 +80,12 @@ export class NewGamesSection extends BaseComponent {
                 new GameSlide({
                     game,
                     onClick: (): void => {
-                        void this.openGameDetails();
+                        this.openGameDetails();
                     },
                 }).element,
         );
 
         this.slider.addSlides(slides);
-    }
-
-    private getSlideClass(index: number): string {
-        switch (index) {
-            case 0: {
-                return 'is-far-prev';
-            }
-            case 1: {
-                return 'is-prev';
-            }
-            case 2: {
-                return 'is-active';
-            }
-            case 3: {
-                return 'is-next';
-            }
-            case 4: {
-                return 'is-far-next';
-            }
-            default: {
-                return '';
-            }
-        }
     }
 
     private async openGameDetails(): Promise<void> {
