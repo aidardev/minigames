@@ -56,5 +56,6 @@ export class Router {
     public navigate(path: string): void {
         history.pushState(undefined, '', path);
         this.render();
+        window.scrollTo(0, 0);
     }
 }
