@@ -4,8 +4,6 @@
     $hero-img-height: styles.rem(220px);
 
     .game-details {
-        &__hero {
-        }
         &__hero-img {
             height: $hero-img-height;
             width: 100%;
@@ -70,8 +68,6 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-        &__spec {
-        }
         &__actions {
             display: flex;
             gap: var(--size-2);
@@ -126,14 +122,10 @@
             flex-direction: column;
             gap: var(--size-1);
         }
-        &__record {
-        }
         &__comments {
             display: flex;
             flex-direction: column;
             gap: var(--size-2);
-        }
-        &__comment-form {
         }
         &__comments-list {
             display: flex;
@@ -202,8 +194,6 @@
         }
         &__player {
             flex: 1 1 auto;
-        }
-        &__score {
         }
         &__date {
             font-size: var(--fs-label-medium);
@@ -334,8 +324,6 @@
                 outline: none;
                 box-shadow: var(--ring-medium-on-primary);
             }
-        }
-        &__submit {
         }
     }
 }
