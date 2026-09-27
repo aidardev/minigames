@@ -95,12 +95,12 @@ export class GameDetailsDialog extends Dialog {
 
     private render(): void {
         this.setContent(/* HTML */ `
-            <article class="game-details">
+            <div class="game-details">
                 ${this.renderHero()}
                 <div class="game-details__body">
                     ${this.renderInfo()} ${this.renderRecords()} ${this.renderComments()}
                 </div>
-            </article>
+            </div>
         `);
     }
 
@@ -218,8 +218,9 @@ export class GameDetailsDialog extends Dialog {
     private renderRecord(record: TopRecord): string {
         return /* HTML */ `
             <li class="game-details__record record">
-                <span class="record__position" aria-label="Position ${record.position}">
-                    ${this.getMedal(record.position)}
+                <span class="record__position">
+                    <span class="sr-only">Position ${record.position}</span>
+                    <span aria-hidden="true">${this.getMedal(record.position)}</span>
                 </span>
                 <span class="record__player">${record.playerName}</span>
                 <strong class="record__score">${record.score.toLocaleString('en-US')} pts</strong>
@@ -277,7 +278,7 @@ export class GameDetailsDialog extends Dialog {
                                 ${comment.authorName.charAt(0).toUpperCase()}
                             </span>
 
-                            <strong class="comment__name"> ${comment.authorName} </strong>
+                            <h4 class="comment__name">${comment.authorName}</h4>
                         </div>
                         <time class="comment__date" datetime="${comment.createdAt}">
                             ${formatRelativeDate(comment.createdAt)}

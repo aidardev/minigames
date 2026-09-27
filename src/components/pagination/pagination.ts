@@ -123,7 +123,7 @@ export class Pagination extends BaseComponent {
 
             const isActive = page === this.currentPage;
             button.classList.toggle('pagination__page--active', isActive);
-            button.toggleAttribute('aria-current', isActive);
+            button.ariaCurrent = (isActive ? 'page' : undefined) as string | null;
         }
     }
 

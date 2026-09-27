@@ -16,6 +16,7 @@ export class CatalogSection extends BaseComponent {
         super('section', 'section-catalog');
 
         this.element.innerHTML = /* HTML */ `
+            <h2 class="sr-only">Game catalog</h2>
             <div class="catalog container">
                 <div class="catalog__controls"></div>
                 <div class="catalog__grid"></div>
