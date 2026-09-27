@@ -1,6 +1,6 @@
 import { BaseComponent } from '../base-component';
 import './chip-group.scss';
-import type { ChipGroupProperties } from './chip-group.types';
+import type { ChipGroupProperties, ChipOption } from './chip-group.types';
 
 export class ChipGroup extends BaseComponent {
     private activeClass = 'chip--active';
@@ -31,7 +31,7 @@ export class ChipGroup extends BaseComponent {
         this.element.innerHTML = /* HTML */ `
             ${options
                 .map(
-                    (option): string => /* HTML */ `
+                    (option: ChipOption): string => /* HTML */ `
                         <button
                             type="button"
                             class="chip-group__chip chip ${option.id === this.activeId ? this.activeClass : ''}"

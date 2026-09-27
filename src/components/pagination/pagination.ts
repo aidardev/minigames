@@ -142,7 +142,10 @@ export class Pagination extends BaseComponent {
 
         start = Math.max(1, Math.min(start, maxStart));
 
-        return Array.from({ length: visiblePagesCount }, (_, index): number => start + index);
+        return Array.from(
+            { length: visiblePagesCount },
+            (_value: unknown, index: number): number => start + index,
+        );
     }
 
     private goTo(page: number): void {

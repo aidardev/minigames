@@ -23,7 +23,7 @@ export function startApp(): void {
         '/library': LibraryPage,
     });
 
-    router.onRouteChange((path) => header.setActivePath(path));
+    router.onRouteChange((path: string): void => header.setActivePath(path));
 
     router.start();
 }

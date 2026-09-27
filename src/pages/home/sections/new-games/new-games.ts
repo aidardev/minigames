@@ -76,7 +76,7 @@ export class NewGamesSection extends BaseComponent {
 
     private renderCards(games: readonly Game[]): void {
         const slides = games.map(
-            (game): HTMLElement =>
+            (game: Game): HTMLElement =>
                 new GameSlide({
                     game,
                     onClick: (): void => {
