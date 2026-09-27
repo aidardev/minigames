@@ -11,6 +11,7 @@ export class Header extends BaseComponent {
     private burgerBtn: HTMLButtonElement | undefined = undefined;
     private closeBtn: HTMLButtonElement | undefined = undefined;
     private menuContainer: HTMLElement | undefined = undefined;
+    private navLinks: HTMLAnchorElement[] = [];
 
     private handleDocumentClick = (event: MouseEvent): void => {
         const target = event.target;
@@ -70,8 +71,8 @@ export class Header extends BaseComponent {
                     </div>
                     <nav class="header__navbar navbar">
                         <ul class="navbar__list list-unstyled">
-                            <li class="is-active"><a href="/" data-link>Home</a></li>
-                            <li><a href="/library" data-link>Library</a></li>
+                            <li><a href="/" data-link data-route="/">Home</a></li>
+                            <li><a href="/library" data-link data-route="/library">Library</a></li>
                             <li><a href="/" data-link>Tournaments</a></li>
                             <li><a href="/" data-link>Community</a></li>
                         </ul>
@@ -120,6 +121,11 @@ export class Header extends BaseComponent {
         this.burgerBtn = this.query('.header__hamburger-btn');
         this.closeBtn = this.query('.header__close');
         this.menuContainer = this.query('.header__menu');
+        this.navLinks = [
+            ...this.element.querySelectorAll<HTMLAnchorElement>(
+                ':scope .navbar__list a[data-route]',
+            ),
+        ];
     }
 
     private bindEvents(): void {
@@ -127,6 +133,13 @@ export class Header extends BaseComponent {
         this.closeBtn?.addEventListener('click', (): void => this.closeMenu());
         this.element.addEventListener('click', this.handleAuthClick);
         this.menuContainer?.addEventListener('click', this.handleLinksClick);
+    }
+
+    public setActivePath(path: string): void {
+        for (const link of this.navLinks) {
+            const isActive = link.dataset.route === path;
+            link.closest('li')?.classList.toggle('is-active', isActive);
+        }
     }
 
     public openMenu(): void {

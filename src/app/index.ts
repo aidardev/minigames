@@ -18,8 +18,12 @@ export function startApp(): void {
 
     document.body.prepend(appRoot);
 
-    new Router(pageOutlet, {
+    const router = new Router(pageOutlet, {
         '/': HomePage,
         '/library': LibraryPage,
-    }).start();
+    });
+
+    router.onRouteChange((path) => header.setActivePath(path));
+
+    router.start();
 }
