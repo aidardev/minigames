@@ -1,17 +1,6 @@
 import { BaseComponent } from '../base-component';
 import './chip-group.scss';
-
-export interface ChipOption {
-    id: string;
-    label: string;
-}
-
-export interface ChipGroupProperties {
-    options: ChipOption[];
-    activeId: string;
-    onChange?: (id: string) => void;
-    modifier?: string;
-}
+import type { ChipGroupProperties } from './chip-group.types';
 
 export class ChipGroup extends BaseComponent {
     private activeClass = 'chip--active';
