@@ -1,9 +1,10 @@
 import arrowLeft from '@/assets/icons/chevron-backward.svg?raw';
 import arrowRight from '@/assets/icons/chevron-forward.svg?raw';
 import { BaseComponent } from '@/components/base-component';
+import { toRem } from '@/utils/to-rem';
 import './pagination.scss';
 
-const MOBILE_BREAKPOINT = 576;
+const MOBILE_BREAKPOINT = 575.98;
 const DESKTOP_VISIBLE_PAGES = 4;
 const MOBILE_VISIBLE_PAGES = 3;
 
@@ -16,7 +17,7 @@ export interface PaginationProperties {
 export class Pagination extends BaseComponent {
     private readonly totalPages: number;
     private readonly onChange?: (page: number) => void;
-    private readonly mediaQuery = matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    private readonly mediaQuery = matchMedia(`(max-width: ${toRem(MOBILE_BREAKPOINT)})`);
 
     private currentPage: number;
 

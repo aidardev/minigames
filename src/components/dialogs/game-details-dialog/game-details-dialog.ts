@@ -5,6 +5,7 @@ import starIcon from '@/assets/icons/star.svg?raw';
 import type { Comment, GameDetails, TopRecord } from '@/types/game-details.types';
 import { formatRelativeDate } from '@/utils/date';
 import { formatCompactNumber } from '@/utils/formatters';
+import { toRem } from '@/utils/to-rem';
 import { Dialog } from '../dialog';
 import './game-details-dialog.scss';
 
@@ -343,7 +344,7 @@ export class GameDetailsDialog extends Dialog {
 
     private resizeTextarea(textarea: HTMLTextAreaElement): void {
         textarea.style.height = 'auto';
-        textarea.style.height = `${Math.min(textarea.scrollHeight, 88)}px`;
+        textarea.style.height = toRem(Math.min(textarea.scrollHeight, 88));
     }
 
     private getMedal(position: number): string {
