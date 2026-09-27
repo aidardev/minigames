@@ -2,6 +2,7 @@ import { getComments } from '@/api/comments';
 import { getGameDetails } from '@/api/game-details';
 import { BaseComponent } from '@/components/base-component';
 import { ChipGroup } from '@/components/chip-group/chip-group';
+import type { ChipOption } from '@/components/chip-group/chip-group.types';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { Dropdown } from '@/components/dropdown/dropdown';
 import { Pagination } from '@/components/pagination/pagination';
@@ -22,9 +23,11 @@ export class CatalogSection extends BaseComponent {
             </div>
         `;
 
-        const defaultCategory = categories.find((category) => category.isDefault);
+        const defaultCategory = categories.find(
+            (category: GameCategory): boolean => category.isDefault,
+        );
 
-        const chipOptions = categories.map((category) => ({
+        const chipOptions = categories.map((category: GameCategory): ChipOption => ({
             id: category.slug,
             label: category.label,
         }));

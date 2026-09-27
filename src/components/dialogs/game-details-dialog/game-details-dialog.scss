@@ -4,8 +4,6 @@
     $hero-img-height: styles.rem(220px);
 
     .game-details {
-        &__hero {
-        }
         &__hero-img {
             height: $hero-img-height;
             width: 100%;
@@ -70,8 +68,6 @@
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-        &__spec {
-        }
         &__actions {
             display: flex;
             gap: var(--size-2);
@@ -126,14 +122,10 @@
             flex-direction: column;
             gap: var(--size-1);
         }
-        &__record {
-        }
         &__comments {
             display: flex;
             flex-direction: column;
             gap: var(--size-2);
-        }
-        &__comment-form {
         }
         &__comments-list {
             display: flex;
@@ -141,6 +133,20 @@
             gap: var(--size-2);
         }
         &__comment {
+            $avatar-colors: (
+                var(--color-avatar-random-3),
+                var(--color-primary),
+                var(--color-avatar-random-1),
+                var(--color-avatar-random-2),
+                var(--color-avatar-random-4),
+                var(--color-avatar-random-5)
+            );
+
+            @for $i from 1 through length($avatar-colors) {
+                &:nth-child(#{length($avatar-colors)}n + #{$i}) .comment__avatar {
+                    background-color: nth($avatar-colors, $i);
+                }
+            }
         }
     }
 
@@ -185,11 +191,14 @@
         }
         &__position {
             line-height: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            width: var(--size-2);
         }
         &__player {
             flex: 1 1 auto;
-        }
-        &__score {
         }
         &__date {
             font-size: var(--fs-label-medium);
@@ -206,6 +215,7 @@
         flex-direction: column;
         gap: var(--size-1);
         box-shadow: var(--shadow-level-075);
+
         &__header {
             display: flex;
             align-items: center;
@@ -319,8 +329,6 @@
                 outline: none;
                 box-shadow: var(--ring-medium-on-primary);
             }
-        }
-        &__submit {
         }
     }
 }

@@ -5,6 +5,7 @@ import starIcon from '@/assets/icons/star.svg?raw';
 import type { Comment, GameDetails, TopRecord } from '@/types/game-details.types';
 import { formatRelativeDate } from '@/utils/date';
 import { formatCompactNumber } from '@/utils/formatters';
+import { toRem } from '@/utils/to-rem';
 import { Dialog } from '../dialog';
 import './game-details-dialog.scss';
 
@@ -77,7 +78,7 @@ export class GameDetailsDialog extends Dialog {
         });
 
         this.game = game;
-        this.comments = comments.map((comment): Comment => ({ ...comment }));
+        this.comments = comments.map((comment: Comment): Comment => ({ ...comment }));
 
         this.isFavorite = game.isLikedByCurrentUser;
 
@@ -208,7 +209,7 @@ export class GameDetailsDialog extends Dialog {
                     Top Records
                 </h3>
                 <ol class="game-details__records-list list-unstyled">
-                    ${this.game.topRecords.map((record): string => this.renderRecord(record)).join('')}
+                    ${this.game.topRecords.map((record: TopRecord): string => this.renderRecord(record)).join('')}
                 </ol>
             </section>
         `;
@@ -258,7 +259,7 @@ export class GameDetailsDialog extends Dialog {
                 </form>
 
                 <ul class="game-details__comments-list list-unstyled">
-                    ${this.comments.map((comment): string => this.renderComment(comment)).join('')}
+                    ${this.comments.map((comment: Comment): string => this.renderComment(comment)).join('')}
                 </ul>
             </section>
         `;
@@ -329,7 +330,9 @@ export class GameDetailsDialog extends Dialog {
         button.setAttribute('aria-label', isLiked ? 'Like comment' : 'Unlike comment');
         button.classList.toggle('is-active', !isLiked);
 
-        const comment = this.comments.find((item): boolean => item.commentId === commentId);
+        const comment = this.comments.find(
+            (item: Comment): boolean => item.commentId === commentId,
+        );
         if (!comment) return;
 
         const count = comment.likesCount + (isLiked ? 0 : 1);
@@ -341,7 +344,7 @@ export class GameDetailsDialog extends Dialog {
 
     private resizeTextarea(textarea: HTMLTextAreaElement): void {
         textarea.style.height = 'auto';
-        textarea.style.height = `${Math.min(textarea.scrollHeight, 88)}px`;
+        textarea.style.height = toRem(Math.min(textarea.scrollHeight, 88));
     }
 
     private getMedal(position: number): string {

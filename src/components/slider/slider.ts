@@ -225,7 +225,7 @@ export class Slider extends BaseComponent<'div'> {
 
     public getSlides(): HTMLLIElement[] {
         return [...this.track.children].filter(
-            (child): child is HTMLLIElement => child instanceof HTMLLIElement,
+            (child: Element): child is HTMLLIElement => child instanceof HTMLLIElement,
         );
     }
 

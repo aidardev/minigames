@@ -6,6 +6,7 @@
         --slide-width-near: #{styles.rem(288px)};
         --slide-transition-duration: 1s;
         --slide-transition-easing: cubic-bezier(0.25, 1, 0.2, 1);
+        overflow: hidden;
         padding-bottom: var(--size-1);
         @include styles.min-width(styles.$br-xxl) {
             padding-inline: var(--size-05);

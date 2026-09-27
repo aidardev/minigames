@@ -8,8 +8,8 @@
     $card-img-dynamic-width: 39cqw;
     $card-img-max-width: #{styles.rem(320px)};
 
-    $cq-compact: 720px;
-    $cq-mobile: 460px;
+    $cq-compact: styles.rem(720px);
+    $cq-mobile: styles.rem(460px);
 
     .game-card {
         container-type: inline-size;
