@@ -2,7 +2,7 @@ import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
 import { BaseComponent } from '../base-component';
-import { AuthDialog, toAuthTab, type AuthTab } from '../dialogs/auth-dialog';
+import { AuthDialog, toAuthTab, type AuthTab } from '../dialogs/auth-dialog/auth-dialog';
 import './header.scss';
 
 export class Header extends BaseComponent {
@@ -11,8 +11,9 @@ export class Header extends BaseComponent {
     private burgerBtn: HTMLButtonElement | undefined = undefined;
     private closeBtn: HTMLButtonElement | undefined = undefined;
     private menuContainer: HTMLElement | undefined = undefined;
+    private navLinks: HTMLAnchorElement[] = [];
 
-    private handleDocumentClick = (event: MouseEvent) => {
+    private handleDocumentClick = (event: MouseEvent): void => {
         const target = event.target;
         if (!(target instanceof Node)) return;
 
@@ -22,13 +23,13 @@ export class Header extends BaseComponent {
         }
     };
 
-    private handleEscKey = (event: KeyboardEvent) => {
+    private handleEscKey = (event: KeyboardEvent): void => {
         if (event.key === 'Escape') {
             this.closeMenu();
         }
     };
 
-    private handleAuthClick = (event: Event) => {
+    private handleAuthClick = (event: Event): void => {
         if (!(event.target instanceof Element)) return;
 
         const trigger = event.target.closest<HTMLElement>('[data-auth-tab]');
@@ -40,7 +41,7 @@ export class Header extends BaseComponent {
         new AuthDialog(tab).open();
     };
 
-    private handleLinksClick = (event: Event) => {
+    private handleLinksClick = (event: Event): void => {
         if (!(event.target instanceof Element)) return;
 
         const trigger = event.target.closest<HTMLElement>('a');
@@ -49,7 +50,7 @@ export class Header extends BaseComponent {
         this.closeMenu();
     };
 
-    public constructor() {
+    constructor() {
         super('header', 'header');
 
         this.element.innerHTML = /* HTML */ `
@@ -70,8 +71,8 @@ export class Header extends BaseComponent {
                     </div>
                     <nav class="header__navbar navbar">
                         <ul class="navbar__list list-unstyled">
-                            <li class="is-active"><a href="/" data-link>Home</a></li>
-                            <li><a href="/" data-link>Library</a></li>
+                            <li><a href="/" data-link data-route="/">Home</a></li>
+                            <li><a href="/library" data-link data-route="/library">Library</a></li>
                             <li><a href="/" data-link>Tournaments</a></li>
                             <li><a href="/" data-link>Community</a></li>
                         </ul>
@@ -116,20 +117,32 @@ export class Header extends BaseComponent {
         this.bindEvents();
     }
 
-    private initElements() {
+    private initElements(): void {
         this.burgerBtn = this.query('.header__hamburger-btn');
         this.closeBtn = this.query('.header__close');
         this.menuContainer = this.query('.header__menu');
+        this.navLinks = [
+            ...this.element.querySelectorAll<HTMLAnchorElement>(
+                ':scope .navbar__list a[data-route]',
+            ),
+        ];
     }
 
-    private bindEvents() {
-        this.burgerBtn?.addEventListener('click', () => this.openMenu());
-        this.closeBtn?.addEventListener('click', () => this.closeMenu());
+    private bindEvents(): void {
+        this.burgerBtn?.addEventListener('click', (): void => this.openMenu());
+        this.closeBtn?.addEventListener('click', (): void => this.closeMenu());
         this.element.addEventListener('click', this.handleAuthClick);
         this.menuContainer?.addEventListener('click', this.handleLinksClick);
     }
 
-    public openMenu() {
+    public setActivePath(path: string): void {
+        for (const link of this.navLinks) {
+            const isActive = link.dataset.route === path;
+            link.closest('li')?.classList.toggle('is-active', isActive);
+        }
+    }
+
+    public openMenu(): void {
         if (this.isMenuOpen) return;
 
         this.isMenuOpen = true;
@@ -141,7 +154,7 @@ export class Header extends BaseComponent {
         document.addEventListener('keydown', this.handleEscKey);
     }
 
-    public closeMenu() {
+    public closeMenu(): void {
         if (!this.isMenuOpen) return;
 
         this.isMenuOpen = false;

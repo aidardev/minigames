@@ -1,0 +1,69 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    %btn {
+        border: none;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: var(--size-5);
+        height: var(--size-5);
+        border-radius: var(--corner-full);
+        box-shadow: var(--ring-medium-on-primary);
+        background: var(--color-white);
+        color: var(--color-on-primary);
+        cursor: pointer;
+        transition:
+            background var(--transition-base),
+            color var(--transition-base),
+            opacity var(--transition-base);
+
+        &:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    }
+
+    .pagination {
+        --pagination-gap: var(--size-2);
+        display: flex;
+        gap: var(--pagination-gap);
+        justify-content: center;
+        @include styles.max-width(styles.$br-lg) {
+            --pagination-gap: var(--size-1);
+        }
+
+        &__arrow {
+            @extend %btn;
+            @include styles.hover {
+                background: var(--color-surface);
+            }
+
+            svg {
+                flex-shrink: 0;
+                width: var(--size-3);
+                height: var(--size-3);
+            }
+        }
+        &__pages {
+            display: flex;
+            gap: var(--pagination-gap);
+        }
+        &__page {
+            @extend %btn;
+            font-size: var(--fs-body-small);
+            font-weight: var(--font-weight-bold);
+            @include styles.hover {
+                &:not(.pagination__page--active) {
+                    background: var(--color-surface);
+                }
+            }
+            &--active {
+                background: var(--color-on-primary);
+                color: var(--color-white);
+            }
+        }
+    }
+}

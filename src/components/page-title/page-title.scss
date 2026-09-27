@@ -1,0 +1,40 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .page-title {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-1);
+        padding-block: var(--size-5);
+        @include styles.max-width(styles.$br-lg) {
+            padding-block: var(--size-3);
+        }
+        @include styles.max-width(styles.$br-sm) {
+            padding-block: var(--size-2);
+        }
+        &__title {
+            font-size: var(--fs-display-large);
+            margin-bottom: 0;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-display-medium);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-display-small);
+            }
+        }
+
+        &__subtitle {
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-large);
+            font-weight: var(--font-weight-medium);
+            line-height: var(--lh-heading);
+            margin-bottom: 0;
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-body-medium);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-body-small);
+            }
+        }
+    }
+}

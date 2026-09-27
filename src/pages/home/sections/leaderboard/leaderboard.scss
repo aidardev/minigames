@@ -138,19 +138,13 @@
         &__avatar {
             width: var(--size-5);
             height: var(--size-5);
-            border-radius: var(--corner-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-size: var(--fs-body-small);
             font-weight: var(--font-weight-bold);
             border: var(--border-width-thin) solid var(--color-on-primary);
-            line-height: var(--lh-body);
-            flex-shrink: 0;
+            line-height: var(--lh-relaxed);
             @include styles.max-width(styles.$br-lg) {
-                // Hardcoded from figma: no Figma token exists & single token is overkill.
-                width: styles.rem(28px);
-                height: styles.rem(28px);
+                width: var(--size-3-5);
+                height: var(--size-3-5);
                 font-size: var(--fs-label-small);
             }
             @include styles.max-width(styles.$br-sm) {

@@ -4,7 +4,16 @@
     .slider {
         &__track {
             display: flex;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-user-select: none;
+            cursor: grab;
+
+            &:active {
+                cursor: grabbing;
+            }
         }
+
         &__arrow {
             cursor: pointer;
             display: flex;

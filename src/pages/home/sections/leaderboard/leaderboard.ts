@@ -1,12 +1,15 @@
 import { BaseComponent } from '@/components/base-component';
+import type { LeaderboardPlayer } from '@/types/leaderboard.types';
 import { formatCompactNumber, formatNumber } from '@/utils/formatters';
 import { getInitials } from '@/utils/string';
-import { LEADERBOARD_MOCK } from './leaderboard.mock';
 import './leaderboard.scss';
 
 export class LeaderboardSection extends BaseComponent {
-    constructor() {
+    private readonly players: LeaderboardPlayer[];
+
+    constructor(players: LeaderboardPlayer[]) {
         super('section', 'section section-leaderboard');
+        this.players = players;
 
         this.element.innerHTML = /* HTML */ `
             <div class="container">
@@ -70,41 +73,45 @@ export class LeaderboardSection extends BaseComponent {
     }
 
     private renderRows(): string {
-        return LEADERBOARD_MOCK.map((player) => {
-            const initials = getInitials(player.playerName);
-            const formattedScore = formatNumber(player.totalScore);
-            const shortScore = formatCompactNumber(player.totalScore);
+        return this.players
+            .map((player: LeaderboardPlayer): string => {
+                const initials = getInitials(player.playerName);
+                const formattedScore = formatNumber(player.totalScore);
+                const shortScore = formatCompactNumber(player.totalScore);
 
-            return /* HTML */ `
-                <tr class="leaderboard-table__row">
-                    <td class="leaderboard-table__cell leaderboard-table__col--rank">
-                        <span class="leaderboard-table__rank-val">#${player.rank}</span>
-                    </td>
-                    <td class="leaderboard-table__cell leaderboard-table__col--player">
-                        <div class="leaderboard-table__player-info">
-                            <span class="leaderboard-table__avatar">${initials}</span>
-                            <span class="leaderboard-table__username">${player.playerName}</span>
-                        </div>
-                    </td>
-                    <td class="leaderboard-table__cell leaderboard-table__col--games">
-                        ${player.gamesPlayed}
-                    </td>
-                    <td class="leaderboard-table__cell leaderboard-table__col--score">
-                        <span class="leaderboard-table__text-full">${formattedScore}</span>
-                        <span class="leaderboard-table__text-short">${shortScore}</span>
-                    </td>
-                    <td class="leaderboard-table__cell leaderboard-table__col--streak">
-                        <span class="leaderboard-table__streak">
-                            🔥 ${player.streakDays}<span class="leaderboard-table__text-full">
-                                days</span
-                            ><span class="leaderboard-table__text-short">d</span>
-                        </span>
-                    </td>
-                    <td class="leaderboard-table__cell leaderboard-table__col--favorite">
-                        <span class="leaderboard-table__badge">${player.favoriteGameName}</span>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+                return /* HTML */ `
+                    <tr class="leaderboard-table__row">
+                        <td class="leaderboard-table__cell leaderboard-table__col--rank">
+                            <span class="leaderboard-table__rank-val">#${player.rank}</span>
+                        </td>
+                        <td class="leaderboard-table__cell leaderboard-table__col--player">
+                            <div class="leaderboard-table__player-info">
+                                <span class="leaderboard-table__avatar avatar">${initials}</span>
+                                <span class="leaderboard-table__username"
+                                    >${player.playerName}</span
+                                >
+                            </div>
+                        </td>
+                        <td class="leaderboard-table__cell leaderboard-table__col--games">
+                            ${player.gamesPlayed}
+                        </td>
+                        <td class="leaderboard-table__cell leaderboard-table__col--score">
+                            <span class="leaderboard-table__text-full">${formattedScore}</span>
+                            <span class="leaderboard-table__text-short">${shortScore}</span>
+                        </td>
+                        <td class="leaderboard-table__cell leaderboard-table__col--streak">
+                            <span class="leaderboard-table__streak">
+                                🔥 ${player.streakDays}<span class="leaderboard-table__text-full">
+                                    days</span
+                                ><span class="leaderboard-table__text-short">d</span>
+                            </span>
+                        </td>
+                        <td class="leaderboard-table__cell leaderboard-table__col--favorite">
+                            <span class="leaderboard-table__badge">${player.favoriteGameName}</span>
+                        </td>
+                    </tr>
+                `;
+            })
+            .join('');
     }
 }

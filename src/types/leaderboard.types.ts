@@ -7,3 +7,11 @@ export interface LeaderboardPlayer {
     favoriteGameSlug: string;
     favoriteGameName: string;
 }
+
+export interface LeaderboardResponse {
+    data: LeaderboardPlayer[];
+    meta: {
+        totalItems: number;
+        description: string;
+    };
+}

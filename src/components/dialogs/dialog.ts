@@ -10,19 +10,21 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
     private readonly content: HTMLElement;
     private pointerDownOnBackdrop = false;
 
-    private handlePointerDown = (event: PointerEvent) => {
+    private handlePointerDown = (event: PointerEvent): void => {
         this.pointerDownOnBackdrop = event.target === this.element;
     };
 
-    private handleClick = (event: MouseEvent) => {
+    private handleClick = (event: MouseEvent): void => {
         if (this.pointerDownOnBackdrop && event.target === this.element) {
             this.close();
         }
     };
 
-    private handleClose = async () => {
+    private handleClose = async (): Promise<void> => {
         await Promise.allSettled(
-            this.element.getAnimations({ subtree: true }).map((a) => a.finished),
+            this.element
+                .getAnimations({ subtree: true })
+                .map((animation): Promise<unknown> => animation.finished),
         );
         if (!this.element.open) this.destroy();
     };
@@ -42,13 +44,13 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
         this.bindEvents();
     }
 
-    private bindEvents() {
+    private bindEvents(): void {
         this.element.addEventListener('pointerdown', this.handlePointerDown);
         this.element.addEventListener('click', this.handleClick);
         this.element.addEventListener('close', this.handleClose);
     }
 
-    protected setContent(content: string | Node) {
+    protected setContent(content: string | Node): void {
         if (typeof content === 'string') {
             this.content.innerHTML = content;
         } else {
@@ -56,13 +58,13 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
         }
     }
 
-    public open() {
+    public open(): void {
         if (this.element.open) return;
         if (!this.element.isConnected) document.body.append(this.element);
         this.element.showModal();
     }
 
-    public close(returnValue?: string) {
+    public close(returnValue?: string): void {
         this.element.close(returnValue);
     }
 }

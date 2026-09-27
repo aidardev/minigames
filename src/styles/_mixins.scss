@@ -8,12 +8,14 @@
 }
 
 @mixin max-width($breakpoint) {
+    // 0.02px used to keep adjacent max-width and min-width ranges from sharing a boundary.
     @media (max-width: f.rem($breakpoint - 0.02px)) {
         @content;
     }
 }
 
 @mixin between($min, $max) {
+    // 0.02px used to keep adjacent max-width and min-width ranges from sharing a boundary.
     @media (min-width: f.rem($min)) and (max-width: f.rem($max - 0.02px)) {
         @content;
     }

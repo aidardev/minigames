@@ -1,7 +1,5 @@
 @use '@/styles/index' as styles;
 
-$icon-size: styles.rem(10px);
-
 @layer components {
     .header {
         display: flex;
@@ -97,8 +95,8 @@ $icon-size: styles.rem(10px);
             }
 
             svg {
-                width: $icon-size;
-                height: $icon-size;
+                width: var(--size-1-25);
+                height: var(--size-1-25);
             }
         }
         &__btns {
@@ -133,7 +131,7 @@ $icon-size: styles.rem(10px);
 
             svg {
                 width: var(--size-2);
-                height: $icon-size;
+                height: var(--size-1-25);
             }
         }
     }

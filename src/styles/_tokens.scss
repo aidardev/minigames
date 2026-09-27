@@ -26,6 +26,7 @@
     --color-like: #ff4b4b;
     --color-error: #b3261e;
     --color-price-free: #0b8a8f;
+    --color-placeholder: #969696;
 
     // Borders
     --color-outline: #e5e7eb;
@@ -73,12 +74,17 @@
     --font-family-secondary: 'Roboto', sans-serif;
 
     // Size
+    --size-px: 1px;
+    --size-025: #{f.rem(2px)};
     --size-05: #{f.rem(4px)};
+    --size-075: #{f.rem(6px)};
     --size-1: #{f.rem(8px)};
+    --size-1-25: #{f.rem(10px)};
     --size-1-5: #{f.rem(12px)};
     --size-2: #{f.rem(16px)};
     --size-2-5: #{f.rem(20px)};
     --size-3: #{f.rem(24px)};
+    --size-3-5: #{f.rem(28px)};
     --size-4: #{f.rem(32px)};
     --size-5: #{f.rem(40px)};
     --size-6: #{f.rem(48px)};
@@ -103,11 +109,13 @@
 
     // Buttons
     --btn-padding-large: var(--size-2) var(--size-3);
-    --btn-padding-medium: #{f.rem(10px)} #{f.rem(20px)};
+    --btn-padding-medium: #{var(--size-1-25)} #{var(--size-2-5)};
     --btn-padding-small: var(--size-1) var(--size-2);
     --btn-padding-icon: var(--size-1);
 
     // Shadows
+    --shadow-level-05: 2px 2px 0 var(--color-on-primary);
+    --shadow-level-075: 3px 3px 0 var(--color-on-primary);
     --shadow-level-1: 4px 4px 0 var(--color-on-primary);
     --shadow-level-2: 6px 6px 0 var(--color-on-primary);
     --shadow-level-3: 8px 8px 0 var(--color-on-primary);
@@ -140,7 +148,9 @@
     // Line Height
     --lh-tight: 1.1;
     --lh-heading: 1.2;
-    --lh-body: 1.5;
+    --lh-snug: 1.25;
+    --lh-normal: 1.4;
+    --lh-relaxed: 1.5;
 
     // z-index
     --z-below: -1;

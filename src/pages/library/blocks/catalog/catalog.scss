@@ -1,0 +1,44 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .catalog {
+        &__controls {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--size-2);
+            padding-block: var(--size-2);
+        }
+
+        &__chip-group {
+            flex: 1 1 auto;
+        }
+
+        &__sort {
+            flex-shrink: 0;
+            @include styles.max-width(styles.$br-lg) {
+                .dropdown__list {
+                    right: auto;
+                    left: 0;
+                }
+            }
+            @include styles.max-width(styles.$br-sm) {
+                width: 100%;
+                .dropdown__list {
+                    width: 100%;
+                    right: 0;
+                }
+            }
+        }
+
+        &__pagination {
+            padding-block: var(--size-5);
+            @include styles.max-width(styles.$br-md) {
+                padding-block: var(--size-4);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                padding-block: var(--size-3);
+            }
+        }
+    }
+}
