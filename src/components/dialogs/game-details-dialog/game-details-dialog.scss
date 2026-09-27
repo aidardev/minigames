@@ -191,6 +191,11 @@
         }
         &__position {
             line-height: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            width: var(--size-2);
         }
         &__player {
             flex: 1 1 auto;
