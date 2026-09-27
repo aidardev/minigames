@@ -141,6 +141,20 @@
             gap: var(--size-2);
         }
         &__comment {
+            $avatar-colors: (
+                var(--color-avatar-random-3),
+                var(--color-primary),
+                var(--color-avatar-random-1),
+                var(--color-avatar-random-2),
+                var(--color-avatar-random-4),
+                var(--color-avatar-random-5)
+            );
+
+            @for $i from 1 through length($avatar-colors) {
+                &:nth-child(#{length($avatar-colors)}n + #{$i}) .comment__avatar {
+                    background-color: nth($avatar-colors, $i);
+                }
+            }
         }
     }
 
@@ -206,6 +220,7 @@
         flex-direction: column;
         gap: var(--size-1);
         box-shadow: var(--shadow-level-075);
+
         &__header {
             display: flex;
             align-items: center;
