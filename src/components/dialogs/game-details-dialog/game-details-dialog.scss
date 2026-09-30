@@ -237,6 +237,7 @@
         &__name {
             font-size: var(--fs-body-small);
             line-height: var(--lh-heading);
+            margin-bottom: 0;
         }
         &__date {
             font-size: var(--fs-label-medium);
@@ -286,7 +287,6 @@
             }
 
             &.is-active {
-                color: var(--color-like);
                 svg {
                     color: var(--color-like);
                 }
