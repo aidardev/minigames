@@ -24,7 +24,7 @@ export interface CategoriesResponse {
     };
 }
 
-export interface GamesSeedResponse {
+export interface GamesResponse {
     data: Game[];
     meta: {
         totalItems: number;
