@@ -1,6 +1,9 @@
+import type { SafeHtml } from '@/utils/html';
+
 export abstract class BaseComponent<
     K extends keyof HTMLElementTagNameMap = keyof HTMLElementTagNameMap,
 > {
+    private readonly childComponents = new Set<BaseComponent>();
     public readonly element: HTMLElementTagNameMap[K];
 
     constructor(tagName: K, className?: string) {
@@ -11,7 +14,20 @@ export abstract class BaseComponent<
         }
     }
 
+    protected setHtml(template: SafeHtml): void {
+        this.element.innerHTML = template.value;
+    }
+
+    protected adopt<C extends BaseComponent>(child: C): C {
+        this.childComponents.add(child);
+        return child;
+    }
+
     public destroy(): void {
+        for (const child of this.childComponents) {
+            child.destroy();
+        }
+        this.childComponents.clear();
         this.element.remove();
     }
 
