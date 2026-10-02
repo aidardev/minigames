@@ -2,12 +2,16 @@
 
 @layer components {
     .section-hero {
+        --min-height: #{styles.rem(626px)};
         position: relative;
         padding-block: var(--size-14);
+        min-height: var(--min-height);
         @include styles.max-width(styles.$br-lg) {
+            --min-height: #{styles.rem(383px)};
             padding-block: var(--size-9);
         }
         @include styles.max-width(styles.$br-sm) {
+            --min-height: #{styles.rem(284px)};
             padding-block: var(--size-8);
         }
         &::before,

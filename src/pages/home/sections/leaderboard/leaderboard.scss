@@ -28,6 +28,25 @@
             font-size: var(--fs-body-small);
         }
 
+        &__skeleton {
+            display: inline-block;
+            vertical-align: middle;
+            width: var(--size-7);
+            height: var(--size-2);
+            &--short {
+                width: var(--size-3);
+            }
+
+            &--wide {
+                width: var(--size-13);
+            }
+
+            &--avatar {
+                flex-shrink: 0;
+                border-radius: var(--corner-full);
+            }
+        }
+
         &__head {
             color: var(--color-white);
             text-transform: uppercase;
@@ -83,6 +102,18 @@
 
         &__row {
             border-bottom: var(--border-width-thin) solid var(--color-outline);
+            &--top {
+                .leaderboard-table__avatar {
+                    background-color: var(--color-primary);
+                }
+                .leaderboard-table__rank-val {
+                    color: var(--color-primary);
+                    @include styles.max-width(styles.$br-lg) {
+                        color: var(--color-tertiary);
+                    }
+                }
+            }
+
             &:nth-child(odd) {
                 background-color: var(--color-bg);
             }
@@ -94,17 +125,6 @@
                 border-bottom: none;
             }
 
-            &:nth-child(1) {
-                .leaderboard-table__avatar {
-                    background-color: var(--color-primary);
-                }
-                .leaderboard-table__rank-val {
-                    color: var(--color-primary);
-                    @include styles.max-width(styles.$br-lg) {
-                        color: var(--color-tertiary);
-                    }
-                }
-            }
             &:nth-child(2) .leaderboard-table__avatar {
                 background-color: var(--color-avatar-random-2);
             }
@@ -135,21 +155,29 @@
             }
         }
 
-        &__avatar {
+        &__avatar,
+        &__skeleton--avatar {
             width: var(--size-5);
             height: var(--size-5);
+            @include styles.max-width(styles.$br-lg) {
+                width: var(--size-3-5);
+                height: var(--size-3-5);
+            }
+            @include styles.max-width(styles.$br-sm) {
+                width: var(--size-3);
+                height: var(--size-3);
+            }
+        }
+
+        &__avatar {
             font-size: var(--fs-body-small);
             font-weight: var(--font-weight-bold);
             border: var(--border-width-thin) solid var(--color-on-primary);
             line-height: var(--lh-relaxed);
             @include styles.max-width(styles.$br-lg) {
-                width: var(--size-3-5);
-                height: var(--size-3-5);
                 font-size: var(--fs-label-small);
             }
             @include styles.max-width(styles.$br-sm) {
-                width: var(--size-3);
-                height: var(--size-3);
                 font-size: var(--fs-label-small);
             }
         }
