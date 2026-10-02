@@ -6,14 +6,16 @@ import { LeaderboardSection } from './sections/leaderboard/leaderboard';
 import { NewGamesSection } from './sections/new-games/new-games';
 
 export class HomePage extends BaseComponent {
-    private readonly developerCta = new DeveloperCtaSection();
+    private readonly developerCta: DeveloperCtaSection;
 
     constructor() {
         super('main', 'home-page');
 
+        this.developerCta = this.adopt(new DeveloperCtaSection());
+
         this.element.append(
-            new HeroSection().element,
-            new NewGamesSection().element,
+            this.adopt(new HeroSection()).element,
+            this.adopt(new NewGamesSection()).element,
             this.developerCta.element,
         );
 
@@ -22,7 +24,7 @@ export class HomePage extends BaseComponent {
 
     private async loadLeaderboard(): Promise<void> {
         const players = await getLeaderboard();
-        const leaderboardSection = new LeaderboardSection(players);
+        const leaderboardSection = this.adopt(new LeaderboardSection(players));
 
         this.element.insertBefore(leaderboardSection.element, this.developerCta.element);
     }

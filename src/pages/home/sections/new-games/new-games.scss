@@ -25,6 +25,11 @@
             padding-bottom: var(--size-075);
         }
 
+        &__skeleton-item {
+            height: var(--game-slide-height);
+            border-radius: var(--game-slide-radius);
+        }
+
         &__slide {
             transition:
                 flex var(--slide-transition-duration) var(--slide-transition-easing),
