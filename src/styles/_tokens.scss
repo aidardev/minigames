@@ -171,7 +171,20 @@
     --z-modal: 40;
     --z-snackbar: 50;
 
+    // Elements
+    --game-slide-height: #{f.rem(384px)};
+    --game-slide-radius: var(--corner-extra-large);
+
+    @include m.max-width(b.$br-lg) {
+        --game-slide-height: #{f.rem(280px)};
+        --game-slide-radius: var(--corner-large);
+    }
+
     @include m.max-width(b.$br-md) {
         --container-padding-x: var(--size-2);
+    }
+
+    @include m.max-width(b.$br-sm) {
+        --game-slide-height: #{f.rem(200px)};
     }
 }
