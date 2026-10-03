@@ -2,6 +2,7 @@ import { Footer } from '@/components/footer/footer';
 import { Header } from '@/components/header/header';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
+import { NotFoundPage } from '@/pages/not-found/not-found';
 import { Router } from './router';
 
 export function startApp(): void {
@@ -18,10 +19,14 @@ export function startApp(): void {
 
     document.body.prepend(appRoot);
 
-    const router = new Router(pageOutlet, {
-        '/': HomePage,
-        '/library': LibraryPage,
-    });
+    const router = new Router(
+        pageOutlet,
+        {
+            '/': HomePage,
+            '/library': LibraryPage,
+        },
+        NotFoundPage,
+    );
 
     router.onRouteChange((path: string): void => header.setActivePath(path));
 

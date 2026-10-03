@@ -1,31 +1,33 @@
 import { BaseComponent } from '../components/base-component';
 
-type Routes = Record<string, new () => BaseComponent>;
+type PageConstructor = new () => BaseComponent;
+type Routes = Record<string, PageConstructor>;
 type RouteChangeListener = (path: string) => void;
 
 export class Router {
+    private static normalize(path: string): string {
+        return path.replace(/\/+$/, '') || '/';
+    }
+
     private readonly outlet: HTMLElement;
     private readonly routes: Routes;
+    private readonly notFound: PageConstructor;
     private current: BaseComponent | undefined = undefined;
     private listeners: RouteChangeListener[] = [];
 
-    constructor(outlet: HTMLElement, routes: Routes) {
+    constructor(outlet: HTMLElement, routes: Routes, notFound: PageConstructor) {
         this.outlet = outlet;
         this.routes = routes;
+        this.notFound = notFound;
     }
 
     private render(): void {
-        const path = location.pathname;
-        const Page = this.routes[path];
+        const path = Router.normalize(location.pathname);
+        const Page = this.routes[path] ?? this.notFound;
 
         this.current?.destroy();
-        this.current = Page ? new Page() : undefined;
-
-        if (this.current) {
-            this.outlet.append(this.current.element);
-        } else {
-            this.outlet.textContent = '404';
-        }
+        this.current = new Page();
+        this.outlet.append(this.current.element);
 
         for (const listener of this.listeners) {
             listener(path);
