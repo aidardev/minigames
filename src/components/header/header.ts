@@ -1,8 +1,9 @@
+import { openAuth } from '@/app/navigation';
 import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
 import { BaseComponent } from '../base-component';
-import { AuthDialog, toAuthTab, type AuthTab } from '../dialogs/auth-dialog/auth-dialog';
+import { toAuthTab, type AuthTab } from '../dialogs/auth-dialog/auth-dialog';
 import './header.scss';
 
 export class Header extends BaseComponent {
@@ -38,7 +39,7 @@ export class Header extends BaseComponent {
         const tab: AuthTab = toAuthTab(trigger.dataset.authTab);
 
         this.closeMenu();
-        new AuthDialog(tab).open();
+        openAuth(tab);
     };
 
     private handleLinksClick = (event: Event): void => {

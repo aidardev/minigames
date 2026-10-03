@@ -3,7 +3,8 @@ import { Header } from '@/components/header/header';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
-import { Router } from './router';
+import { DialogController } from './dialog-controller';
+import { Router, type Route } from './router';
 
 export function startApp(): void {
     const appRoot = document.createElement('div');
@@ -28,7 +29,9 @@ export function startApp(): void {
         NotFoundPage,
     );
 
-    router.onRouteChange((path: string): void => header.setActivePath(path));
+    new DialogController(router).start();
+
+    router.onRouteChange(({ path }: Route): void => header.setActivePath(path));
 
     router.start();
 }
