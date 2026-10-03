@@ -1,5 +1,3 @@
-import { getComments } from '@/api/comments';
-import { getGameDetails } from '@/api/game-details';
 import { BaseComponent } from '@/components/base-component';
 import { ChipGroup } from '@/components/chip-group/chip-group';
 import type { ChipOption } from '@/components/chip-group/chip-group.types';
@@ -55,13 +53,8 @@ export class CatalogSection extends BaseComponent {
         const grid = new GameGrid({
             games: games.slice(0, GAMES_PER_PAGE),
 
-            onGameDetailsClick: async (): Promise<void> => {
-                const [game, comments] = await Promise.all([getGameDetails(), getComments()]);
-
-                new GameDetailsDialog({
-                    game,
-                    comments,
-                }).open();
+            onGameDetailsClick: (slug: string): void => {
+                new GameDetailsDialog({ slug }).open();
             },
         });
 

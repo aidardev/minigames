@@ -1,13 +1,20 @@
-import type { Comment, CommentsResponse } from '@/types/game-details.types';
+import type { CommentsResponse, GameComments } from '@/types/game-details.types';
+import { apiClient } from './api-client';
 
-export async function getComments(): Promise<Comment[]> {
-    const response = await fetch('/mock-data/comments-tukoni-forest-keepers.json');
+const COMMENTS_LIMIT = 3;
+const COMMENTS_SORT = 'newest';
 
-    if (!response.ok) {
-        throw new Error(`Failed to load comments: ${response.status}`);
-    }
+export async function getComments(slug: string, signal?: AbortSignal): Promise<GameComments> {
+    const response = await apiClient<CommentsResponse>(
+        `/games/${encodeURIComponent(slug)}/comments`,
+        {
+            query: { limit: COMMENTS_LIMIT, sort: COMMENTS_SORT },
+            signal,
+        },
+    );
 
-    const payload: CommentsResponse = await response.json();
-
-    return payload.data;
+    return {
+        comments: response.data,
+        total: response.meta.totalComments,
+    };
 }
