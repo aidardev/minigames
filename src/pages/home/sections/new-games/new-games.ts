@@ -1,5 +1,3 @@
-import { getComments } from '@/api/comments';
-import { getGameDetails } from '@/api/game-details';
 import { getFeaturedGames } from '@/api/games';
 import leftArrowIcon from '@/assets/icons/arrow-back.svg?raw';
 import rightArrowIcon from '@/assets/icons/arrow-forward.svg?raw';
@@ -97,8 +95,8 @@ export class NewGamesSection extends BaseComponent {
                 (game: Game): HTMLElement =>
                     new GameSlide({
                         game,
-                        onClick: (): void => {
-                            this.openGameDetails();
+                        onClick: (slug: string): void => {
+                            new GameDetailsDialog({ slug }).open();
                         },
                     }).element,
             ),
@@ -116,14 +114,5 @@ export class NewGamesSection extends BaseComponent {
 
             if (button) button.disabled = isDisabled;
         }
-    }
-
-    private async openGameDetails(): Promise<void> {
-        const [game, comments] = await Promise.all([getGameDetails(), getComments()]);
-
-        new GameDetailsDialog({
-            game,
-            comments,
-        }).open();
     }
 }

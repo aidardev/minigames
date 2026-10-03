@@ -1,3 +1,4 @@
+import { SafeHtml } from '@/utils/html';
 import { BaseComponent } from '../base-component';
 import './dialog.scss';
 
@@ -50,8 +51,10 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
         this.element.addEventListener('close', this.handleClose);
     }
 
-    protected setContent(content: string | Node): void {
-        if (typeof content === 'string') {
+    protected setContent(content: string | SafeHtml | Node): void {
+        if (content instanceof SafeHtml) {
+            this.content.innerHTML = content.value;
+        } else if (typeof content === 'string') {
             this.content.innerHTML = content;
         } else {
             this.content.replaceChildren(content);

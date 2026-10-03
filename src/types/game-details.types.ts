@@ -47,3 +47,8 @@ export interface CommentsResponse {
     data: Comment[];
     meta: CommentsMeta;
 }
+
+export interface GameComments {
+    comments: Comment[];
+    total: number;
+}
