@@ -1,9 +1,9 @@
 import { getFeaturedGames } from '@/api/games';
+import { openGameDetails } from '@/app/navigation';
 import leftArrowIcon from '@/assets/icons/arrow-back.svg?raw';
 import rightArrowIcon from '@/assets/icons/arrow-forward.svg?raw';
 import { AsyncRegion } from '@/components/async-region/async-region';
 import { BaseComponent } from '@/components/base-component';
-import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { EmptyState } from '@/components/empty-state/empty-state';
 import { GameSlide } from '@/components/game-slide/game-slide';
 import { Slider } from '@/components/slider/slider';
@@ -95,9 +95,7 @@ export class NewGamesSection extends BaseComponent {
                 (game: Game): HTMLElement =>
                     new GameSlide({
                         game,
-                        onClick: (slug: string): void => {
-                            new GameDetailsDialog({ slug }).open();
-                        },
+                        onClick: openGameDetails,
                     }).element,
             ),
         );
