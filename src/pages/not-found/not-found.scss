@@ -1,0 +1,40 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    $text-width: 55ch;
+
+    .not-found {
+        &__inner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--size-2);
+            padding-block: var(--size-13);
+            text-align: center;
+            @include styles.max-width(styles.$br-sm) {
+                padding-block: var(--size-7);
+            }
+        }
+
+        &__code {
+            font-size: var(--fs-display-large);
+            font-weight: var(--font-weight-bold);
+            line-height: var(--lh-tight);
+            margin-bottom: 0;
+        }
+
+        &__title {
+            margin-bottom: 0;
+        }
+
+        &__text {
+            max-width: $text-width;
+            color: var(--color-on-bg);
+            margin-bottom: 0;
+        }
+
+        &__btn {
+            margin-top: var(--size-1);
+        }
+    }
+}
