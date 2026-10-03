@@ -1,0 +1,10 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .empty-state {
+        @include styles.feedback-item;
+        border: var(--border-width-medium) dashed var(--color-outline-variant);
+        background-color: var(--color-surface-low);
+        color: var(--color-on-bg);
+    }
+}

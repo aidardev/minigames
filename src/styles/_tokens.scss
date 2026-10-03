@@ -27,6 +27,10 @@
     --color-error: #b3261e;
     --color-price-free: #0b8a8f;
     --color-placeholder: #969696;
+    --color-success: #207e49;
+    --color-warning: #885a02;
+    --color-skeleton-base: var(--color-outline);
+    --color-skeleton-highlight: var(--color-white);
 
     // Borders
     --color-outline: #e5e7eb;
@@ -123,10 +127,16 @@
     --shadow-card: 0 2px 8px -4px rgba(0, 0, 0, 0.04), 0 14px 30px -10px rgba(0, 0, 0, 0.08);
     --shadow-btn: 0 10px 20px -10px rgba(0, 0, 0, 0.1);
 
+    // Durations
+    --duration-fast: 0.15s;
+    --duration-base: 0.25s;
+    --duration-slower: 0.45s;
+    --duration-shimmer: 1.4s;
+
     // Transitions
-    --transition-base: 0.25s ease;
-    --transition-fast: 0.15s ease;
-    --transition-slower: 0.45s ease;
+    --transition-fast: var(--duration-fast) ease;
+    --transition-base: var(--duration-base) ease;
+    --transition-slower: var(--duration-slower) ease;
 
     // Container
     --container-width: #{f.rem(1680px)};
@@ -159,8 +169,22 @@
     --z-sticky: 20;
     --z-overlay: 30;
     --z-modal: 40;
+    --z-snackbar: 50;
+
+    // Elements
+    --game-slide-height: #{f.rem(384px)};
+    --game-slide-radius: var(--corner-extra-large);
+
+    @include m.max-width(b.$br-lg) {
+        --game-slide-height: #{f.rem(280px)};
+        --game-slide-radius: var(--corner-large);
+    }
 
     @include m.max-width(b.$br-md) {
         --container-padding-x: var(--size-2);
+    }
+
+    @include m.max-width(b.$br-sm) {
+        --game-slide-height: #{f.rem(200px)};
     }
 }

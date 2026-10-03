@@ -1,34 +1,88 @@
-import { BaseComponent } from '../components/base-component';
+import type { BaseComponent } from '../components/base-component';
+import { isNavigateEvent, NAVIGATE_EVENT } from './navigation';
 
-type Routes = Record<string, new () => BaseComponent>;
-type RouteChangeListener = (path: string) => void;
+export interface Route {
+    path: string;
+    query: URLSearchParams;
+}
+
+export interface NavigateOptions {
+    // Replaces the current history entry instead of adding a new one.
+    replace?: boolean;
+}
+
+// Pages implement this to react to query changes without being rebuilt.
+export interface QueryAware {
+    onQueryChange(query: URLSearchParams): void;
+}
+
+type PageConstructor = new (query: URLSearchParams) => BaseComponent;
+type Routes = Record<string, PageConstructor>;
+type RouteChangeListener = (route: Route) => void;
+
+const PATH_ALIASES: Readonly<Record<string, string>> = { '/home': '/' };
+const APP_ENTRY_STATE = { spa: true } as const;
+
+function isAppEntry(): boolean {
+    const state: unknown = history.state;
+
+    return typeof state === 'object' && state !== null && 'spa' in state;
+}
+
+function isQueryAware(page: BaseComponent): page is BaseComponent & QueryAware {
+    return 'onQueryChange' in page && typeof page.onQueryChange === 'function';
+}
 
 export class Router {
+    private static normalize(path: string): string {
+        const trimmed = path.replace(/\/+$/, '') || '/';
+
+        return PATH_ALIASES[trimmed] ?? trimmed;
+    }
+
+    private static readRoute(): Route {
+        return {
+            path: this.normalize(location.pathname),
+            query: new URLSearchParams(location.search),
+        };
+    }
+
     private readonly outlet: HTMLElement;
     private readonly routes: Routes;
+    private readonly notFound: PageConstructor;
     private current: BaseComponent | undefined = undefined;
+    private currentPath: string | undefined = undefined;
     private listeners: RouteChangeListener[] = [];
 
-    constructor(outlet: HTMLElement, routes: Routes) {
+    constructor(outlet: HTMLElement, routes: Routes, notFound: PageConstructor) {
         this.outlet = outlet;
         this.routes = routes;
+        this.notFound = notFound;
+    }
+
+    private mount(route: Route): void {
+        const Page = this.routes[route.path] ?? this.notFound;
+
+        this.current?.destroy();
+        // The page receives the initial query so a deep link can restore its state immediately.
+        this.current = new Page(route.query);
+        this.currentPath = route.path;
+        this.outlet.append(this.current.element);
     }
 
     private render(): void {
-        const path = location.pathname;
-        const Page = this.routes[path];
+        const route = Router.readRoute();
 
-        this.current?.destroy();
-        this.current = Page ? new Page() : undefined;
-
-        if (this.current) {
-            this.outlet.append(this.current.element);
+        if (this.current && route.path === this.currentPath) {
+            // Same page, new query (a dialog opened, a filter changed): rebuilding would
+            // refetch everything and reset the page, so the page is only notified.
+            if (isQueryAware(this.current)) this.current.onQueryChange(route.query);
         } else {
-            this.outlet.textContent = '404';
+            this.mount(route);
         }
 
         for (const listener of this.listeners) {
-            listener(path);
+            listener(route);
         }
     }
 
@@ -37,14 +91,20 @@ export class Router {
     }
 
     public start(): void {
+        addEventListener(NAVIGATE_EVENT, (event: Event): void => {
+            if (isNavigateEvent(event)) this.navigate(event.detail.to, event.detail.options);
+        });
+
         addEventListener('popstate', (): void => this.render());
 
-        document.addEventListener('click', (event): void => {
-            const target = event.target;
-            if (!(target instanceof HTMLElement)) return;
+        document.addEventListener('click', (event: MouseEvent): void => {
+            // Leave new-tab and modified clicks to the browser.
+            if (event.defaultPrevented || event.button !== 0) return;
+            if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            if (!(event.target instanceof Element)) return;
 
-            const link = target.closest('a[data-link]');
-            if (!link) return;
+            const link = event.target.closest<HTMLAnchorElement>('a[data-link]');
+            if (!link || link.target === '_blank') return;
 
             event.preventDefault();
             this.navigate(link.getAttribute('href') ?? '/');
@@ -53,9 +113,43 @@ export class Router {
         this.render();
     }
 
-    public navigate(path: string): void {
-        history.pushState(undefined, '', path);
+    public navigate(to: string, { replace = false }: NavigateOptions = {}): void {
+        const target = new URL(to, location.href);
+        const url = `${target.pathname}${target.search}${target.hash}`;
+
+        // Navigating to the address we are already on must not add a history entry.
+        if (url === `${location.pathname}${location.search}${location.hash}`) return;
+
+        const isPageChange = Router.normalize(target.pathname) !== this.currentPath;
+
+        if (replace) {
+            history.replaceState(history.state, '', url);
+        } else {
+            history.pushState(APP_ENTRY_STATE, '', url);
+        }
+
         this.render();
-        window.scrollTo(0, 0);
+
+        // Query-only changes (pagination, filters) keep the scroll position.
+        if (isPageChange) window.scrollTo(0, 0);
+    }
+
+    /**
+     * Removes query params (e.g. a closed dialog) from the URL. If the current entry was
+     * created by in-app navigation, steps back so the history has no leftover duplicate;
+     * otherwise (deep link) replaces the entry, because going back would leave the site.
+     */
+    public removeQuery(...keys: string[]): void {
+        const url = new URL(location.href);
+
+        if (!keys.some((key: string): boolean => url.searchParams.has(key))) return;
+
+        if (isAppEntry()) {
+            history.back();
+            return;
+        }
+
+        for (const key of keys) url.searchParams.delete(key);
+        this.navigate(`${url.pathname}${url.search}`, { replace: true });
     }
 }

@@ -1,22 +1,15 @@
 import { BaseComponent } from '@/components/base-component';
 import { throttle } from '@/utils/throttle';
+import {
+    ALL_POSITION_CLASSES,
+    HIDDEN_CLASS,
+    POSITION_CLASSES,
+    SLIDE_CLASS,
+    SLIDER_CLASS,
+    TRACK_CLASS,
+} from './slider.constants';
 import './slider.scss';
-
-export interface SliderOptions {
-    className?: string;
-    trackClassName?: string;
-    slideClassName?: string;
-    // Autoplay interval in ms. Omit (or 0) to disable autoplay.
-    autoplayInterval?: number;
-    // Pointer travel (px) after which a pointerdown counts as a drag, not a click.
-    dragThreshold?: number;
-    // Pointer travel (px) after which a drag counts as a swipe (changes the active slide).
-    swipeThreshold?: number;
-}
-
-const POSITION_CLASSES = ['is-active', 'is-near', 'is-far'] as const;
-const HIDDEN_CLASS = 'is-hidden';
-const ALL_POSITION_CLASSES = [...POSITION_CLASSES, HIDDEN_CLASS];
+import type { SliderOptions } from './slider.types';
 
 export class Slider extends BaseComponent<'div'> {
     private readonly track: HTMLUListElement;
@@ -85,7 +78,7 @@ export class Slider extends BaseComponent<'div'> {
     }, 400);
 
     constructor(options: SliderOptions = {}) {
-        super('div', 'slider');
+        super('div', SLIDER_CLASS);
 
         this.slideClassName = options.slideClassName;
         this.autoplayInterval = options.autoplayInterval;
@@ -96,7 +89,7 @@ export class Slider extends BaseComponent<'div'> {
         this.applyClassName(options.className);
 
         this.track = document.createElement('ul');
-        this.track.classList.add('slider__track', 'list-unstyled');
+        this.track.classList.add(TRACK_CLASS, 'list-unstyled');
 
         if (options.trackClassName) {
             this.track.classList.add(options.trackClassName);
@@ -110,7 +103,7 @@ export class Slider extends BaseComponent<'div'> {
     private createSlide(element: HTMLElement): HTMLLIElement {
         const slide = document.createElement('li');
 
-        slide.classList.add('slider__slide');
+        slide.classList.add(SLIDE_CLASS);
 
         if (this.slideClassName) {
             slide.classList.add(this.slideClassName);

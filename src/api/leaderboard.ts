@@ -1,13 +1,8 @@
 import type { LeaderboardPlayer, LeaderboardResponse } from '@/types/leaderboard.types';
+import { apiClient } from './api-client';
 
-export async function getLeaderboard(): Promise<LeaderboardPlayer[]> {
-    const response = await fetch('/mock-data/leaderboard.json');
+export async function getLeaderboard(signal?: AbortSignal): Promise<LeaderboardPlayer[]> {
+    const response = await apiClient<LeaderboardResponse>('/leaderboard', { signal });
 
-    if (!response.ok) {
-        throw new Error(`Failed to load leaderboard: ${response.status}`);
-    }
-
-    const seed: LeaderboardResponse = await response.json();
-
-    return seed.data;
+    return response.data;
 }

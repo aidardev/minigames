@@ -4,6 +4,7 @@
     $hero-img-height: styles.rem(220px);
 
     .game-details {
+        position: relative;
         &__hero-img {
             height: $hero-img-height;
             width: 100%;
@@ -15,7 +16,7 @@
             right: var(--size-2);
         }
         &__body {
-            padding: var(--size-3);
+            padding: var(--size-3) var(--size-3) 0;
             display: flex;
             flex-direction: column;
             gap: var(--size-3);
@@ -126,6 +127,7 @@
             display: flex;
             flex-direction: column;
             gap: var(--size-2);
+            padding: 0 var(--size-3) var(--size-3);
         }
         &__comments-list {
             display: flex;
@@ -147,6 +149,48 @@
                     background-color: nth($avatar-colors, $i);
                 }
             }
+        }
+
+        &__content-region,
+        &__comments-region {
+            &:not(:last-child) {
+                margin-bottom: var(--size-3);
+            }
+        }
+
+        &__content-region {
+            &:has(> .error-banner) {
+                padding: var(--size-9) var(--size-3) 0;
+            }
+        }
+
+        &__comments-region {
+            &:has(> .error-banner) {
+                padding: 0 var(--size-3) var(--size-3);
+            }
+        }
+
+        &__skeleton-hero {
+            height: $hero-img-height;
+            border-radius: 0;
+        }
+        &__skeleton-title {
+            height: var(--size-5);
+            width: 60%;
+        }
+        &__skeleton-text {
+            height: var(--size-2);
+        }
+        &__skeleton-spec {
+            height: var(--size-7);
+        }
+        &__skeleton-button {
+            height: var(--size-6);
+            flex: 1;
+        }
+        &__skeleton-section-title {
+            height: var(--size-2);
+            width: 30%;
         }
     }
 
@@ -237,6 +281,7 @@
         &__name {
             font-size: var(--fs-body-small);
             line-height: var(--lh-heading);
+            margin-bottom: 0;
         }
         &__date {
             font-size: var(--fs-label-medium);
@@ -286,10 +331,26 @@
             }
 
             &.is-active {
-                color: var(--color-like);
                 svg {
                     color: var(--color-like);
                 }
+            }
+        }
+
+        &__skeleton {
+            height: var(--size-2);
+            &--avatar {
+                flex-shrink: 0;
+                width: var(--size-3-5);
+                height: var(--size-3-5);
+                border-radius: var(--corner-full);
+            }
+            &--name {
+                width: var(--size-13);
+            }
+            &--like {
+                align-self: flex-start;
+                width: var(--size-5);
             }
         }
     }
@@ -329,6 +390,17 @@
                 outline: none;
                 box-shadow: var(--ring-medium-on-primary);
             }
+        }
+
+        &__skeleton-avatar {
+            flex-shrink: 0;
+            width: var(--size-5);
+            height: var(--size-5);
+            border-radius: var(--corner-full);
+        }
+        &__skeleton-input {
+            flex: 1 1 auto;
+            height: var(--size-6);
         }
     }
 }
