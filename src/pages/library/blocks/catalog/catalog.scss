@@ -10,8 +10,9 @@
             padding-block: var(--size-2);
         }
 
-        &__chip-group {
+        &__categories {
             flex: 1 1 auto;
+            min-width: 0;
         }
 
         &__sort {
@@ -39,6 +40,19 @@
             @include styles.max-width(styles.$br-sm) {
                 padding-block: var(--size-3);
             }
+        }
+
+        &__skeleton-chip {
+            flex-shrink: 0;
+            width: var(--size-9);
+            height: var(--size-4);
+            border-radius: var(--corner-extra-large);
+        }
+
+        &__skeleton-pagination {
+            max-width: calc(var(--size-15) * 3);
+            height: var(--size-5);
+            margin-inline: auto;
         }
     }
 }

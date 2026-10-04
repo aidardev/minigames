@@ -1,6 +1,8 @@
 import type { DropdownOption } from '@/components/dropdown/dropdown';
 
 export const GAMES_PER_PAGE = 6;
+export const DEFAULT_CATEGORY = 'all';
+export const DEFAULT_SORT = 'rating-desc';
 
 export const SORT_OPTIONS: DropdownOption[] = [
     {

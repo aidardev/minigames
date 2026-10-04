@@ -1,66 +1,142 @@
-import { openGameDetails } from '@/app/navigation';
+import { ApiError } from '@/api/api-error';
+import { getCategories } from '@/api/categories';
+import { getGamesPage } from '@/api/games';
+import { setQueryParameters } from '@/app/navigation';
+import { AsyncRegion } from '@/components/async-region/async-region';
 import { BaseComponent } from '@/components/base-component';
 import { ChipGroup } from '@/components/chip-group/chip-group';
 import type { ChipOption } from '@/components/chip-group/chip-group.types';
 import { Dropdown } from '@/components/dropdown/dropdown';
-import { Pagination } from '@/components/pagination/pagination';
-import type { Game, GameCategory } from '@/types/game.types';
-import { GameGrid } from '../game-grid/game-grid';
+import { EmptyState } from '@/components/empty-state/empty-state';
+import type { GameCategory, GamesPage } from '@/types/game.types';
+import { html } from '@/utils/html';
+import { isSameLibraryQuery, type LibraryQuery } from '../../library-query';
+import { CatalogResults } from './catalog-results';
+import { CatalogResultsSkeleton, CategoriesSkeleton } from './catalog-skeletons';
 import { GAMES_PER_PAGE, SORT_OPTIONS } from './catalog.constants';
 import './catalog.scss';
 
-export class CatalogSection extends BaseComponent {
-    constructor(games: Game[], categories: GameCategory[]) {
-        super('section', 'section-catalog');
+export class CatalogSection extends BaseComponent<'section'> {
+    // The URL-derived state: the single input of every games request.
+    private urlQuery: LibraryQuery;
+    // Exists once categories are loaded; kept so Back/Forward can move the highlight.
+    private chipGroup: ChipGroup | undefined;
+    private readonly dropdown: Dropdown;
+    private readonly categoriesRegion: AsyncRegion<GameCategory[]>;
+    private readonly resultsRegion: AsyncRegion<GamesPage>;
 
-        this.element.innerHTML = /* HTML */ `
+    constructor(query: LibraryQuery) {
+        super('section', 'section-catalog');
+        this.urlQuery = query;
+
+        this.setHtml(html`
             <h2 class="sr-only">Game catalog</h2>
             <div class="catalog container">
                 <div class="catalog__controls"></div>
-                <div class="catalog__grid"></div>
-                <div class="catalog__pagination"></div>
             </div>
-        `;
+        `);
 
-        const defaultCategory = categories.find(
-            (category: GameCategory): boolean => category.isDefault,
+        this.dropdown = this.adopt(
+            new Dropdown({
+                options: SORT_OPTIONS,
+                activeId: query.sort,
+                modifier: 'catalog__sort',
+                // A new sort starts again from the first page.
+                onChange: (sort: string): void => setQueryParameters({ sort, page: '1' }),
+            }),
         );
 
-        const chipOptions = categories.map((category: GameCategory): ChipOption => ({
-            id: category.slug,
-            label: category.label,
-        }));
+        this.categoriesRegion = this.adopt(
+            new AsyncRegion<GameCategory[]>(
+                {
+                    load: (signal: AbortSignal): Promise<GameCategory[]> => getCategories(signal),
+                    renderSkeleton: (): CategoriesSkeleton => new CategoriesSkeleton(),
+                    renderSuccess: (categories: GameCategory[]): ChipGroup =>
+                        this.createChipGroup(categories),
+                    renderEmpty: (): EmptyState => new EmptyState({ title: 'No categories' }),
+                },
+                'catalog__categories',
+            ),
+        );
 
+        this.resultsRegion = this.adopt(
+            new AsyncRegion<GamesPage>(
+                {
+                    // Reads this.urlQuery at call time, so every load uses the latest URL state.
+                    load: (signal: AbortSignal): Promise<GamesPage> =>
+                        getGamesPage({ ...this.urlQuery, limit: GAMES_PER_PAGE }, signal),
+                    renderSkeleton: (): CatalogResultsSkeleton => new CatalogResultsSkeleton(),
+                    // An empty list is not an "empty region": CatalogResults draws the empty
+                    // state itself so the pagination stays visible.
+                    renderSuccess: (data: GamesPage): CatalogResults => this.createResults(data),
+                    renderError: (error: unknown): CatalogResults | undefined =>
+                        this.renderInvalidParameters(error),
+                },
+                'catalog__results',
+            ),
+        );
+
+        this.query('.catalog__controls')?.append(
+            this.categoriesRegion.element,
+            this.dropdown.element,
+        );
+        this.query('.catalog')?.append(this.resultsRegion.element);
+
+        void this.categoriesRegion.load();
+        void this.resultsRegion.load();
+    }
+
+    private createChipGroup(categories: GameCategory[]): ChipGroup {
         const chipGroup = new ChipGroup({
-            options: chipOptions,
-            activeId: defaultCategory?.slug ?? categories[0]?.slug ?? '',
+            options: categories.map((category: GameCategory): ChipOption => ({
+                id: category.slug,
+                label: category.label,
+            })),
+            activeId: this.urlQuery.category,
             modifier: 'catalog__chip-group',
+            // A new category starts again from the first page.
+            onChange: (category: string): void => setQueryParameters({ category, page: '1' }),
         });
 
-        const dropdown = new Dropdown({
-            options: SORT_OPTIONS,
-            activeId: SORT_OPTIONS[0].id,
-            modifier: 'catalog__sort',
+        this.chipGroup = chipGroup;
+
+        return chipGroup;
+    }
+
+    private createResults(data: GamesPage): CatalogResults {
+        return new CatalogResults({
+            ...data,
+            onPageChange: (page: number): void => {
+                // Re-selecting the page that is already in the URL changes nothing.
+                if (page === this.urlQuery.page) return;
+
+                setQueryParameters({ page: String(page) });
+
+                this.element.scrollIntoView({ block: 'start' });
+            },
         });
+    }
 
-        const totalPages = Math.ceil(games.length / GAMES_PER_PAGE);
+    // The API answers 400 for filter values it does not know (a hand-edited URL). That means
+    // "no data for these filters", not an outage, so it gets the empty-results view.
+    private renderInvalidParameters(error: unknown): CatalogResults | undefined {
+        if (!(error instanceof ApiError) || error.status !== 400) return undefined;
 
-        const pagination = new Pagination({
-            totalPages,
-            currentPage: 1,
-        });
+        return this.createResults({ games: [], page: 1, totalPages: 1 });
+    }
 
-        const grid = new GameGrid({
-            games: games.slice(0, GAMES_PER_PAGE),
+    /**
+    Called by the page whenever the URL changes while Library is open.
+    */
+    public update(next: LibraryQuery): void {
+        const previous = this.urlQuery;
+        this.urlQuery = next;
 
-            onGameDetailsClick: openGameDetails,
-        });
+        // The controls follow the URL (Back/Forward, deep links, corrected values).
+        this.chipGroup?.setActive(next.category);
+        this.dropdown.setActive(next.sort);
 
-        this.element
-            .querySelector('.catalog__controls')
-            ?.append(chipGroup.element, dropdown.element);
-
-        this.element.querySelector('.catalog__grid')?.append(grid.element);
-        this.element.querySelector('.catalog__pagination')?.append(pagination.element);
+        // Other query changes (e.g. ?game= opening a dialog) must not refetch the list.
+        if (!isSameLibraryQuery(previous, next)) void this.resultsRegion.load();
     }
 }

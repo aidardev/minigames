@@ -1,13 +1,8 @@
 import type { CategoriesResponse, GameCategory } from '@/types/game.types';
+import { apiClient } from './api-client';
 
-export async function getCategories(): Promise<GameCategory[]> {
-    const response = await fetch('/mock-data/categories.json');
+export async function getCategories(signal?: AbortSignal): Promise<GameCategory[]> {
+    const response = await apiClient<CategoriesResponse>('/categories', { signal });
 
-    if (!response.ok) {
-        throw new Error(`Failed to load categories: ${response.status}`);
-    }
-
-    const payload: CategoriesResponse = await response.json();
-
-    return payload.data;
+    return response.data;
 }

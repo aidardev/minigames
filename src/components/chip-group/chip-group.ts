@@ -1,3 +1,4 @@
+import { html, SafeHtml } from '@/utils/html';
 import { BaseComponent } from '../base-component';
 import './chip-group.scss';
 import type { ChipGroupProperties, ChipOption } from './chip-group.types';
@@ -28,26 +29,24 @@ export class ChipGroup extends BaseComponent {
 
         if (modifier) this.element.classList.add(modifier);
 
-        this.element.innerHTML = /* HTML */ `
-            ${options
-                .map(
-                    (option: ChipOption): string => /* HTML */ `
-                        <button
-                            type="button"
-                            class="chip-group__chip chip ${option.id === this.activeId ? this.activeClass : ''}"
-                            data-id="${option.id}"
-                        >
-                            ${option.label}
-                        </button>
-                    `,
-                )
-                .join('')}
-        `;
+        this.setHtml(html`
+            ${options.map(
+                (option: ChipOption): SafeHtml => html`
+                    <button
+                        type="button"
+                        class="chip-group__chip chip ${option.id === this.activeId ? this.activeClass : ''}"
+                        data-id="${option.id}"
+                    >
+                        ${option.label}
+                    </button>
+                `,
+            )}
+        `);
 
         this.element.addEventListener('click', this.handleClick);
     }
 
-    private setActive(id: string): void {
+    public setActive(id: string): void {
         this.activeId = id;
 
         for (const chip of this.element.querySelectorAll<HTMLElement>('.chip-group__chip')) {

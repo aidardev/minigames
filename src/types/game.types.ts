@@ -35,3 +35,9 @@ export interface CategoriesResponse {
         description: string;
     };
 }
+
+export interface GamesPage {
+    games: Game[];
+    page: number;
+    totalPages: number;
+}
