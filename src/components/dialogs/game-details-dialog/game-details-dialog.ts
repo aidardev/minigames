@@ -1,7 +1,9 @@
+import { isNotFoundError } from '@/api/api-error';
 import { getComments } from '@/api/comments';
 import { getGameDetails } from '@/api/game-details';
 import closeIcon from '@/assets/icons/close-alt.svg?raw';
 import { AsyncRegion } from '@/components/async-region/async-region';
+import { EmptyState } from '@/components/empty-state/empty-state';
 import type { GameComments, GameDetails } from '@/types/game-details.types';
 import { html, unsafeHtml } from '@/utils/html';
 import { Dialog } from '../dialog';
@@ -52,6 +54,8 @@ export class GameDetailsDialog extends Dialog {
                     renderSkeleton: (): GameDetailsSkeleton => new GameDetailsSkeleton(),
                     renderSuccess: (game: GameDetails): GameDetailsContent =>
                         new GameDetailsContent(game),
+                    renderError: (error: unknown): EmptyState | undefined =>
+                        isNotFoundError(error) ? this.createGameNotFound() : undefined,
                 },
                 'game-details__content-region',
             ),
@@ -64,6 +68,8 @@ export class GameDetailsDialog extends Dialog {
                     renderSkeleton: (): CommentsSkeleton => new CommentsSkeleton(),
                     renderSuccess: (data: GameComments): CommentsSection =>
                         new CommentsSection(data),
+                    renderError: (error) =>
+                        isNotFoundError(error) ? document.createElement('div') : undefined,
                 },
                 'game-details__comments-region',
             ),
@@ -76,5 +82,13 @@ export class GameDetailsDialog extends Dialog {
 
         this.detailsRegion.load();
         this.commentsRegion.load();
+    }
+
+    private createGameNotFound(): EmptyState {
+        return new EmptyState({
+            title: 'Game not found',
+            description: 'This game doesn’t exist or may have been removed.',
+            action: { label: 'Close', onClick: (): void => this.close() },
+        });
     }
 }

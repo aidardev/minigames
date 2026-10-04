@@ -51,7 +51,7 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
         this.element.addEventListener('close', this.handleClose);
     }
 
-    protected setContent(content: string | SafeHtml | Node): void {
+    protected setContent(content: SafeHtml | Node): void {
         if (content instanceof SafeHtml) {
             this.content.innerHTML = content.value;
         } else if (typeof content === 'string') {

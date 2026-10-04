@@ -1,6 +1,8 @@
 @use '@/styles/index' as styles;
 
 @layer components {
+    $skeleton-pagination-width: styles.rem(320px);
+
     .catalog {
         &__controls {
             display: flex;
@@ -50,7 +52,7 @@
         }
 
         &__skeleton-pagination {
-            max-width: calc(var(--size-15) * 3);
+            max-width: $skeleton-pagination-width;
             height: var(--size-5);
             margin-inline: auto;
         }

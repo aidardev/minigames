@@ -1,3 +1,4 @@
+import { html } from '@/utils/html';
 import { Dialog } from '../dialog';
 import './auth-dialog.scss';
 import { LoginForm } from './login-form';
@@ -38,7 +39,7 @@ export class AuthDialog extends Dialog {
 
         this.onTabChange = onTabChange;
 
-        this.setContent(/* HTML */ `
+        this.setContent(html`
             <div class="auth">
                 <div class="auth__tabs" role="tablist" aria-label="Login or register">
                     <button

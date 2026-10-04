@@ -43,7 +43,7 @@ class SnackbarItem extends BaseComponent<'div'> {
     private async leave(): Promise<void> {
         this.element.classList.add('snackbar--leaving');
         await Promise.allSettled(
-            this.element.getAnimations().map((animation) => animation.finished),
+            this.element.getAnimations().map((animation): Promise<unknown> => animation.finished),
         );
         this.destroy();
         this.onClosed();

@@ -1,3 +1,5 @@
+import { HttpStatus } from '@/utils/status-codes';
+
 export interface ApiErrorBody {
     error: string;
 }
@@ -14,4 +16,12 @@ export class ApiError extends Error {
 
 export function getErrorMessage(error: unknown): string {
     return error instanceof ApiError ? error.message : 'Something went wrong. Please try again.';
+}
+
+export function isNotFoundError(error: unknown): boolean {
+    return error instanceof ApiError && error.status === HttpStatus.NOT_FOUND;
+}
+
+export function isBadRequestError(error: unknown): boolean {
+    return error instanceof ApiError && error.status === HttpStatus.BAD_REQUEST;
 }

@@ -86,6 +86,7 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                         type="button"
                         data-action="favorite"
                         aria-pressed="${String(this.isFavorite)}"
+                        disabled
                     >
                         ${unsafeHtml(heartIcon)}
                         <span data-favorite-label>
