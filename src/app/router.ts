@@ -21,13 +21,6 @@ type Routes = Record<string, PageConstructor>;
 type RouteChangeListener = (route: Route) => void;
 
 const PATH_ALIASES: Readonly<Record<string, string>> = { '/home': '/' };
-const APP_ENTRY_STATE = { spa: true } as const;
-
-function isAppEntry(): boolean {
-    const state: unknown = history.state;
-
-    return typeof state === 'object' && state !== null && 'spa' in state;
-}
 
 function isQueryAware(page: BaseComponent): page is BaseComponent & QueryAware {
     return 'onQueryChange' in page && typeof page.onQueryChange === 'function';
@@ -125,7 +118,7 @@ export class Router {
         if (replace) {
             history.replaceState(history.state, '', url);
         } else {
-            history.pushState(APP_ENTRY_STATE, '', url);
+            history.pushState(undefined, '', url);
         }
 
         this.render();
@@ -135,21 +128,16 @@ export class Router {
     }
 
     /**
-     * Removes query params (e.g. a closed dialog) from the URL. If the current entry was
-     * created by in-app navigation, steps back so the history has no leftover duplicate;
-     * otherwise (deep link) replaces the entry, because going back would leave the site.
+     * Removes query params (e.g. a closed dialog) from the URL as a new history entry,
+     * so open/close actions can be walked through with Back and Forward.
      */
     public removeQuery(...keys: string[]): void {
         const url = new URL(location.href);
 
         if (!keys.some((key: string): boolean => url.searchParams.has(key))) return;
 
-        if (isAppEntry()) {
-            history.back();
-            return;
-        }
-
         for (const key of keys) url.searchParams.delete(key);
-        this.navigate(`${url.pathname}${url.search}`, { replace: true });
+
+        this.navigate(`${url.pathname}${url.search}${url.hash}`);
     }
 }
