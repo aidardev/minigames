@@ -159,7 +159,7 @@
         }
 
         &__content-region {
-            &:has(> .error-banner) {
+            &:has(> .error-banner, .empty-state) {
                 padding: var(--size-9) var(--size-3) 0;
             }
         }
