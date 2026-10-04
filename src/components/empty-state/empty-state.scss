@@ -3,11 +3,11 @@
 @layer components {
     .empty-state {
         @include styles.feedback-item;
-        border: var(--border-width-medium) dashed var(--color-outline-variant);
+        border: var(--border-width-thin) solid var(--color-outline);
         background-color: var(--color-surface-low);
-        color: var(--color-on-bg);
+
         &__btn {
-            margin-top: var(--size-1);
+            margin-top: var(--size-1-5);
         }
     }
 }
