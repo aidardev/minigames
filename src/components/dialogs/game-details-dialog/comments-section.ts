@@ -124,7 +124,7 @@ export class CommentsSection extends BaseComponent<'section'> {
                     <p class="comment__text">${comment.text}</p>
 
                     <button
-                        class="comment__like btn"
+                        class="comment__like btn${isLiked ? ' is-active' : ''}"
                         type="button"
                         data-action="like-comment"
                         data-comment-id="${comment.commentId}"
