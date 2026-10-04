@@ -1,4 +1,5 @@
 import { BaseComponent } from '@/components/base-component';
+import { renderGameCardSkeleton } from '@/components/game-card/game-card-skeleton';
 import { skeletonHtml } from '@/components/skeleton/skeleton';
 import { html, type SafeHtml } from '@/utils/html';
 import { GAMES_PER_PAGE } from './catalog.constants';
@@ -15,11 +16,8 @@ export class CatalogResultsSkeleton extends BaseComponent<'div'> {
                 <ul class="game-grid list-unstyled">
                     ${Array.from(
                         { length: GAMES_PER_PAGE },
-                        (): SafeHtml => html`
-                            <li class="game-grid__item">
-                                ${skeletonHtml('catalog__skeleton-card')}
-                            </li>
-                        `,
+                        (): SafeHtml =>
+                            html`<li class="game-grid__item">${renderGameCardSkeleton()}</li>`,
                     )}
                 </ul>
             </div>

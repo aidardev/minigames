@@ -132,6 +132,46 @@
             font-size: var(--fs-body-small);
         }
 
+        &__skeleton-img {
+            border-radius: 0;
+        }
+
+        &__skeleton-title {
+            flex: 1 1 auto;
+            height: var(--size-3-5);
+            max-width: 50%;
+        }
+
+        &__skeleton-badge {
+            width: var(--size-7);
+            height: var(--size-3);
+            border-radius: var(--corner-extra-large);
+        }
+
+        &__skeleton-text {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-1);
+        }
+
+        &__skeleton-line {
+            height: var(--size-2);
+
+            &--short {
+                width: 60%;
+            }
+        }
+
+        &__skeleton-meta {
+            width: var(--size-13);
+            height: var(--size-3);
+        }
+
+        &__skeleton-button {
+            width: var(--size-11);
+            height: var(--size-5);
+        }
+
         @container game-card (max-width: #{$cq-compact}) {
             &__inner {
                 min-height: $card-min-height-compact;
@@ -206,6 +246,15 @@
             &__details {
                 width: 100%;
                 padding-block: var(--size-1-25);
+            }
+
+            &__skeleton-button {
+                width: 100%;
+            }
+
+            &__skeleton-title {
+                max-width: 100%;
+                width: 100%;
             }
         }
     }
