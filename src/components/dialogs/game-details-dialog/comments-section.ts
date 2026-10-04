@@ -63,13 +63,15 @@ export class CommentsSection extends BaseComponent<'section'> {
                     name="comment"
                     rows="1"
                     maxlength="1000"
-                    placeholder="Write a comment..."
+                    placeholder="Sign in to write a comment"
                     data-comment-input
+                    disabled
                 ></textarea>
                 <button
                     class="comment-form__submit btn btn--icon btn--on-primary"
                     type="submit"
                     aria-label="Submit comment"
+                    disabled
                 >
                     ${unsafeHtml(sendIcon)}
                 </button>
@@ -130,6 +132,7 @@ export class CommentsSection extends BaseComponent<'section'> {
                         data-comment-id="${comment.commentId}"
                         aria-pressed="${String(isLiked)}"
                         aria-label="${isLiked ? 'Unlike' : 'Like'} comment"
+                        disabled
                     >
                         ${unsafeHtml(heartIcon)}
                         <span data-comment-like-count>
