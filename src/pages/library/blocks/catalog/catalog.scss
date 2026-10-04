@@ -10,8 +10,9 @@
             padding-block: var(--size-2);
         }
 
-        &__chip-group {
+        &__categories {
             flex: 1 1 auto;
+            min-width: 0;
         }
 
         &__sort {

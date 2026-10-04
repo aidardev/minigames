@@ -42,14 +42,12 @@ export class Dropdown extends BaseComponent {
         if (!optionElement) return;
 
         const id = optionElement.dataset.id;
-        if (!id || id === this.activeId) {
+        if (!id) {
             this.close();
             return;
         }
 
-        this.activeId = id;
-        this.updateValueLabel();
-        this.renderOptions();
+        this.setActive(id);
         this.close();
         this.onChange?.(id);
     };
@@ -143,5 +141,13 @@ export class Dropdown extends BaseComponent {
         document.removeEventListener('click', this.handleOutsideClick);
         document.removeEventListener('keydown', this.handleKeydown);
         super.destroy();
+    }
+
+    public setActive(id: string): void {
+        if (id === this.activeId) return;
+
+        this.activeId = id;
+        this.updateValueLabel();
+        this.renderOptions();
     }
 }
