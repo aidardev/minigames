@@ -1,3 +1,5 @@
+const HTTP_NOT_FOUND = 404;
+
 export interface ApiErrorBody {
     error: string;
 }
@@ -14,4 +16,8 @@ export class ApiError extends Error {
 
 export function getErrorMessage(error: unknown): string {
     return error instanceof ApiError ? error.message : 'Something went wrong. Please try again.';
+}
+
+export function isNotFoundError(error: unknown): boolean {
+    return error instanceof ApiError && error.status === HTTP_NOT_FOUND;
 }
