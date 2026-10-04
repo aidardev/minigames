@@ -150,12 +150,7 @@ export class Pagination extends BaseComponent {
     }
 
     private goTo(page: number): void {
-        const normalizedPage = this.normalizePage(page);
-        if (normalizedPage === this.currentPage) {
-            return;
-        }
-
-        this.currentPage = normalizedPage;
+        this.currentPage = this.normalizePage(page);
         this.updateState();
         this.onChange?.(this.currentPage);
     }

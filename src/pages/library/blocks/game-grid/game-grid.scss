@@ -14,15 +14,6 @@
 
         &__item {
             display: flex;
-
-            &--empty {
-                grid-column: 1 / -1;
-            }
-        }
-
-        &__empty {
-            text-align: center;
-            width: 100%;
         }
     }
 }
