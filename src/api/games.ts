@@ -1,16 +1,27 @@
-import type { Game, GamesResponse } from '@/types/game.types';
+import type { Game, GamesPage, GamesResponse } from '@/types/game.types';
 import { apiClient } from './api-client';
 
-export async function getGames(): Promise<Game[]> {
-    const response = await fetch('/mock-data/all-games-seed.json');
+export interface GamesPageParameters {
+    category: string;
+    sort: string;
+    page: number;
+    limit: number;
+}
 
-    if (!response.ok) {
-        throw new Error(`Failed to load games: ${response.status}`);
-    }
+export async function getGamesPage(
+    { category, sort, page, limit }: GamesPageParameters,
+    signal?: AbortSignal,
+): Promise<GamesPage> {
+    const response = await apiClient<GamesResponse>('/games', {
+        query: { category, sort, page, limit },
+        signal,
+    });
 
-    const seed: GamesResponse = await response.json();
-
-    return seed.data;
+    return {
+        games: response.data,
+        page: response.meta.page,
+        totalPages: response.meta.totalPages,
+    };
 }
 
 export async function getFeaturedGames(signal?: AbortSignal): Promise<Game[]> {
