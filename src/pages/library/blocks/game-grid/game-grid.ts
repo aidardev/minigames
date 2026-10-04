@@ -43,9 +43,4 @@ export class GameGrid extends BaseComponent {
             this.element.append(item);
         }
     }
-
-    public override destroy(): void {
-        this.element.removeEventListener('click', this.handleClick);
-        super.destroy();
-    }
 }

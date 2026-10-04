@@ -51,9 +51,4 @@ export class GameSlide extends BaseComponent {
 
         this.element.addEventListener('click', this.handleClick);
     }
-
-    public override destroy(): void {
-        this.element.removeEventListener('click', this.handleClick);
-        super.destroy();
-    }
 }
