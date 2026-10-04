@@ -1,4 +1,4 @@
-import { ApiError } from '@/api/api-error';
+import { isBadRequestError } from '@/api/api-error';
 import { getCategories } from '@/api/categories';
 import { getGamesPage } from '@/api/games';
 import { setQueryParameters } from '@/app/navigation';
@@ -120,7 +120,7 @@ export class CatalogSection extends BaseComponent<'section'> {
     // The API answers 400 for filter values it does not know (a hand-edited URL). That means
     // "no data for these filters", not an outage, so it gets the empty-results view.
     private renderInvalidParameters(error: unknown): CatalogResults | undefined {
-        if (!(error instanceof ApiError) || error.status !== 400) return undefined;
+        if (!isBadRequestError(error)) return undefined;
 
         return this.createResults({ games: [], page: 1, totalPages: 1 });
     }

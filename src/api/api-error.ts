@@ -1,4 +1,4 @@
-const HTTP_NOT_FOUND = 404;
+import { HttpStatus } from '@/utils/status-codes';
 
 export interface ApiErrorBody {
     error: string;
@@ -19,5 +19,9 @@ export function getErrorMessage(error: unknown): string {
 }
 
 export function isNotFoundError(error: unknown): boolean {
-    return error instanceof ApiError && error.status === HTTP_NOT_FOUND;
+    return error instanceof ApiError && error.status === HttpStatus.NOT_FOUND;
+}
+
+export function isBadRequestError(error: unknown): boolean {
+    return error instanceof ApiError && error.status === HttpStatus.BAD_REQUEST;
 }
