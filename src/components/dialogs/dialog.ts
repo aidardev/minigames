@@ -54,8 +54,6 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
     protected setContent(content: SafeHtml | Node): void {
         if (content instanceof SafeHtml) {
             this.content.innerHTML = content.value;
-        } else if (typeof content === 'string') {
-            this.content.innerHTML = content;
         } else {
             this.content.replaceChildren(content);
         }
