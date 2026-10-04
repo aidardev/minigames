@@ -1,0 +1,13 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .empty-state {
+        @include styles.feedback-item;
+        border: var(--border-width-thin) solid var(--color-outline);
+        background-color: var(--color-surface-low);
+
+        &__btn {
+            margin-top: var(--size-1-5);
+        }
+    }
+}

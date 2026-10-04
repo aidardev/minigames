@@ -36,33 +36,11 @@ export class GameGrid extends BaseComponent {
     private render(games: Game[]): void {
         this.element.replaceChildren();
 
-        if (games.length === 0) {
-            const emptyItem = document.createElement('li');
-            emptyItem.className = 'game-grid__item game-grid__item--empty';
-
-            const emptyText = document.createElement('p');
-            emptyText.className = 'game-grid__empty';
-            emptyText.textContent = 'No games found.';
-
-            emptyItem.append(emptyText);
-            this.element.append(emptyItem);
-            return;
-        }
-
         for (const game of games) {
             const item = document.createElement('li');
             item.className = 'game-grid__item';
             item.append(new GameCard(game).element);
             this.element.append(item);
         }
-    }
-
-    public update(games: Game[]): void {
-        this.render(games);
-    }
-
-    public override destroy(): void {
-        this.element.removeEventListener('click', this.handleClick);
-        super.destroy();
     }
 }

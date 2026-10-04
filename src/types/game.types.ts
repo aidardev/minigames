@@ -7,7 +7,19 @@ export interface Game {
     rating: number;
     likesCount: number;
     cardImage: string;
-    featured: boolean;
+}
+
+export interface GamesMeta {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    appliedFilter: Record<string, string | boolean>;
+}
+
+export interface GamesResponse {
+    data: Game[];
+    meta: GamesMeta;
 }
 
 export interface GameCategory {
@@ -24,11 +36,8 @@ export interface CategoriesResponse {
     };
 }
 
-export interface GamesSeedResponse {
-    data: Game[];
-    meta: {
-        totalItems: number;
-        description: string;
-        featuredCount: number;
-    };
+export interface GamesPage {
+    games: Game[];
+    page: number;
+    totalPages: number;
 }

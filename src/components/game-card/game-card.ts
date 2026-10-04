@@ -3,6 +3,7 @@ import starIcon from '@/assets/icons/star.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import type { Game } from '@/types/game.types';
 import { formatCompactNumber } from '@/utils/formatters';
+import { html, unsafeHtml } from '@/utils/html';
 import './game-card.scss';
 
 export class GameCard extends BaseComponent {
@@ -11,7 +12,7 @@ export class GameCard extends BaseComponent {
 
         const isFree = game.price === 'Free';
 
-        this.element.innerHTML = /* HTML */ `
+        this.setHtml(html`
             <div class="game-card__inner">
                 <img
                     class="game-card__img"
@@ -33,11 +34,11 @@ export class GameCard extends BaseComponent {
                     <div class="game-card__footer">
                         <div class="game-card__meta">
                             <div class="game-card__meta-item meta-item meta-item--rating">
-                                ${starIcon}
+                                ${unsafeHtml(starIcon)}
                                 <span class="meta-item__value">${game.rating}</span>
                             </div>
                             <div class="game-card__meta-item meta-item meta-item--likes">
-                                ${heartIcon}
+                                ${unsafeHtml(heartIcon)}
                                 <span class="meta-item__value"
                                     >${formatCompactNumber(game.likesCount)}</span
                                 >
@@ -58,6 +59,6 @@ export class GameCard extends BaseComponent {
                     </div>
                 </div>
             </div>
-        `;
+        `);
     }
 }

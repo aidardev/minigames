@@ -2,7 +2,9 @@ import { Footer } from '@/components/footer/footer';
 import { Header } from '@/components/header/header';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
-import { Router } from './router';
+import { NotFoundPage } from '@/pages/not-found/not-found';
+import { DialogController } from './dialog-controller';
+import { Router, type Route } from './router';
 
 export function startApp(): void {
     const appRoot = document.createElement('div');
@@ -18,12 +20,18 @@ export function startApp(): void {
 
     document.body.prepend(appRoot);
 
-    const router = new Router(pageOutlet, {
-        '/': HomePage,
-        '/library': LibraryPage,
-    });
+    const router = new Router(
+        pageOutlet,
+        {
+            '/': HomePage,
+            '/library': LibraryPage,
+        },
+        NotFoundPage,
+    );
 
-    router.onRouteChange((path: string): void => header.setActivePath(path));
+    new DialogController(router).start();
+
+    router.onRouteChange(({ path }: Route): void => header.setActivePath(path));
 
     router.start();
 }

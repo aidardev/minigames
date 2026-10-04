@@ -1,3 +1,4 @@
+import { html } from '@/utils/html';
 import { Dialog } from '../dialog';
 import './auth-dialog.scss';
 import { LoginForm } from './login-form';
@@ -5,27 +6,40 @@ import { RegisterForm } from './register-form';
 
 export type AuthTab = 'login' | 'register';
 
-export function toAuthTab(value: string | undefined): AuthTab {
+export function toAuthTab(value: string | null | undefined): AuthTab {
     return value === 'register' ? 'register' : 'login';
 }
 
+export interface AuthDialogOptions {
+    initialTab?: AuthTab;
+    // Called when the user switches tabs inside the dialog (not on programmatic setTab).
+    onTabChange?: (tab: AuthTab) => void;
+}
+
 export class AuthDialog extends Dialog {
+    private readonly onTabChange?: (tab: AuthTab) => void;
+
     private handleSwitchClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
 
         const trigger = event.target.closest<HTMLElement>('[data-auth-tab]');
         if (!trigger) return;
 
-        this.showTab(toAuthTab(trigger.dataset.authTab));
+        const tab = toAuthTab(trigger.dataset.authTab);
+
+        this.setTab(tab);
+        this.onTabChange?.(tab);
     };
 
-    constructor(initialTab: AuthTab = 'login') {
+    constructor({ initialTab = 'login', onTabChange }: AuthDialogOptions = {}) {
         super({
             label: 'Auth Dialog',
             modifier: 'dialog--auth',
         });
 
-        this.setContent(/* HTML */ `
+        this.onTabChange = onTabChange;
+
+        this.setContent(html`
             <div class="auth">
                 <div class="auth__tabs" role="tablist" aria-label="Login or register">
                     <button
@@ -68,7 +82,7 @@ export class AuthDialog extends Dialog {
         `);
 
         this.mountForms();
-        this.showTab(initialTab);
+        this.setTab(initialTab);
         this.bindTabEvents();
     }
 
@@ -81,7 +95,7 @@ export class AuthDialog extends Dialog {
         this.element.addEventListener('click', this.handleSwitchClick);
     }
 
-    private showTab(tab: AuthTab): void {
+    public setTab(tab: AuthTab): void {
         for (const button of this.element.querySelectorAll<HTMLButtonElement>('[role="tab"]')) {
             button.setAttribute('aria-selected', String(button.dataset.authTab === tab));
         }

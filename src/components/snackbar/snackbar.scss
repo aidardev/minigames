@@ -1,0 +1,93 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    $snackbar-width: styles.rem(480px);
+
+    .snackbar-container {
+        position: fixed;
+        inset-inline: 0;
+        bottom: var(--container-padding-x);
+        z-index: var(--z-snackbar);
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--size-1);
+        padding-inline: var(--container-padding-x);
+        pointer-events: none;
+    }
+
+    .snackbar {
+        display: flex;
+        align-items: center;
+        gap: var(--size-2);
+        width: 100%;
+        max-width: $snackbar-width;
+        padding: var(--size-1-5) var(--size-2);
+        pointer-events: auto;
+        border: var(--border-width-medium) solid var(--color-on-primary);
+        border-radius: var(--corner-small);
+        box-shadow: var(--shadow-level-1);
+        background-color: var(--color-on-primary);
+        color: var(--color-white);
+        font-size: var(--fs-body-small);
+        font-weight: var(--font-weight-medium);
+        animation: snackbar-enter var(--duration-base) ease-out;
+        transition:
+            opacity var(--transition-base),
+            transform var(--transition-base);
+
+        &--success {
+            background-color: var(--color-success);
+        }
+        &--error {
+            background-color: var(--color-error);
+        }
+        &--warning {
+            background-color: var(--color-primary);
+            color: var(--color-on-primary);
+        }
+
+        &--leaving {
+            opacity: 0;
+            transform: translateY(var(--size-1));
+        }
+
+        &__message {
+            flex: 1 1 auto;
+            margin: 0;
+        }
+
+        &__close {
+            display: flex;
+            flex-shrink: 0;
+            padding: var(--size-1);
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            color: inherit;
+            flex-shrink: 0;
+            svg {
+                width: var(--size-2);
+                height: var(--size-2);
+                flex-shrink: 0;
+            }
+
+            &:focus-visible {
+                outline: var(--border-width-medium) solid currentcolor;
+                outline-offset: var(--size-025);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+            transition: none;
+        }
+    }
+
+    @keyframes snackbar-enter {
+        from {
+            opacity: 0;
+            transform: translateY(var(--size-1));
+        }
+    }
+}

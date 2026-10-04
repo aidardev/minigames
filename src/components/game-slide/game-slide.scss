@@ -5,10 +5,9 @@ $threshold-compact-mobile: styles.rem(150px);
 
 @layer components {
     .game-slide {
-        --game-slide-height: #{styles.rem(384px)};
         container-type: inline-size;
         container-name: game-slide;
-        border-radius: var(--corner-extra-large);
+        border-radius: var(--game-slide-radius);
         overflow: hidden;
         height: var(--game-slide-height);
         width: 100%;
@@ -17,15 +16,6 @@ $threshold-compact-mobile: styles.rem(150px);
         box-shadow: var(--ring-medium-on-primary), var(--shadow-level-1);
         position: relative;
         cursor: pointer;
-        @include styles.max-width(styles.$br-lg) {
-            --game-slide-height: #{styles.rem(280px)};
-            border-radius: var(--corner-large);
-        }
-
-        @include styles.max-width(styles.$br-sm) {
-            --game-slide-height: #{styles.rem(200px)};
-        }
-
         &__img {
             position: absolute;
             width: 100%;
