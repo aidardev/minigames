@@ -108,7 +108,11 @@ export class CatalogSection extends BaseComponent<'section'> {
             ...data,
             onPageChange: (page: number): void => {
                 // Re-selecting the page that is already in the URL changes nothing.
-                if (page !== this.urlQuery.page) setQueryParameters({ page: String(page) });
+                if (page === this.urlQuery.page) return;
+
+                setQueryParameters({ page: String(page) });
+
+                this.element.scrollIntoView({ block: 'start' });
             },
         });
     }
