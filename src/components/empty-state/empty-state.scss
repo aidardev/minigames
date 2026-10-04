@@ -6,5 +6,8 @@
         border: var(--border-width-medium) dashed var(--color-outline-variant);
         background-color: var(--color-surface-low);
         color: var(--color-on-bg);
+        &__btn {
+            margin-top: var(--size-1);
+        }
     }
 }
