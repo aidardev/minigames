@@ -21,14 +21,24 @@ export function navigate(to: string, options?: NavigateOptions): void {
     );
 }
 
+export function setQueryParameters(
+    values: Record<string, string>,
+    options?: NavigateOptions,
+): void {
+    const parameters = new URLSearchParams(location.search);
+
+    for (const [key, value] of Object.entries(values)) {
+        parameters.set(key, value);
+    }
+
+    navigate(`${location.pathname}?${parameters.toString()}`, options);
+}
+
 /**
 Sets one query param and keeps the rest.
 */
 export function setQueryParameter(key: string, value: string, options?: NavigateOptions): void {
-    const parameters = new URLSearchParams(location.search);
-    parameters.set(key, value);
-
-    navigate(`${location.pathname}?${parameters.toString()}`, options);
+    setQueryParameters({ [key]: value }, options);
 }
 
 export function openGameDetails(slug: string): void {
