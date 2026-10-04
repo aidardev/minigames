@@ -35,15 +35,18 @@ $feedback-item-text-width: f.rem(640px);
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--size-1);
-    padding: var(--size-5) var(--size-3);
-    border-radius: var(--corner-medium);
+    padding: var(--size-6) var(--size-3);
+    border-radius: var(--corner-large);
     text-align: center;
+
     &__title {
         margin: 0;
         font-size: var(--fs-headline-small);
         font-weight: var(--font-weight-bold);
         line-height: var(--lh-heading);
+        color: var(--color-on-primary);
     }
 
     &__message,
@@ -52,5 +55,6 @@ $feedback-item-text-width: f.rem(640px);
         max-width: $feedback-item-text-width;
         font-size: var(--fs-body-medium);
         line-height: var(--lh-relaxed);
+        color: var(--color-on-bg-low);
     }
 }
