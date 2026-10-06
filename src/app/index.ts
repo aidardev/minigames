@@ -3,6 +3,7 @@ import { Header } from '@/components/header/header';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
+import { appSession } from '@/services/session/app-session';
 import { DialogController } from './dialog-controller';
 import { Router, type Route } from './router';
 
@@ -19,6 +20,8 @@ export function startApp(): void {
     appRoot.append(header.element, pageOutlet, footer.element);
 
     document.body.prepend(appRoot);
+
+    appSession.start();
 
     const router = new Router(
         pageOutlet,
