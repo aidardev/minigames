@@ -61,6 +61,18 @@
             &:focus-visible {
                 background: var(--color-surface-low);
             }
+
+            &[aria-invalid='true'] {
+                box-shadow: var(--ring-medium-error);
+            }
+        }
+
+        &__error {
+            color: var(--color-error);
+            font-size: var(--fs-label-medium);
+            font-weight: var(--font-weight-medium);
+            line-height: var(--lh-normal);
+            margin-bottom: 0;
         }
 
         &__toggle {
