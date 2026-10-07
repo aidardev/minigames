@@ -71,7 +71,7 @@ describe('AppSessionStore', () => {
     });
 
     describe('subscribe', () => {
-        it('reports the current state immediately and every change after', () => {
+        it('reports the current state immediately and every change after', async () => {
             const { store } = setup();
             const observed: (AppSession | undefined)[] = [];
 
@@ -79,7 +79,7 @@ describe('AppSessionStore', () => {
                 observed.push(session);
             });
             store.createSession(PROFILE);
-            store.logout();
+            await store.logout();
 
             expect(observed).toStrictEqual([
                 undefined,
@@ -310,11 +310,11 @@ describe('AppSessionStore', () => {
     });
 
     describe('logout', () => {
-        it('clears the session without an expiration notice', () => {
+        it('clears the session without an expiration notice', async () => {
             const { store, signOut, onExpired } = setup();
             store.createSession(PROFILE);
 
-            store.logout();
+            await store.logout();
 
             expect(store.getActiveSession()).toBeUndefined();
             expect(localStorage.getItem(APP_SESSION_STORAGE_KEY)).toBeNull();
@@ -322,11 +322,11 @@ describe('AppSessionStore', () => {
             expect(onExpired).not.toHaveBeenCalled();
         });
 
-        it('cancels the expiration timer', () => {
+        it('cancels the expiration timer', async () => {
             const { store, onExpired } = setup();
             store.createSession(PROFILE);
 
-            store.logout();
+            await store.logout();
             vi.advanceTimersByTime(APP_SESSION_LIFETIME_MS);
 
             expect(onExpired).not.toHaveBeenCalled();
@@ -337,7 +337,7 @@ describe('AppSessionStore', () => {
             signOut.mockRejectedValue(new Error('network'));
             store.createSession(PROFILE);
 
-            store.logout();
+            await store.logout();
             await vi.advanceTimersByTimeAsync(0);
 
             expect(store.getActiveSession()).toBeUndefined();
