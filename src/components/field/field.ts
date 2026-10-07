@@ -53,11 +53,19 @@ export function renderField(options: FieldOptions): SafeHtml {
     `;
 }
 
-function renderPasswordToggle(): string {
-    return /* HTML */ `
-        <button class="field__toggle" type="button" aria-label="Show password" data-password-toggle>
-            <span class="field__toggle-icon field__toggle-icon--show">${eyeIcon}</span>
-            <span class="field__toggle-icon field__toggle-icon--hide">${eyeOffIcon}</span>
+function renderPasswordToggle(): SafeHtml {
+    return html`
+        <button
+            class="field__toggle"
+            type="button"
+            aria-label="Show password"
+            aria-pressed="false"
+            data-password-toggle
+        >
+            <span class="field__toggle-icon field__toggle-icon--show">${unsafeHtml(eyeIcon)}</span>
+            <span class="field__toggle-icon field__toggle-icon--hide"
+                >${unsafeHtml(eyeOffIcon)}</span
+            >
         </button>
     `;
 }
