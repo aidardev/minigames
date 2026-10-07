@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
 import { FormValidator } from '@/utils/validation/form-validator';
+import { describe, expect, it } from 'vitest';
 import {
     AuthErrorMessage as Message,
     loginSchema,
