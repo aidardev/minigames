@@ -18,6 +18,8 @@ export interface AuthDialogOptions {
 
 export class AuthDialog extends Dialog {
     private readonly onTabChange?: (tab: AuthTab) => void;
+    private readonly forms: Record<AuthTab, LoginForm | RegisterForm>;
+    private currentTab: AuthTab | undefined;
 
     private handleSwitchClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
@@ -81,14 +83,21 @@ export class AuthDialog extends Dialog {
             </div>
         `);
 
-        this.mountForms();
+        this.forms = this.mountForms();
         this.setTab(initialTab);
         this.bindTabEvents();
     }
 
-    private mountForms(): void {
-        this.query('[data-auth-panel="login"]')?.append(new LoginForm().element);
-        this.query('[data-auth-panel="register"]')?.append(new RegisterForm().element);
+    private mountForms(): Record<AuthTab, LoginForm | RegisterForm> {
+        const forms = {
+            login: this.adopt(new LoginForm()),
+            register: this.adopt(new RegisterForm()),
+        };
+
+        this.query('[data-auth-panel="login"]')?.append(forms.login.element);
+        this.query('[data-auth-panel="register"]')?.append(forms.register.element);
+
+        return forms;
     }
 
     private bindTabEvents(): void {
@@ -96,6 +105,11 @@ export class AuthDialog extends Dialog {
     }
 
     public setTab(tab: AuthTab): void {
+        // Can be called with the current tab (URL sync, repeated click on the active tab).
+        // That is not a real switch, so keep what the user has typed.
+        if (tab === this.currentTab) return;
+        this.currentTab = tab;
+
         for (const button of this.element.querySelectorAll<HTMLButtonElement>('[role="tab"]')) {
             button.setAttribute('aria-selected', String(button.dataset.authTab === tab));
         }
@@ -103,5 +117,8 @@ export class AuthDialog extends Dialog {
         for (const panel of this.element.querySelectorAll<HTMLElement>('[role="tabpanel"]')) {
             panel.hidden = panel.dataset.authPanel !== tab;
         }
+
+        // Switching tabs resets both forms
+        for (const form of Object.values(this.forms)) form.reset();
     }
 }
