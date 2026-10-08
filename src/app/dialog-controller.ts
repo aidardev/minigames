@@ -1,7 +1,7 @@
 import { AuthDialog, toAuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
-import { handleLogin, handleRegister } from './auth-flow';
+import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
 import { setQueryParameter } from './navigation';
 import type { Route, Router } from './router';
 
@@ -55,6 +55,7 @@ export class DialogController {
             onTabChange: (tab): void => setQueryParameter(AUTH_PARAM, tab, { replace: true }),
             onLogin: (values): Promise<void> => this.finishAuth(handleLogin(values)),
             onRegister: (values): Promise<void> => this.finishAuth(handleRegister(values)),
+            onGoogleLogin: (): Promise<void> => this.finishAuth(handleGoogleLogin()),
         });
 
         return {
