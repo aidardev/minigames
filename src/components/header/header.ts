@@ -2,6 +2,7 @@ import { openAuth } from '@/app/navigation';
 import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
+import { html, unsafeHtml } from '@/utils/html';
 import { BaseComponent } from '../base-component';
 import { toAuthTab, type AuthTab } from '../dialogs/auth-dialog/auth-dialog';
 import './header.scss';
@@ -54,7 +55,7 @@ export class Header extends BaseComponent {
     constructor() {
         super('header', 'header');
 
-        this.element.innerHTML = /* HTML */ `
+        this.setHtml(html`
             <div class="header__inner container">
                 <a href="/" class="header__logo logo logo--dark" data-link>
                     <img src="${logo}" alt="" class="logo__img" width="32" height="32">
@@ -67,7 +68,7 @@ export class Header extends BaseComponent {
                             <span class="logo__text">MiniGames</span>
                         </a>
                         <button class="header__close btn" type="button" aria-label="Close menu">
-                            ${closeIcon}
+                            ${unsafeHtml(closeIcon)}
                         </button>
                     </div>
                     <nav class="header__navbar navbar">
@@ -109,10 +110,10 @@ export class Header extends BaseComponent {
                     aria-expanded="false"
                     aria-controls="mobile-menu"
                 >
-                    ${burgerIcon}
+                    ${unsafeHtml(burgerIcon)}
                 </button>
             </div>
-        `;
+        `);
 
         this.initElements();
         this.bindEvents();
