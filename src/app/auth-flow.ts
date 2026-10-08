@@ -1,7 +1,8 @@
 import type { LoginValues, RegisterValues } from '@/components/dialogs/auth-dialog/auth-validation';
 import { showSnackbar } from '@/components/snackbar/snackbar';
-import { getAuthErrorMessage } from '@/services/firebase/auth-errors';
+import { getAuthErrorMessage, isAuthCancellation } from '@/services/firebase/auth-errors';
 import { signInWithEmail, signUpWithEmail } from '@/services/firebase/email-auth';
+import { signInWithGoogle } from '@/services/firebase/google-auth';
 import { appSession } from '@/services/session/app-session';
 import type { AppSessionProfile } from '@/services/session/session.types';
 
@@ -18,7 +19,11 @@ async function canAuthenticate(
     try {
         profile = await signIn();
     } catch (error) {
-        showSnackbar(getAuthErrorMessage(error), 'error');
+        if (isAuthCancellation(error)) {
+            showSnackbar('Sign-in was cancelled.', 'info');
+        } else {
+            showSnackbar(getAuthErrorMessage(error), 'error');
+        }
         return false;
     }
 
@@ -39,5 +44,12 @@ export function handleRegister(values: Readonly<RegisterValues>): Promise<boolea
     return canAuthenticate(
         () => signUpWithEmail(values),
         ({ displayName }): string => `Account created. Welcome, ${displayName}!`,
+    );
+}
+
+export function handleGoogleLogin(): Promise<boolean> {
+    return canAuthenticate(
+        signInWithGoogle,
+        ({ displayName }): string => `Welcome, ${displayName}!`,
     );
 }

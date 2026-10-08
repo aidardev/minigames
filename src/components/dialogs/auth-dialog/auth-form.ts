@@ -13,6 +13,9 @@ interface FieldView {
     error: HTMLElement;
 }
 
+// What started the pending state; only the form's own submit relabels the submit button.
+export type PendingKind = 'submit' | 'google';
+
 const FIELD_EVENTS = ['input', 'change', 'focusout'] as const;
 
 /**
@@ -121,9 +124,9 @@ export abstract class AuthForm<V extends Record<keyof V, string>> extends BaseCo
 
     /**
      * Locks every control (inputs, submit, Google, tab links) while a request is in flight.
-     * The submit button shows its data-pending-label, if it has one.
+     * For a submit request the submit button shows its data-pending-label, if it has one.
      */
-    public setPending(isPending: boolean): void {
+    public setPending(isPending: boolean, kind: PendingKind = 'submit'): void {
         this.pending = isPending;
 
         for (const control of this.element.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
@@ -134,7 +137,7 @@ export abstract class AuthForm<V extends Record<keyof V, string>> extends BaseCo
 
         const pendingLabel = this.submitButton.dataset.pendingLabel;
         this.submitButton.textContent =
-            isPending && pendingLabel ? pendingLabel : this.idleSubmitLabel;
+            isPending && kind === 'submit' && pendingLabel ? pendingLabel : this.idleSubmitLabel;
         this.element.setAttribute('aria-busy', String(isPending));
 
         // Re-enables the submit button only if the form is valid.
