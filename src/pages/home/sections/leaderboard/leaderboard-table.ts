@@ -3,7 +3,7 @@ import { skeletonHtml } from '@/components/skeleton/skeleton';
 import type { LeaderboardPlayer } from '@/types/leaderboard.types';
 import { formatCompactNumber, formatNumber } from '@/utils/formatters';
 import { html, type SafeHtml } from '@/utils/html';
-import { getInitials } from '@/utils/string';
+import { getLeaderboardInitials } from '@/utils/string';
 
 const SKELETON_ROW_COUNT = 5;
 
@@ -45,7 +45,7 @@ function renderRow(player: LeaderboardPlayer): SafeHtml {
             <td class="leaderboard-table__cell leaderboard-table__col--player">
                 <div class="leaderboard-table__player-info">
                     <span class="leaderboard-table__avatar avatar">
-                        ${getInitials(player.playerName)}
+                        ${getLeaderboardInitials(player.playerName)}
                     </span>
                     <span class="leaderboard-table__username">${player.playerName}</span>
                 </div>
