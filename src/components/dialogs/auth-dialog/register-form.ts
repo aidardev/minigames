@@ -61,6 +61,7 @@ export class RegisterForm extends AuthForm<RegisterValues> {
                     <button
                         class="auth-form__btn auth-form__btn--submit btn btn--large btn--primary"
                         type="submit"
+                        data-pending-label="Creating account…"
                     >
                         Create Account
                     </button>

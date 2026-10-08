@@ -44,6 +44,7 @@ export class LoginForm extends AuthForm<LoginValues> {
                     <button
                         class="auth-form__btn auth-form__btn--submit btn btn--large btn--primary"
                         type="submit"
+                        data-pending-label="Signing in…"
                     >
                         Login
                     </button>

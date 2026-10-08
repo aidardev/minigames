@@ -28,6 +28,8 @@ export abstract class AuthForm<V extends Record<keyof V, string>> extends BaseCo
     private readonly fieldViews = new Map<keyof V & string, FieldView>();
     private readonly submitButton: HTMLButtonElement;
     private readonly onSubmit?: (values: Readonly<V>) => void;
+    private readonly idleSubmitLabel: string;
+    private pending = false;
 
     private handleFieldEvent = (event: Event): void => {
         if (!(event.target instanceof HTMLInputElement)) return;
@@ -42,6 +44,8 @@ export abstract class AuthForm<V extends Record<keyof V, string>> extends BaseCo
 
     private handleSubmit = (event: SubmitEvent): void => {
         event.preventDefault();
+
+        if (this.pending) return;
 
         // Extra guard: submit can fire without the button (e.g. requestSubmit())
         this.validator.touchAll();
@@ -63,6 +67,7 @@ export abstract class AuthForm<V extends Record<keyof V, string>> extends BaseCo
         this.onSubmit = onSubmit;
         this.validator = new FormValidator(schema);
         this.submitButton = this.requireElement<HTMLButtonElement>('button[type="submit"]');
+        this.idleSubmitLabel = this.submitButton.textContent.trim();
         this.collectFields();
         this.bindEvents();
         this.render();
@@ -111,7 +116,29 @@ export abstract class AuthForm<V extends Record<keyof V, string>> extends BaseCo
             }
         }
 
-        this.submitButton.disabled = !this.validator.isValid();
+        this.submitButton.disabled = this.pending || !this.validator.isValid();
+    }
+
+    /**
+     * Locks every control (inputs, submit, Google, tab links) while a request is in flight.
+     * The submit button shows its data-pending-label, if it has one.
+     */
+    public setPending(isPending: boolean): void {
+        this.pending = isPending;
+
+        for (const control of this.element.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+            'input, button',
+        )) {
+            control.disabled = isPending;
+        }
+
+        const pendingLabel = this.submitButton.dataset.pendingLabel;
+        this.submitButton.textContent =
+            isPending && pendingLabel ? pendingLabel : this.idleSubmitLabel;
+        this.element.setAttribute('aria-busy', String(isPending));
+
+        // Re-enables the submit button only if the form is valid.
+        this.render();
     }
 
     // Clears the inputs, the touched state and every error message.
