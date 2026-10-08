@@ -2,10 +2,22 @@ import { openAuth } from '@/app/navigation';
 import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
 import logo from '@/assets/images/logo.svg';
+import type { AppSession, SessionListener } from '@/services/session/session.types';
 import { html, unsafeHtml } from '@/utils/html';
+import { getProfileView } from '@/utils/profile/profile';
 import { BaseComponent } from '../base-component';
 import { toAuthTab, type AuthTab } from '../dialogs/auth-dialog/auth-dialog';
+import { ProfileAvatar } from '../profile-avatar/profile-avatar';
 import './header.scss';
+
+// The header only needs to observe the session, so tests can pass a fake instead of the real store.
+export interface SessionSource {
+    subscribe: (listener: SessionListener) => () => void;
+}
+
+export interface HeaderOptions {
+    session: SessionSource;
+}
 
 export class Header extends BaseComponent {
     private isMenuOpen = false;
@@ -14,6 +26,13 @@ export class Header extends BaseComponent {
     private closeBtn: HTMLButtonElement | undefined = undefined;
     private menuContainer: HTMLElement | undefined = undefined;
     private navLinks: HTMLAnchorElement[] = [];
+
+    private guestControls: HTMLElement[] = [];
+    private profileControls: HTMLElement[] = [];
+    private profileNames: HTMLElement[] = [];
+    private profileLabels: HTMLElement[] = [];
+    private readonly avatars: ProfileAvatar[] = [];
+    private readonly unsubscribeSession: () => void;
 
     private handleDocumentClick = (event: MouseEvent): void => {
         const target = event.target;
@@ -52,7 +71,7 @@ export class Header extends BaseComponent {
         this.closeMenu();
     };
 
-    constructor() {
+    constructor({ session }: HeaderOptions) {
         super('header', 'header');
 
         this.setHtml(html`
@@ -79,7 +98,7 @@ export class Header extends BaseComponent {
                             <li><a href="/" data-link>Community</a></li>
                         </ul>
                     </nav>
-                    <div class="header__btns">
+                    <div class="header__btns" data-header-guest>
                         <button
                             class="header__btn btn btn--medium btn--outline-on-primary"
                             type="button"
@@ -95,14 +114,28 @@ export class Header extends BaseComponent {
                             Sign Up
                         </button>
                     </div>
+                    <div class="header__profile" data-header-profile hidden>
+                        <span data-profile-avatar></span>
+                        <span class="header__profile-name" data-profile-name></span>
+                    </div>
                 </div>
                 <button
                     class="header__btn header__btn--tablet btn btn--small btn--primary"
                     type="button"
                     data-auth-tab="register"
+                    data-header-guest
                 >
                     Sign Up
                 </button>
+                <span
+                    class="header__profile header__profile--compact"
+                    role="img"
+                    data-header-profile
+                    data-profile-label
+                    hidden
+                >
+                    <span data-profile-avatar></span>
+                </span>
                 <button
                     class="header__hamburger-btn btn btn--icon btn--outline-on-primary"
                     type="button"
@@ -116,7 +149,10 @@ export class Header extends BaseComponent {
         `);
 
         this.initElements();
+        this.initProfile();
         this.bindEvents();
+
+        this.unsubscribeSession = session.subscribe((current): void => this.renderSession(current));
     }
 
     private initElements(): void {
@@ -130,11 +166,44 @@ export class Header extends BaseComponent {
         ];
     }
 
+    private initProfile(): void {
+        this.guestControls = [...this.element.querySelectorAll<HTMLElement>('[data-header-guest]')];
+        this.profileControls = [
+            ...this.element.querySelectorAll<HTMLElement>('[data-header-profile]'),
+        ];
+        this.profileNames = [...this.element.querySelectorAll<HTMLElement>('[data-profile-name]')];
+        this.profileLabels = [
+            ...this.element.querySelectorAll<HTMLElement>('[data-profile-label]'),
+        ];
+
+        for (const slot of this.element.querySelectorAll<HTMLElement>('[data-profile-avatar]')) {
+            const avatar = this.adopt(new ProfileAvatar());
+            slot.append(avatar.element);
+            this.avatars.push(avatar);
+        }
+    }
+
     private bindEvents(): void {
         this.burgerBtn?.addEventListener('click', (): void => this.openMenu());
         this.closeBtn?.addEventListener('click', (): void => this.closeMenu());
         this.element.addEventListener('click', this.handleAuthClick);
         this.menuContainer?.addEventListener('click', this.handleLinksClick);
+    }
+
+    private renderSession(session: AppSession | undefined): void {
+        const isAuthenticated = session !== undefined;
+
+        for (const control of this.guestControls) control.hidden = isAuthenticated;
+        for (const control of this.profileControls) control.hidden = !isAuthenticated;
+
+        if (!isAuthenticated) return;
+
+        const { name, initials } = getProfileView(session);
+
+        for (const element of this.profileNames) element.textContent = name;
+        for (const element of this.profileLabels) element.setAttribute('aria-label', name);
+        for (const avatar of this.avatars)
+            avatar.update({ avatarUrl: session.avatarUrl, initials });
     }
 
     public setActivePath(path: string): void {
@@ -166,5 +235,10 @@ export class Header extends BaseComponent {
 
         document.removeEventListener('click', this.handleDocumentClick);
         document.removeEventListener('keydown', this.handleEscKey);
+    }
+
+    public override destroy(): void {
+        this.unsubscribeSession();
+        super.destroy();
     }
 }
