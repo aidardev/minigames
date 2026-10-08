@@ -11,7 +11,7 @@ export function startApp(): void {
     const appRoot = document.createElement('div');
     appRoot.className = 'app';
 
-    const header = new Header();
+    const header = new Header({ session: appSession });
     const footer = new Footer();
 
     const pageOutlet = document.createElement('div');

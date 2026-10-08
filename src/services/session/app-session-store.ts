@@ -6,7 +6,7 @@ import type {
 } from './session.types';
 
 export const APP_SESSION_STORAGE_KEY = 'minigames:aidardev:app-session';
-export const APP_SESSION_LIFETIME_MS = 5 * 60 * 1000;
+export const APP_SESSION_LIFETIME_MS = 50 * 60 * 1000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
     return typeof value === 'object' && value !== null;
