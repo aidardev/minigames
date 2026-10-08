@@ -52,6 +52,7 @@ export class LoginForm extends AuthForm<LoginValues> {
                     <button
                         class="auth-form__btn auth-form__btn--google btn btn--medium btn--outline-on-primary"
                         type="button"
+                        data-auth-google
                     >
                         <img src="${unsafeHtml(googleIcon)}" alt="" width="24" height="24">
                         Continue with Google

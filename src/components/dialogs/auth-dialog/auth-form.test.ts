@@ -347,4 +347,11 @@ describe('AuthForm pending state', () => {
         expect(event.defaultPrevented).toBe(true);
         expect(onSubmit).not.toHaveBeenCalled();
     });
+
+    it('keeps the submit label when the pending request is not the form submit', () => {
+        loginForm.setPending(true, 'google');
+
+        expect(controls().every((control): boolean => control.disabled)).toBe(true);
+        expect(submitButton(loginForm.element).textContent).toBe('Login');
+    });
 });

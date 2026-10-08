@@ -1,6 +1,7 @@
 import { html } from '@/utils/html';
 import { Dialog } from '../dialog';
 import './auth-dialog.scss';
+import type { PendingKind } from './auth-form';
 import type { LoginValues, RegisterValues } from './auth-validation';
 import { LoginForm } from './login-form';
 import { RegisterForm } from './register-form';
@@ -19,17 +20,24 @@ export interface AuthDialogOptions {
     // so the handler must handle its own errors and never reject.
     onLogin?: (values: Readonly<LoginValues>) => Promise<void>;
     onRegister?: (values: Readonly<RegisterValues>) => Promise<void>;
+    onGoogleLogin?: () => Promise<void>;
 }
 
 export class AuthDialog extends Dialog {
     private readonly onTabChange?: (tab: AuthTab) => void;
     private readonly onLogin?: (values: Readonly<LoginValues>) => Promise<void>;
     private readonly onRegister?: (values: Readonly<RegisterValues>) => Promise<void>;
+    private readonly onGoogleLogin?: () => Promise<void>;
     private readonly forms: Record<AuthTab, LoginForm | RegisterForm>;
     private currentTab: AuthTab | undefined;
 
-    private handleSwitchClick = (event: MouseEvent): void => {
+    private handleAuthClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
+
+        if (event.target.closest('[data-auth-google]')) {
+            this.startGoogleLogin();
+            return;
+        }
 
         const trigger = event.target.closest<HTMLElement>('[data-auth-tab]');
         if (!trigger) return;
@@ -45,6 +53,7 @@ export class AuthDialog extends Dialog {
         onTabChange,
         onLogin,
         onRegister,
+        onGoogleLogin,
     }: AuthDialogOptions = {}) {
         super({
             label: 'Auth Dialog',
@@ -54,6 +63,7 @@ export class AuthDialog extends Dialog {
         this.onTabChange = onTabChange;
         this.onLogin = onLogin;
         this.onRegister = onRegister;
+        this.onGoogleLogin = onGoogleLogin;
 
         this.setContent(html`
             <div class="auth">
@@ -99,7 +109,7 @@ export class AuthDialog extends Dialog {
 
         this.forms = this.mountForms();
         this.setTab(initialTab);
-        this.bindTabEvents();
+        this.bindClickEvents();
     }
 
     private mountForms(): Record<AuthTab, LoginForm | RegisterForm> {
@@ -122,8 +132,8 @@ export class AuthDialog extends Dialog {
         return forms;
     }
 
-    private bindTabEvents(): void {
-        this.element.addEventListener('click', this.handleSwitchClick);
+    private bindClickEvents(): void {
+        this.element.addEventListener('click', this.handleAuthClick);
     }
 
     private submit<V>(
@@ -132,24 +142,31 @@ export class AuthDialog extends Dialog {
     ): void {
         if (!handler) return;
 
-        void this.runPending(() => handler(values));
+        void this.runPending((): Promise<void> => handler(values), 'submit');
     }
 
-    private async runPending(action: () => Promise<void>): Promise<void> {
-        this.setPending(true);
+    private startGoogleLogin(): void {
+        const handler = this.onGoogleLogin;
+        if (!handler) return;
+
+        void this.runPending(handler, 'google');
+    }
+
+    private async runPending(action: () => Promise<void>, kind: PendingKind): Promise<void> {
+        this.setPending(true, kind);
 
         try {
             await action();
         } finally {
-            this.setPending(false);
+            this.setPending(false, kind);
         }
     }
 
     // While a request is in flight nothing can be edited, switched or dismissed.
-    private setPending(isPending: boolean): void {
+    private setPending(isPending: boolean, kind: PendingKind): void {
         this.setLocked(isPending);
 
-        for (const form of Object.values(this.forms)) form.setPending(isPending);
+        for (const form of Object.values(this.forms)) form.setPending(isPending, kind);
 
         for (const tab of this.element.querySelectorAll<HTMLButtonElement>('.auth__tab')) {
             tab.disabled = isPending;

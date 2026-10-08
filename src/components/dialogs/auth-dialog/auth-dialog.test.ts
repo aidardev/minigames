@@ -244,3 +244,69 @@ describe('AuthDialog pending state', () => {
         ).not.toThrow();
     });
 });
+
+describe('AuthDialog Google sign-in', () => {
+    let dialog: AuthDialog;
+    let finish: () => void;
+    let onGoogleLogin: Mock<() => Promise<void>>;
+
+    function googleButton(tab: AuthTab): HTMLButtonElement {
+        return query<HTMLButtonElement>(dialog, `[data-auth-panel="${tab}"] [data-auth-google]`);
+    }
+
+    beforeEach(() => {
+        const { promise, resolve } = Promise.withResolvers<void>();
+        finish = resolve;
+        onGoogleLogin = vi.fn<() => Promise<void>>(() => promise);
+        dialog = new AuthDialog({ onGoogleLogin });
+    });
+
+    it.each<AuthTab>(['login', 'register'])('starts Google sign-in from the %s form', (tab) => {
+        googleButton(tab).click();
+
+        expect(onGoogleLogin).toHaveBeenCalledOnce();
+    });
+
+    it('locks the whole dialog while Google sign-in is pending', () => {
+        const close = vi.spyOn(dialog, 'close').mockImplementation((): void => undefined);
+
+        googleButton('login').click();
+        dialog.element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+        dialog.element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+        expect(googleButton('login').disabled).toBe(true);
+        expect(googleButton('register').disabled).toBe(true);
+        expect(emailInput(dialog, 'login').disabled).toBe(true);
+        expect(
+            query<HTMLButtonElement>(dialog, '.auth__tab[data-auth-tab="register"]').disabled,
+        ).toBe(true);
+        expect(close).not.toHaveBeenCalled();
+    });
+
+    it('does not rename the submit button while Google sign-in is pending', () => {
+        googleButton('login').click();
+
+        expect(
+            query<HTMLButtonElement>(dialog, '[data-auth-panel="login"] button[type="submit"]')
+                .textContent,
+        ).toBe('Login');
+    });
+
+    it('unlocks the dialog once Google sign-in settles', async () => {
+        googleButton('login').click();
+
+        finish();
+
+        await vi.waitFor((): void => expect(googleButton('login').disabled).toBe(false));
+        expect(emailInput(dialog, 'login').disabled).toBe(false);
+    });
+
+    it('ignores the Google button when there is no handler', () => {
+        const bare = new AuthDialog();
+
+        expect(() =>
+            query<HTMLButtonElement>(bare, '[data-auth-panel="login"] [data-auth-google]').click(),
+        ).not.toThrow();
+        expect(emailInput(bare, 'login').disabled).toBe(false);
+    });
+});

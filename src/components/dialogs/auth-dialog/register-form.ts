@@ -69,6 +69,7 @@ export class RegisterForm extends AuthForm<RegisterValues> {
                     <button
                         class="auth-form__btn auth-form__btn--google btn btn--medium btn--outline-on-primary"
                         type="button"
+                        data-auth-google
                     >
                         <img src="${unsafeHtml(googleIcon)}" alt="" width="24" height="24">
                         Sign up with Google
