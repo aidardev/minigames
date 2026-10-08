@@ -3,9 +3,9 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     updateProfile,
-    type User,
 } from 'firebase/auth';
 import { auth } from './firebase';
+import { toProfile } from './user-profile';
 
 export interface EmailCredentials {
     email: string;
@@ -16,28 +16,13 @@ export interface EmailRegistration extends EmailCredentials {
     username: string;
 }
 
-function toProfile(user: User, fallbackName: string): AppSessionProfile {
-    const email = user.email ?? '';
-
-    return {
-        displayName: user.displayName ?? fallbackName,
-        email,
-        ...(user.photoURL && { avatarUrl: user.photoURL }),
-    };
-}
-
-// Accounts created without a name still need something to show in the header.
-function getNameFromEmail(email: string): string {
-    return email.slice(0, email.indexOf('@'));
-}
-
 export async function signInWithEmail({
     email,
     password,
 }: EmailCredentials): Promise<AppSessionProfile> {
     const { user } = await signInWithEmailAndPassword(auth, email, password);
 
-    return toProfile(user, getNameFromEmail(email));
+    return toProfile(user);
 }
 
 export async function signUpWithEmail({
@@ -55,5 +40,5 @@ export async function signUpWithEmail({
         // below uses the typed username anyway.
     }
 
-    return { ...toProfile(user, username), displayName: username };
+    return { ...toProfile(user), displayName: username };
 }

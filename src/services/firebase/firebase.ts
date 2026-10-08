@@ -13,7 +13,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+
+function createGoogleProvider(): GoogleAuthProvider {
+    const provider = new GoogleAuthProvider();
+    // Without it Google silently reuses the last account
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    return provider;
+}
+
+export const googleProvider = createGoogleProvider();
 
 export function signOutFirebaseUser(): Promise<void> {
     return signOut(auth);
