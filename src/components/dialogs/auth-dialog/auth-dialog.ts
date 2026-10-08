@@ -1,6 +1,7 @@
 import { html } from '@/utils/html';
 import { Dialog } from '../dialog';
 import './auth-dialog.scss';
+import type { LoginValues, RegisterValues } from './auth-validation';
 import { LoginForm } from './login-form';
 import { RegisterForm } from './register-form';
 
@@ -14,10 +15,16 @@ export interface AuthDialogOptions {
     initialTab?: AuthTab;
     // Called when the user switches tabs inside the dialog (not on programmatic setTab).
     onTabChange?: (tab: AuthTab) => void;
+    // Called with validated values. The dialog stays locked until the promise settles,
+    // so the handler must handle its own errors and never reject.
+    onLogin?: (values: Readonly<LoginValues>) => Promise<void>;
+    onRegister?: (values: Readonly<RegisterValues>) => Promise<void>;
 }
 
 export class AuthDialog extends Dialog {
     private readonly onTabChange?: (tab: AuthTab) => void;
+    private readonly onLogin?: (values: Readonly<LoginValues>) => Promise<void>;
+    private readonly onRegister?: (values: Readonly<RegisterValues>) => Promise<void>;
     private readonly forms: Record<AuthTab, LoginForm | RegisterForm>;
     private currentTab: AuthTab | undefined;
 
@@ -33,13 +40,20 @@ export class AuthDialog extends Dialog {
         this.onTabChange?.(tab);
     };
 
-    constructor({ initialTab = 'login', onTabChange }: AuthDialogOptions = {}) {
+    constructor({
+        initialTab = 'login',
+        onTabChange,
+        onLogin,
+        onRegister,
+    }: AuthDialogOptions = {}) {
         super({
             label: 'Auth Dialog',
             modifier: 'dialog--auth',
         });
 
         this.onTabChange = onTabChange;
+        this.onLogin = onLogin;
+        this.onRegister = onRegister;
 
         this.setContent(html`
             <div class="auth">
@@ -90,8 +104,16 @@ export class AuthDialog extends Dialog {
 
     private mountForms(): Record<AuthTab, LoginForm | RegisterForm> {
         const forms = {
-            login: this.adopt(new LoginForm()),
-            register: this.adopt(new RegisterForm()),
+            login: this.adopt(
+                new LoginForm({
+                    onSubmit: (values): void => this.submit(this.onLogin, values),
+                }),
+            ),
+            register: this.adopt(
+                new RegisterForm({
+                    onSubmit: (values): void => this.submit(this.onRegister, values),
+                }),
+            ),
         };
 
         this.query('[data-auth-panel="login"]')?.append(forms.login.element);
@@ -102,6 +124,38 @@ export class AuthDialog extends Dialog {
 
     private bindTabEvents(): void {
         this.element.addEventListener('click', this.handleSwitchClick);
+    }
+
+    private submit<V>(
+        handler: ((values: Readonly<V>) => Promise<void>) | undefined,
+        values: Readonly<V>,
+    ): void {
+        if (!handler) return;
+
+        void this.runPending(() => handler(values));
+    }
+
+    private async runPending(action: () => Promise<void>): Promise<void> {
+        this.setPending(true);
+
+        try {
+            await action();
+        } finally {
+            this.setPending(false);
+        }
+    }
+
+    // While a request is in flight nothing can be edited, switched or dismissed.
+    private setPending(isPending: boolean): void {
+        this.setLocked(isPending);
+
+        for (const form of Object.values(this.forms)) form.setPending(isPending);
+
+        for (const tab of this.element.querySelectorAll<HTMLButtonElement>('.auth__tab')) {
+            tab.disabled = isPending;
+        }
+
+        // TODO: disable the close button here too once the dialog gets one (not in the design yet).
     }
 
     public setTab(tab: AuthTab): void {

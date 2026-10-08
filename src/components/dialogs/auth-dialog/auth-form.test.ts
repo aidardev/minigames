@@ -293,3 +293,58 @@ describe('AuthForm markup contract', () => {
         expect(() => new BrokenForm(html`<input name="email">`)).toThrow('button[type="submit"]');
     });
 });
+
+describe('AuthForm pending state', () => {
+    const onSubmit = vi.fn();
+    let loginForm: LoginForm;
+
+    function controls(): (HTMLInputElement | HTMLButtonElement)[] {
+        return [
+            ...loginForm.element.querySelectorAll<HTMLInputElement | HTMLButtonElement>(
+                'input, button',
+            ),
+        ];
+    }
+
+    beforeEach(() => {
+        onSubmit.mockClear();
+        loginForm = new LoginForm({ onSubmit });
+        type(loginForm.element, 'email', 'alex@minigames.com');
+        type(loginForm.element, 'password', 'secret');
+    });
+
+    it('locks every control and shows the pending label', () => {
+        loginForm.setPending(true);
+
+        expect(controls().every((control): boolean => control.disabled)).toBe(true);
+        expect(submitButton(loginForm.element).textContent).toBe('Signing in…');
+        expect(loginForm.element.getAttribute('aria-busy')).toBe('true');
+    });
+
+    it('unlocks the controls and restores the label afterwards', () => {
+        loginForm.setPending(true);
+        loginForm.setPending(false);
+
+        expect(controls().some((control): boolean => control.disabled)).toBe(false);
+        expect(submitButton(loginForm.element).textContent).toBe('Login');
+        expect(loginForm.element.getAttribute('aria-busy')).toBe('false');
+    });
+
+    it('keeps submit disabled after pending ends if the form is invalid', () => {
+        type(loginForm.element, 'email', 'broken');
+
+        loginForm.setPending(true);
+        loginForm.setPending(false);
+
+        expect(submitButton(loginForm.element).disabled).toBe(true);
+    });
+
+    it('ignores submit events while pending', () => {
+        loginForm.setPending(true);
+
+        const event = submit(loginForm.element);
+
+        expect(event.defaultPrevented).toBe(true);
+        expect(onSubmit).not.toHaveBeenCalled();
+    });
+});

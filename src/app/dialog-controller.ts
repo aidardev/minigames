@@ -1,6 +1,7 @@
 import { AuthDialog, toAuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
+import { handleLogin, handleRegister } from './auth-flow';
 import { setQueryParameter } from './navigation';
 import type { Route, Router } from './router';
 
@@ -52,6 +53,8 @@ export class DialogController {
             initialTab: toAuthTab(query.get(AUTH_PARAM)),
             // Switching tabs rewrites the URL but must not add a history entry.
             onTabChange: (tab): void => setQueryParameter(AUTH_PARAM, tab, { replace: true }),
+            onLogin: (values): Promise<void> => this.finishAuth(handleLogin(values)),
+            onRegister: (values): Promise<void> => this.finishAuth(handleRegister(values)),
         });
 
         return {
@@ -93,6 +96,11 @@ export class DialogController {
         // Closed by the user (Escape, backdrop, close button): reflect it in the URL.
         this.current = undefined;
         this.router.removeQuery(entry.param);
+    }
+
+    // Success closes the dialog the same way the URL does: by dropping the auth param.
+    private async finishAuth(attempt: Promise<boolean>): Promise<void> {
+        if (await attempt) this.router.removeQuery(AUTH_PARAM);
     }
 
     // Must be called before router.start(), so a deep link opens its dialog on the first render.

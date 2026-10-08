@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { AuthDialog, toAuthTab, type AuthTab } from './auth-dialog';
+import type { LoginValues } from './auth-validation';
 
 function query<E extends HTMLElement>(dialog: AuthDialog, selector: string): E {
     const element = dialog.element.querySelector<E>(selector);
@@ -123,5 +124,123 @@ describe('AuthDialog', () => {
         dialog.destroy();
 
         expect(dialog.element.isConnected).toBe(false);
+    });
+});
+
+describe('AuthDialog pending state', () => {
+    const CREDENTIALS = { email: 'alex@minigames.com', password: 'secret' };
+    let dialog: AuthDialog;
+    let finish: () => void;
+    let onLogin: Mock<(values: Readonly<LoginValues>) => Promise<void>>;
+
+    function loginForm(): HTMLFormElement {
+        return query<HTMLFormElement>(dialog, '[data-auth-panel="login"] form');
+    }
+
+    function submitLogin(): void {
+        type(emailInput(dialog, 'login'), CREDENTIALS.email);
+        type(
+            query<HTMLInputElement>(dialog, '[data-auth-panel="login"] input[name="password"]'),
+            CREDENTIALS.password,
+        );
+        loginForm().dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true }));
+    }
+
+    function tabButton(tab: AuthTab): HTMLButtonElement {
+        return query<HTMLButtonElement>(dialog, `.auth__tab[data-auth-tab="${tab}"]`);
+    }
+
+    function pressEscape(): KeyboardEvent {
+        const event = new KeyboardEvent('keydown', {
+            key: 'Escape',
+            bubbles: true,
+            cancelable: true,
+        });
+        dialog.element.dispatchEvent(event);
+        return event;
+    }
+
+    function cancel(): Event {
+        const event = new Event('cancel', { cancelable: true });
+        dialog.element.dispatchEvent(event);
+        return event;
+    }
+
+    function clickBackdrop(): void {
+        dialog.element.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+        dialog.element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }
+
+    beforeEach(() => {
+        const { promise, resolve } = Promise.withResolvers<void>();
+
+        onLogin = vi.fn<(values: Readonly<LoginValues>) => Promise<void>>(() => promise);
+        finish = resolve;
+
+        dialog = new AuthDialog({ onLogin });
+    });
+
+    it('can be dismissed when nothing is pending', () => {
+        const close = vi.spyOn(dialog, 'close').mockImplementation((): void => undefined);
+
+        clickBackdrop();
+
+        expect(close).toHaveBeenCalledOnce();
+        expect(cancel().defaultPrevented).toBe(false);
+        expect(pressEscape().defaultPrevented).toBe(false);
+    });
+
+    it('passes the validated values to onLogin', () => {
+        submitLogin();
+
+        expect(onLogin).toHaveBeenCalledOnce();
+        expect(onLogin).toHaveBeenCalledWith(CREDENTIALS);
+    });
+
+    it('cannot be dismissed while the request is pending', () => {
+        const close = vi.spyOn(dialog, 'close').mockImplementation((): void => undefined);
+
+        submitLogin();
+        clickBackdrop();
+
+        expect(close).not.toHaveBeenCalled();
+        expect(cancel().defaultPrevented).toBe(true);
+        expect(pressEscape().defaultPrevented).toBe(true);
+    });
+
+    it('locks the tabs and the form while the request is pending', () => {
+        submitLogin();
+
+        expect(tabButton('login').disabled).toBe(true);
+        expect(tabButton('register').disabled).toBe(true);
+        expect(emailInput(dialog, 'login').disabled).toBe(true);
+        expect(query<HTMLButtonElement>(dialog, 'button[type="submit"]').disabled).toBe(true);
+    });
+
+    it('unlocks everything once the request settles', async () => {
+        const close = vi.spyOn(dialog, 'close').mockImplementation((): void => undefined);
+        submitLogin();
+
+        finish();
+
+        await vi.waitFor((): void => expect(tabButton('register').disabled).toBe(false));
+        expect(emailInput(dialog, 'login').disabled).toBe(false);
+        expect(cancel().defaultPrevented).toBe(false);
+        clickBackdrop();
+        expect(close).toHaveBeenCalledOnce();
+    });
+
+    it('works without handlers', () => {
+        const bare = new AuthDialog();
+        const form = query<HTMLFormElement>(bare, '[data-auth-panel="login"] form');
+        type(emailInput(bare, 'login'), CREDENTIALS.email);
+        type(
+            query<HTMLInputElement>(bare, '[data-auth-panel="login"] input[name="password"]'),
+            CREDENTIALS.password,
+        );
+
+        expect(() =>
+            form.dispatchEvent(new SubmitEvent('submit', { bubbles: true, cancelable: true })),
+        ).not.toThrow();
     });
 });
