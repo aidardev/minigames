@@ -45,6 +45,12 @@ function isVisible(header: Header, selector: string): boolean {
     );
 }
 
+function isHidden(header: Header, selector: string): boolean {
+    return [...header.element.querySelectorAll<HTMLElement>(selector)].every((element): boolean =>
+        Boolean(element.hidden),
+    );
+}
+
 describe('Header session state', () => {
     let source: ReturnType<typeof createSessionSource>;
     let header: Header;
@@ -57,21 +63,13 @@ describe('Header session state', () => {
 
     it('shows the guest controls and hides the profile for a guest', () => {
         expect(isVisible(header, '[data-header-guest]')).toBe(true);
-        expect(
-            [...header.element.querySelectorAll<HTMLElement>('[data-header-profile]')].every(
-                (element): boolean => Boolean(element.hidden),
-            ),
-        ).toBe(true);
+        expect(isHidden(header, '[data-header-profile]')).toBe(true);
     });
 
     it('replaces the guest controls with the profile once authenticated', () => {
         source.emit(SESSION);
 
-        expect(
-            [...header.element.querySelectorAll<HTMLElement>('[data-header-guest]')].every(
-                (element): boolean => Boolean(element.hidden),
-            ),
-        ).toBe(true);
+        expect(isHidden(header, '[data-header-guest]')).toBe(true);
         expect(isVisible(header, '[data-header-profile]')).toBe(true);
     });
 
@@ -80,12 +78,6 @@ describe('Header session state', () => {
 
         expect(query(header, '[data-profile-name]').textContent).toBe('Alex Doe');
         expect(query(header, '.profile-avatar').textContent).toBe('AD');
-    });
-
-    it('labels the compact profile with the name', () => {
-        source.emit(SESSION);
-
-        expect(query(header, '[data-profile-label]').getAttribute('aria-label')).toBe('Alex Doe');
     });
 
     it('shows the photo when the session has an avatarUrl', () => {

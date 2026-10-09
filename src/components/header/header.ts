@@ -28,10 +28,9 @@ export class Header extends BaseComponent {
     private navLinks: HTMLAnchorElement[] = [];
 
     private guestControls: HTMLElement[] = [];
-    private profileControls: HTMLElement[] = [];
-    private profileNames: HTMLElement[] = [];
-    private profileLabels: HTMLElement[] = [];
-    private readonly avatars: ProfileAvatar[] = [];
+    private readonly profile: HTMLElement;
+    private readonly profileName: HTMLElement;
+    private readonly avatar = this.adopt(new ProfileAvatar());
     private readonly unsubscribeSession: () => void;
 
     private handleDocumentClick = (event: MouseEvent): void => {
@@ -115,8 +114,8 @@ export class Header extends BaseComponent {
                         </button>
                     </div>
                     <div class="header__profile" data-header-profile hidden>
-                        <span data-profile-avatar></span>
                         <span class="header__profile-name" data-profile-name></span>
+                        <span data-profile-avatar></span>
                     </div>
                 </div>
                 <button
@@ -127,15 +126,6 @@ export class Header extends BaseComponent {
                 >
                     Sign Up
                 </button>
-                <span
-                    class="header__profile header__profile--compact"
-                    role="img"
-                    data-header-profile
-                    data-profile-label
-                    hidden
-                >
-                    <span data-profile-avatar></span>
-                </span>
                 <button
                     class="header__hamburger-btn btn btn--icon btn--outline-on-primary"
                     type="button"
@@ -147,6 +137,9 @@ export class Header extends BaseComponent {
                 </button>
             </div>
         `);
+
+        this.profile = this.getElement('[data-header-profile]');
+        this.profileName = this.getElement('[data-profile-name]');
 
         this.initElements();
         this.initProfile();
@@ -168,19 +161,7 @@ export class Header extends BaseComponent {
 
     private initProfile(): void {
         this.guestControls = [...this.element.querySelectorAll<HTMLElement>('[data-header-guest]')];
-        this.profileControls = [
-            ...this.element.querySelectorAll<HTMLElement>('[data-header-profile]'),
-        ];
-        this.profileNames = [...this.element.querySelectorAll<HTMLElement>('[data-profile-name]')];
-        this.profileLabels = [
-            ...this.element.querySelectorAll<HTMLElement>('[data-profile-label]'),
-        ];
-
-        for (const slot of this.element.querySelectorAll<HTMLElement>('[data-profile-avatar]')) {
-            const avatar = this.adopt(new ProfileAvatar());
-            slot.append(avatar.element);
-            this.avatars.push(avatar);
-        }
+        this.query('[data-profile-avatar]')?.append(this.avatar.element);
     }
 
     private bindEvents(): void {
@@ -194,16 +175,14 @@ export class Header extends BaseComponent {
         const isAuthenticated = session !== undefined;
 
         for (const control of this.guestControls) control.hidden = isAuthenticated;
-        for (const control of this.profileControls) control.hidden = !isAuthenticated;
+        this.profile.hidden = !isAuthenticated;
 
         if (!isAuthenticated) return;
 
         const { name, initials } = getProfileView(session);
 
-        for (const element of this.profileNames) element.textContent = name;
-        for (const element of this.profileLabels) element.setAttribute('aria-label', name);
-        for (const avatar of this.avatars)
-            avatar.update({ avatarUrl: session.avatarUrl, initials });
+        this.profileName.textContent = name;
+        this.avatar.update({ avatarUrl: session.avatarUrl, initials });
     }
 
     public setActivePath(path: string): void {
