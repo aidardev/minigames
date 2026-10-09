@@ -53,3 +53,13 @@ export function handleGoogleLogin(): Promise<boolean> {
         ({ displayName }): string => `Welcome, ${displayName}!`,
     );
 }
+
+export async function handleLogout(): Promise<void> {
+    const isSignedOut = await appSession.logout();
+
+    if (isSignedOut) {
+        showSnackbar('You have been logged out.', 'success');
+    } else {
+        showSnackbar('Sign-out could not be completed. You are now in Guest Mode.', 'error');
+    }
+}
