@@ -1,10 +1,12 @@
 // @vitest-environment jsdom
+import { handleLogout } from '@/app/auth-flow';
 import { openAuth } from '@/app/navigation';
 import type { AppSession, SessionListener } from '@/services/session/session.types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Header } from './header';
 
 vi.mock('@/app/navigation', () => ({ openAuth: vi.fn() }));
+vi.mock('@/app/auth-flow', () => ({ handleLogout: vi.fn() }));
 
 const SESSION: AppSession = {
     displayName: 'Alex Doe',
@@ -57,20 +59,29 @@ describe('Header session state', () => {
 
     beforeEach(() => {
         vi.mocked(openAuth).mockClear();
+        vi.mocked(handleLogout).mockClear();
         source = createSessionSource();
         header = new Header({ session: source.session });
     });
 
     it('shows the guest controls and hides the profile for a guest', () => {
         expect(isVisible(header, '[data-header-guest]')).toBe(true);
-        expect(isHidden(header, '[data-header-profile]')).toBe(true);
+        expect(isHidden(header, '[data-header-auth]')).toBe(true);
     });
 
     it('replaces the guest controls with the profile once authenticated', () => {
         source.emit(SESSION);
 
         expect(isHidden(header, '[data-header-guest]')).toBe(true);
-        expect(isVisible(header, '[data-header-profile]')).toBe(true);
+        expect(isVisible(header, '[data-header-auth]')).toBe(true);
+    });
+
+    it('shows Log Out only while a session is active', () => {
+        expect(isHidden(header, '[data-logout]')).toBe(true);
+
+        source.emit(SESSION);
+
+        expect(isVisible(header, '[data-logout]')).toBe(true);
     });
 
     it('shows the display name and initials', () => {
@@ -108,6 +119,7 @@ describe('Header session state', () => {
         source.emit(undefined);
 
         expect(isVisible(header, '[data-header-guest]')).toBe(true);
+        expect(isHidden(header, '[data-header-auth]')).toBe(true);
     });
 
     it('updates the profile when the session changes', () => {
@@ -135,5 +147,32 @@ describe('Header auth controls', () => {
 
         expect(openAuth).toHaveBeenNthCalledWith(1, 'login');
         expect(openAuth).toHaveBeenNthCalledWith(2, 'register');
+    });
+});
+
+describe('Header logout control', () => {
+    let header: Header;
+
+    beforeEach(() => {
+        vi.mocked(openAuth).mockClear();
+        vi.mocked(handleLogout).mockClear();
+        const source = createSessionSource();
+        header = new Header({ session: source.session });
+        source.emit(SESSION);
+    });
+
+    it('starts the logout flow without opening the auth dialog', () => {
+        query<HTMLButtonElement>(header, '[data-logout]').click();
+
+        expect(handleLogout).toHaveBeenCalledOnce();
+        expect(openAuth).not.toHaveBeenCalled();
+    });
+
+    it('closes the open mobile menu', () => {
+        header.openMenu();
+
+        query<HTMLButtonElement>(header, '[data-logout]').click();
+
+        expect(document.body.classList.contains('is-locked')).toBe(false);
     });
 });
