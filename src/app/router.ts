@@ -79,6 +79,16 @@ export class Router {
         }
     }
 
+    private withoutQuery(keys: string[]): string | undefined {
+        const url = new URL(location.href);
+
+        if (!keys.some((key: string): boolean => url.searchParams.has(key))) return undefined;
+
+        for (const key of keys) url.searchParams.delete(key);
+
+        return `${url.pathname}${url.search}${url.hash}`;
+    }
+
     public onRouteChange(listener: RouteChangeListener): void {
         this.listeners.push(listener);
     }
@@ -132,12 +142,18 @@ export class Router {
      * so open/close actions can be walked through with Back and Forward.
      */
     public removeQuery(...keys: string[]): void {
-        const url = new URL(location.href);
+        const target = this.withoutQuery(keys);
 
-        if (!keys.some((key: string): boolean => url.searchParams.has(key))) return;
+        if (target) this.navigate(target);
+    }
 
-        for (const key of keys) url.searchParams.delete(key);
+    /**
+     * Same as removeQuery, but rewrites the current history entry (used to drop a
+     * query param that must never stay in history, e.g. a blocked dialog).
+     */
+    public removeQueryInPlace(...keys: string[]): void {
+        const target = this.withoutQuery(keys);
 
-        this.navigate(`${url.pathname}${url.search}${url.hash}`);
+        if (target) this.navigate(target, { replace: true });
     }
 }
