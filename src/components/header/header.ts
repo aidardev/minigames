@@ -1,3 +1,4 @@
+import { handleLogout } from '@/app/auth-flow';
 import { openAuth } from '@/app/navigation';
 import closeIcon from '@/assets/icons/close.svg?raw';
 import burgerIcon from '@/assets/icons/menu.svg?raw';
@@ -28,7 +29,7 @@ export class Header extends BaseComponent {
     private navLinks: HTMLAnchorElement[] = [];
 
     private guestControls: HTMLElement[] = [];
-    private readonly profile: HTMLElement;
+    private authControls: HTMLElement[] = [];
     private readonly profileName: HTMLElement;
     private readonly avatar = this.adopt(new ProfileAvatar());
     private readonly unsubscribeSession: () => void;
@@ -59,6 +60,14 @@ export class Header extends BaseComponent {
 
         this.closeMenu();
         openAuth(tab);
+    };
+
+    private handleLogoutClick = (event: Event): void => {
+        if (!(event.target instanceof Element)) return;
+        if (!event.target.closest('[data-logout]')) return;
+
+        this.closeMenu();
+        void handleLogout();
     };
 
     private handleLinksClick = (event: Event): void => {
@@ -97,11 +106,16 @@ export class Header extends BaseComponent {
                             <li><a href="/" data-link>Community</a></li>
                         </ul>
                     </nav>
-                    <div class="header__btns" data-header-guest>
+                    <div class="header__profile" data-header-auth hidden>
+                        <span class="header__profile-name" data-profile-name></span>
+                        <span data-profile-avatar></span>
+                    </div>
+                    <div class="header__btns">
                         <button
                             class="header__btn btn btn--medium btn--outline-on-primary"
                             type="button"
                             data-auth-tab="login"
+                            data-header-guest
                         >
                             Log In
                         </button>
@@ -109,13 +123,19 @@ export class Header extends BaseComponent {
                             class="header__btn btn btn--medium btn--primary"
                             type="button"
                             data-auth-tab="register"
+                            data-header-guest
                         >
                             Sign Up
                         </button>
-                    </div>
-                    <div class="header__profile" data-header-profile hidden>
-                        <span class="header__profile-name" data-profile-name></span>
-                        <span data-profile-avatar></span>
+                        <button
+                            class="header__btn btn btn--medium btn--outline-on-primary"
+                            type="button"
+                            data-logout
+                            data-header-auth
+                            hidden
+                        >
+                            Log Out
+                        </button>
                     </div>
                 </div>
                 <button
@@ -125,6 +145,15 @@ export class Header extends BaseComponent {
                     data-header-guest
                 >
                     Sign Up
+                </button>
+                <button
+                    class="header__btn header__btn--tablet btn btn--small btn--outline-on-primary"
+                    type="button"
+                    data-logout
+                    data-header-auth
+                    hidden
+                >
+                    Log Out
                 </button>
                 <button
                     class="header__hamburger-btn btn btn--icon btn--outline-on-primary"
@@ -138,7 +167,6 @@ export class Header extends BaseComponent {
             </div>
         `);
 
-        this.profile = this.getElement('[data-header-profile]');
         this.profileName = this.getElement('[data-profile-name]');
 
         this.initElements();
@@ -161,6 +189,7 @@ export class Header extends BaseComponent {
 
     private initProfile(): void {
         this.guestControls = [...this.element.querySelectorAll<HTMLElement>('[data-header-guest]')];
+        this.authControls = [...this.element.querySelectorAll<HTMLElement>('[data-header-auth]')];
         this.query('[data-profile-avatar]')?.append(this.avatar.element);
     }
 
@@ -168,6 +197,7 @@ export class Header extends BaseComponent {
         this.burgerBtn?.addEventListener('click', (): void => this.openMenu());
         this.closeBtn?.addEventListener('click', (): void => this.closeMenu());
         this.element.addEventListener('click', this.handleAuthClick);
+        this.element.addEventListener('click', this.handleLogoutClick);
         this.menuContainer?.addEventListener('click', this.handleLinksClick);
     }
 
@@ -175,7 +205,7 @@ export class Header extends BaseComponent {
         const isAuthenticated = session !== undefined;
 
         for (const control of this.guestControls) control.hidden = isAuthenticated;
-        this.profile.hidden = !isAuthenticated;
+        for (const control of this.authControls) control.hidden = !isAuthenticated;
 
         if (!isAuthenticated) return;
 
