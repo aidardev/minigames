@@ -81,14 +81,16 @@ export class AppSessionStore {
     /**
      * The single way out of an authenticated state: logout, expiration, invalid data.
      */
-    private async end(): Promise<void> {
+    private async end(): Promise<boolean> {
         localStorage.removeItem(APP_SESSION_STORAGE_KEY);
         this.setSession(undefined);
 
         try {
             await this.handlers.signOut();
+            return true;
         } catch {
             // The app session is already cleared, so a failed Firebase sign-out must not break Guest Mode.
+            return false;
         }
     }
 
@@ -154,8 +156,8 @@ export class AppSessionStore {
         this.setSession(session);
     }
 
-    public async logout(): Promise<void> {
-        await this.end();
+    public logout(): Promise<boolean> {
+        return this.end();
     }
 
     /**
