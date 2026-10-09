@@ -115,26 +115,13 @@
         &__profile {
             display: flex;
             align-items: center;
-            gap: var(--size-1-25);
-            min-width: 0;
-            font-weight: var(--font-weight-medium);
-            &--compact {
-                @include styles.min-width(styles.$br-lg) {
-                    display: none;
-                }
-                @include styles.max-width(styles.$br-sm) {
-                    display: none;
-                }
-            }
-        }
-        &__menu &__profile {
+            gap: var(--size-1);
             @include styles.max-width(styles.$br-lg) {
-                margin-top: auto;
-                font-size: var(--fs-body-large);
+                display: none;
             }
         }
         &__profile-name {
-            min-width: 0;
+            font-weight: var(--font-weight-bold);
             max-width: var(--size-15);
             overflow: hidden;
             text-overflow: ellipsis;
