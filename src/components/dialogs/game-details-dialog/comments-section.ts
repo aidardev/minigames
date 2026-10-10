@@ -4,6 +4,7 @@ import { EmptyState } from '@/components/empty-state/empty-state';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { AppSession } from '@/services/session/session.types';
 import type { Comment, GameComments } from '@/types/game-details.types';
+import { AvatarColorPicker } from '@/utils/avatar-color';
 import { formatRelativeDate } from '@/utils/date';
 import { html, type SafeHtml } from '@/utils/html';
 import { getInitial } from '@/utils/profile/profile';
@@ -17,6 +18,7 @@ export interface CommentsSectionProperties extends GameComments {
 
 export class CommentsSection extends BaseComponent<'section'> {
     private readonly slug: string;
+    private readonly avatarColors = new AvatarColorPicker();
 
     constructor({ slug, session, comments, total }: CommentsSectionProperties) {
         super('section', 'game-details__comments');
@@ -112,7 +114,10 @@ export class CommentsSection extends BaseComponent<'section'> {
                 <article class="comment">
                     <header class="comment__header">
                         <div class="comment__author">
-                            <span class="comment__avatar avatar" aria-hidden="true">
+                            <span
+                                class="comment__avatar avatar comment__avatar--color-${this.avatarColors.getIndex(comment.authorName)}"
+                                aria-hidden="true"
+                            >
                                 ${getInitial(comment.authorName)}
                             </span>
 

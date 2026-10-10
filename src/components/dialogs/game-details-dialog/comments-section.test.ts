@@ -77,6 +77,7 @@ describe('CommentsSection', () => {
 
     afterEach(() => {
         document.body.replaceChildren();
+        vi.restoreAllMocks();
     });
 
     describe('rendering', () => {
@@ -143,6 +144,30 @@ describe('CommentsSection', () => {
 
             expect(toggleCommentLike).toHaveBeenCalledWith('1', 'alex@minigames.com');
             expect(like.textContent?.trim()).toBe('1');
+        });
+
+        it('uses the first non-whitespace character of the author name in uppercase', () => {
+            const comment = { ...createComment('1', 'Nice'), authorName: '  bob' };
+            const element = setup([comment], 1);
+
+            expect(query(element, '.comment__avatar').textContent?.trim()).toBe('B');
+        });
+
+        it('gives the avatar a color class from the token range', () => {
+            vi.spyOn(Math, 'random').mockReturnValue(0.5);
+            const element = setup([createComment('1', 'Nice')], 1);
+
+            expect(query(element, '.comment__avatar').classList).toContain(
+                'comment__avatar--color-3',
+            );
+        });
+
+        it('gives the same color to the same author within one list', () => {
+            vi.spyOn(Math, 'random').mockReturnValueOnce(0).mockReturnValue(0.999);
+            const element = setup([createComment('1', 'One'), createComment('2', 'Two')], 2);
+            const [first, second] = element.querySelectorAll('.comment__avatar');
+
+            expect(first?.className).toBe(second?.className);
         });
     });
 
@@ -217,6 +242,30 @@ describe('CommentsSection', () => {
             expect(getComments).not.toHaveBeenCalled();
             expect(getRenderedTexts(element)).toStrictEqual(['Old']);
             expect(getTitle(element)).toBe('Comments (1)');
+        });
+
+        it('keeps the avatar color of an existing author after the list is refreshed', async () => {
+            const random = vi.spyOn(Math, 'random').mockReturnValue(0);
+            const element = setup([createComment('1', 'Old')], 1);
+            random.mockReturnValue(0.999);
+            vi.mocked(postComment).mockResolvedValue(createComment('9', 'Hi'));
+            vi.mocked(getComments).mockResolvedValue({
+                comments: [
+                    { ...createComment('9', 'Hi'), authorName: 'carol' },
+                    createComment('1', 'Old'),
+                ],
+                total: 2,
+            });
+
+            sendComment(element, 'Hi');
+            await vi.waitFor((): void =>
+                expect(element.querySelectorAll('.comment')).toHaveLength(2),
+            );
+
+            const [carol, bob] = element.querySelectorAll('.comment__avatar');
+
+            expect(bob?.classList).toContain('comment__avatar--color-1');
+            expect(carol?.classList).toContain('comment__avatar--color-5');
         });
 
         describe('when only the refresh fails', () => {
