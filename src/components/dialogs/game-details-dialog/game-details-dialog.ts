@@ -47,7 +47,8 @@ export class GameDetailsDialog extends Dialog {
             </div>
         `);
 
-        const userEmail = appSession.getActiveSession()?.email;
+        const session = appSession.getActiveSession();
+        const userEmail = session?.email;
 
         this.detailsRegion = this.adopt(
             new AsyncRegion<GameDetails>(
@@ -71,7 +72,7 @@ export class GameDetailsDialog extends Dialog {
                         getComments(slug, { userEmail, signal }),
                     renderSkeleton: (): CommentsSkeleton => new CommentsSkeleton(),
                     renderSuccess: (data: GameComments): CommentsSection =>
-                        new CommentsSection(data),
+                        new CommentsSection({ ...data, slug, session }),
                     renderError: (error) =>
                         isNotFoundError(error) ? document.createElement('div') : undefined,
                 },

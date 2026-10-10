@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FALLBACK_PROFILE_NAME, getInitials, getProfileView } from './profile';
+import { FALLBACK_PROFILE_NAME, getInitial, getInitials, getProfileView } from './profile';
 
 describe('getInitials', () => {
     it.each([
@@ -26,6 +26,24 @@ describe('getInitials', () => {
 
     it.each([[''], [' '.repeat(3)], ['@@@'], ['😀']])('returns nothing for "%s"', (name) => {
         expect(getInitials(name)).toBe('');
+    });
+});
+
+describe('getInitial', () => {
+    it('returns the uppercase first letter', () => {
+        expect(getInitial('alex')).toBe('A');
+    });
+
+    it('skips leading whitespace', () => {
+        expect(getInitial('  forest')).toBe('F');
+    });
+
+    it('does not cut a surrogate pair', () => {
+        expect(getInitial('🌲tree')).toBe('🌲');
+    });
+
+    it('returns an empty string for an empty name', () => {
+        expect(getInitial(' '.repeat(3))).toBe('');
     });
 });
 

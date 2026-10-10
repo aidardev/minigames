@@ -1,4 +1,10 @@
-import type { CommentsResponse, GameComments } from '@/types/game-details.types';
+import type {
+    Comment,
+    CommentsResponse,
+    GameComments,
+    NewComment,
+    NewCommentResponse,
+} from '@/types/game-details.types';
 import { apiClient } from './api-client';
 
 export interface CommentsRequest {
@@ -25,4 +31,13 @@ export async function getComments(
         comments: response.data,
         total: response.meta.totalComments,
     };
+}
+
+export async function postComment(slug: string, comment: NewComment): Promise<Comment> {
+    const response = await apiClient<NewCommentResponse>(
+        `/games/${encodeURIComponent(slug)}/comments`,
+        { method: 'POST', body: comment },
+    );
+
+    return response.data;
 }
