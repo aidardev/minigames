@@ -7,7 +7,7 @@
         font-size: var(--fs-body-small);
         font-weight: var(--font-weight-bold);
         &__image {
-            width: 100%;
+            width: var(--size-full);
             height: 100%;
             object-fit: cover;
         }

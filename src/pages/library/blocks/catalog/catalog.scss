@@ -26,9 +26,9 @@
                 }
             }
             @include styles.max-width(styles.$br-sm) {
-                width: 100%;
+                width: var(--size-full);
                 .dropdown__list {
-                    width: 100%;
+                    width: var(--size-full);
                     right: 0;
                 }
             }
