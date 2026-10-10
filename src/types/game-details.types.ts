@@ -61,3 +61,13 @@ export interface GameComments {
     comments: Comment[];
     total: number;
 }
+
+export interface NewComment {
+    userEmail: string;
+    authorName: string;
+    text: string;
+}
+
+export interface NewCommentResponse {
+    data: Comment;
+}
