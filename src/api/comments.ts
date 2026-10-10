@@ -1,5 +1,7 @@
 import type {
     Comment,
+    CommentLike,
+    CommentLikeResponse,
     CommentsResponse,
     GameComments,
     NewComment,
@@ -37,6 +39,18 @@ export async function postComment(slug: string, comment: NewComment): Promise<Co
     const response = await apiClient<NewCommentResponse>(
         `/games/${encodeURIComponent(slug)}/comments`,
         { method: 'POST', body: comment },
+    );
+
+    return response.data;
+}
+
+export async function toggleCommentLike(
+    commentId: string,
+    userEmail: string,
+): Promise<CommentLike> {
+    const response = await apiClient<CommentLikeResponse>(
+        `/comments/${encodeURIComponent(commentId)}/like`,
+        { method: 'POST', body: { userEmail } },
     );
 
     return response.data;
