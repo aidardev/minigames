@@ -5,7 +5,7 @@ import type {
     SessionListener,
 } from './session.types';
 
-export const APP_SESSION_STORAGE_KEY = 'minigames:aidardev:app-session';
+export const APP_SESSION_STORAGE_KEY = 'minigames:minigames-aidar:app-session';
 export const APP_SESSION_LIFETIME_MS = 50 * 60 * 1000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
