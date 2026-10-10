@@ -28,6 +28,12 @@ export function getInitials(name: string): string {
     return letters.join('').toUpperCase();
 }
 
+export function getInitial(name: string): string {
+    const [first = ''] = name.trim();
+
+    return first.toUpperCase();
+}
+
 export function getEmailLocalPart(email: string): string {
     const atIndex = email.indexOf('@');
 
