@@ -1,5 +1,6 @@
 import { SafeHtml } from '@/utils/html';
 import { BaseComponent } from '../base-component';
+import { bringSnackbarsToFront } from '../snackbar/snackbar';
 import './dialog.scss';
 
 interface DialogOptions {
@@ -85,6 +86,7 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
         if (this.element.open) return;
         if (!this.element.isConnected) document.body.append(this.element);
         this.element.showModal();
+        bringSnackbarsToFront();
     }
 
     public close(returnValue?: string): void {
