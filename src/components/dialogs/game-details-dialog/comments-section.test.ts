@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { getComments, postComment } from '@/api/comments';
+import { getComments, postComment, toggleCommentLike } from '@/api/comments';
 import { requireSession } from '@/app/require-auth';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { AppSession } from '@/services/session/session.types';
@@ -8,7 +8,11 @@ import type { Comment } from '@/types/game-details.types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentsSection } from './comments-section';
 
-vi.mock('@/api/comments', () => ({ getComments: vi.fn(), postComment: vi.fn() }));
+vi.mock('@/api/comments', () => ({
+    getComments: vi.fn(),
+    postComment: vi.fn(),
+    toggleCommentLike: vi.fn(),
+}));
 vi.mock('@/app/require-auth', () => ({ requireSession: vi.fn() }));
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 
@@ -105,7 +109,7 @@ describe('CommentsSection', () => {
 
         it('marks comments liked by the current user as active', () => {
             const element = setup([createComment('1', 'Nice', true)], 1);
-            const like = query(element, '[data-action="like-comment"]');
+            const like = query(element, '.comment__like');
 
             expect(like.getAttribute('aria-pressed')).toBe('true');
             expect(like.classList.contains('is-active')).toBe(true);
@@ -117,6 +121,28 @@ describe('CommentsSection', () => {
             expect(getTitle(element)).toBe('Comments (0)');
             expect(element.textContent).toContain('No comments yet');
             expect(element.querySelector('.game-details__comments-list')).toBeNull();
+        });
+
+        it('shows the like count from the server without adding to it', () => {
+            const comment = { ...createComment('1', 'Nice', true), likesCount: 7 };
+            const element = setup([comment], 1);
+
+            expect(query(element, '.comment__like').textContent?.trim()).toBe('7');
+        });
+
+        it('updates a like button from the server response', async () => {
+            vi.mocked(toggleCommentLike).mockResolvedValue({
+                isLikedByCurrentUser: true,
+                likesCount: 1,
+            });
+            const element = setup([createComment('1', 'Nice')], 1);
+            const like = query<HTMLButtonElement>(element, '.comment__like');
+
+            like.click();
+            await vi.waitFor((): void => expect(like.getAttribute('aria-pressed')).toBe('true'));
+
+            expect(toggleCommentLike).toHaveBeenCalledWith('1', 'alex@minigames.com');
+            expect(like.textContent?.trim()).toBe('1');
         });
     });
 

@@ -71,3 +71,12 @@ export interface NewComment {
 export interface NewCommentResponse {
     data: Comment;
 }
+
+export interface CommentLike {
+    isLikedByCurrentUser: boolean;
+    likesCount: number;
+}
+
+export interface CommentLikeResponse {
+    data: CommentLike;
+}
