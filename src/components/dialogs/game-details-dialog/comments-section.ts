@@ -1,33 +1,23 @@
+import { getComments } from '@/api/comments';
 import heartIcon from '@/assets/icons/favorite.svg?raw';
-import sendIcon from '@/assets/icons/send.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import { EmptyState } from '@/components/empty-state/empty-state';
+import { showSnackbar } from '@/components/snackbar/snackbar';
+import type { AppSession } from '@/services/session/session.types';
 import type { Comment, GameComments } from '@/types/game-details.types';
 import { formatRelativeDate } from '@/utils/date';
 import { html, type SafeHtml, unsafeHtml } from '@/utils/html';
-import { toRem } from '@/utils/to-rem';
+import { CommentForm } from './comment-form';
+
+export interface CommentsSectionProperties extends GameComments {
+    slug: string;
+    session: AppSession | undefined;
+}
 
 export class CommentsSection extends BaseComponent<'section'> {
+    private readonly slug: string;
     private readonly likedComments = new Set<string>();
-    private readonly comments: Comment[];
-
-    private handleSubmit = (event: SubmitEvent): void => {
-        const form = event.target;
-
-        if (!(form instanceof HTMLFormElement)) return;
-        if (!form.matches('[data-comment-form]')) return;
-
-        event.preventDefault();
-    };
-
-    private handleInput = (event: Event): void => {
-        const target = event.target;
-
-        if (!(target instanceof HTMLTextAreaElement)) return;
-        if (!target.matches('[data-comment-input]')) return;
-
-        this.resizeTextarea(target);
-    };
+    private comments: Comment[] = [];
 
     private handleActionClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
@@ -38,10 +28,47 @@ export class CommentsSection extends BaseComponent<'section'> {
         }
     };
 
-    constructor({ comments, total }: GameComments) {
+    constructor({ slug, session, comments, total }: CommentsSectionProperties) {
         super('section', 'game-details__comments');
 
+        this.slug = slug;
+
+        this.setHtml(html`
+            <h3 class="game-details__section-title" data-comments-title></h3>
+            <div data-comment-form-slot></div>
+            <div data-comments-slot></div>
+        `);
+
+        this.getElement('[data-comment-form-slot]').replaceWith(
+            this.adopt(
+                new CommentForm({
+                    slug,
+                    session,
+                    onPosted: (activeSession: AppSession): Promise<void> =>
+                        this.refresh(activeSession),
+                }),
+            ).element,
+        );
+
+        this.showComments({ comments, total });
+
+        this.element.addEventListener('click', this.handleActionClick);
+    }
+
+    private async refresh(session: AppSession): Promise<void> {
+        try {
+            this.showComments(await getComments(this.slug, { userEmail: session.email }));
+        } catch {
+            showSnackbar(
+                'Your comment was posted, but the list could not be refreshed. Reopen the game to see it.',
+                'warning',
+            );
+        }
+    }
+
+    private showComments({ comments, total }: GameComments): void {
         this.comments = comments;
+        this.likedComments.clear();
 
         for (const comment of comments) {
             if (comment.isLikedByCurrentUser) {
@@ -49,47 +76,12 @@ export class CommentsSection extends BaseComponent<'section'> {
             }
         }
 
-        this.setHtml(html`
-            <h3 class="game-details__section-title">Comments (${total})</h3>
+        this.updateTotal(total);
 
-            <form class="game-details__comment-form comment-form" data-comment-form>
-                <div class="comment-form__avatar avatar" aria-hidden="true">U</div>
-                <label class="comment-form__label sr-only" for="game-details-comment">
-                    Write a comment
-                </label>
-                <textarea
-                    id="game-details-comment"
-                    class="comment-form__input"
-                    name="comment"
-                    rows="1"
-                    maxlength="1000"
-                    placeholder="Sign in to write a comment"
-                    data-comment-input
-                    disabled
-                ></textarea>
-                <button
-                    class="comment-form__submit btn btn--icon btn--on-primary"
-                    type="submit"
-                    aria-label="Submit comment"
-                    disabled
-                >
-                    ${unsafeHtml(sendIcon)}
-                </button>
-            </form>
-
-            ${
-                comments.length > 0
-                    ? html`
-                          <ul class="game-details__comments-list list-unstyled">
-                              ${comments.map((comment: Comment): SafeHtml => this.renderComment(comment))}
-                          </ul>
-                      `
-                    : html`<div data-comments-empty></div>`
-            }
-        `);
+        const body = this.getElement('[data-comments-slot]');
 
         if (comments.length === 0) {
-            this.query('[data-comments-empty]')?.replaceWith(
+            body.replaceChildren(
                 this.adopt(
                     new EmptyState({
                         title: 'No comments yet',
@@ -97,11 +89,22 @@ export class CommentsSection extends BaseComponent<'section'> {
                     }),
                 ).element,
             );
+            return;
         }
 
-        this.element.addEventListener('click', this.handleActionClick);
-        this.element.addEventListener('submit', this.handleSubmit);
-        this.element.addEventListener('input', this.handleInput);
+        body.innerHTML = this.renderList().value;
+    }
+
+    private updateTotal(total: number): void {
+        this.getElement('[data-comments-title]').textContent = `Comments (${total})`;
+    }
+
+    private renderList(): SafeHtml {
+        return html`
+            <ul class="game-details__comments-list list-unstyled">
+                ${this.comments.map((comment: Comment): SafeHtml => this.renderComment(comment))}
+            </ul>
+        `;
     }
 
     private renderComment(comment: Comment): SafeHtml {
@@ -169,10 +172,5 @@ export class CommentsSection extends BaseComponent<'section'> {
         if (countElement) {
             countElement.textContent = String(count);
         }
-    }
-
-    private resizeTextarea(textarea: HTMLTextAreaElement): void {
-        textarea.style.height = 'auto';
-        textarea.style.height = toRem(Math.min(textarea.scrollHeight, 88));
     }
 }
