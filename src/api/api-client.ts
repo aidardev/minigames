@@ -4,8 +4,10 @@ import { ApiError, type ApiErrorBody } from './api-error';
 type QueryValue = string | number | boolean | undefined;
 
 export interface RequestOptions {
+    method?: 'GET' | 'POST';
     query?: Record<string, QueryValue>;
     signal?: AbortSignal;
+    body?: unknown;
 }
 
 const REQUEST_TIMEOUT_MS = 10_000;
@@ -74,7 +76,7 @@ function toRequestError(error: unknown, signal: AbortSignal | undefined): Error 
  * Throws ApiError for anything the user should see.
  */
 export async function apiClient<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { query, signal } = options;
+    const { method = 'GET', query, signal, body } = options;
     const timeoutSignal = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
     // Whichever fires first aborts the request.
     const requestSignal = signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal;
@@ -82,7 +84,14 @@ export async function apiClient<T>(endpoint: string, options: RequestOptions = {
     let response: Response;
 
     try {
-        response = await fetch(buildUrl(endpoint, query), { signal: requestSignal });
+        response = await fetch(buildUrl(endpoint, query), {
+            method,
+            signal: requestSignal,
+            ...(body !== undefined && {
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            }),
+        });
     } catch (error) {
         throw toRequestError(error, signal);
     }

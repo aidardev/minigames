@@ -105,6 +105,11 @@
     --size-14: #{f.rem(112px)};
     --size-15: #{f.rem(120px)};
 
+    --size-one-third: 33.333%;
+    --size-half: 50%;
+    --size-three-fifths: 60%;
+    --size-full: 100%;
+
     // Corner
     --corner-extra-small: #{f.rem(4px)};
     --corner-small: #{f.rem(8px)};
@@ -154,6 +159,7 @@
 
     // Ring Borders
     --ring-medium-on-primary: inset 0 0 0 var(--border-width-medium) var(--color-on-primary);
+    --ring-medium-error: inset 0 0 0 var(--border-width-medium) var(--color-error);
 
     // Focus / Outline
     --outline-offset: 3px;

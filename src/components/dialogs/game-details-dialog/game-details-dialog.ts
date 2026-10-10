@@ -4,6 +4,7 @@ import { getGameDetails } from '@/api/game-details';
 import closeIcon from '@/assets/icons/close-alt.svg?raw';
 import { AsyncRegion } from '@/components/async-region/async-region';
 import { EmptyState } from '@/components/empty-state/empty-state';
+import { appSession } from '@/services/session/app-session';
 import type { GameComments, GameDetails } from '@/types/game-details.types';
 import { html, unsafeHtml } from '@/utils/html';
 import { Dialog } from '../dialog';
@@ -46,11 +47,14 @@ export class GameDetailsDialog extends Dialog {
             </div>
         `);
 
+        const session = appSession.getActiveSession();
+        const userEmail = session?.email;
+
         this.detailsRegion = this.adopt(
             new AsyncRegion<GameDetails>(
                 {
                     load: (signal: AbortSignal): Promise<GameDetails> =>
-                        getGameDetails(slug, signal),
+                        getGameDetails(slug, { signal, userEmail }),
                     renderSkeleton: (): GameDetailsSkeleton => new GameDetailsSkeleton(),
                     renderSuccess: (game: GameDetails): GameDetailsContent =>
                         new GameDetailsContent(game),
@@ -64,10 +68,11 @@ export class GameDetailsDialog extends Dialog {
         this.commentsRegion = this.adopt(
             new AsyncRegion<GameComments>(
                 {
-                    load: (signal: AbortSignal): Promise<GameComments> => getComments(slug, signal),
+                    load: (signal: AbortSignal): Promise<GameComments> =>
+                        getComments(slug, { userEmail, signal }),
                     renderSkeleton: (): CommentsSkeleton => new CommentsSkeleton(),
                     renderSuccess: (data: GameComments): CommentsSection =>
-                        new CommentsSection(data),
+                        new CommentsSection({ ...data, slug, session }),
                     renderError: (error) =>
                         isNotFoundError(error) ? document.createElement('div') : undefined,
                 },

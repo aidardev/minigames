@@ -23,6 +23,10 @@ export abstract class BaseComponent<
         return child;
     }
 
+    protected release(child: BaseComponent): void {
+        if (this.childComponents.delete(child)) child.destroy();
+    }
+
     public destroy(): void {
         for (const child of this.childComponents) {
             child.destroy();
@@ -33,5 +37,13 @@ export abstract class BaseComponent<
 
     protected query<E extends HTMLElement>(selector: string): E | undefined {
         return this.element.querySelector<E>(selector) || undefined;
+    }
+
+    protected getElement<E extends HTMLElement>(selector: string): E {
+        const element = this.query<E>(selector);
+
+        if (!element) throw new Error(`Element not found: ${selector}`);
+
+        return element;
     }
 }

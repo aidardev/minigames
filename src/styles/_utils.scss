@@ -23,7 +23,7 @@
 
     .img-responsive {
         display: block;
-        max-width: 100%;
+        max-width: var(--size-full);
         height: auto;
     }
 

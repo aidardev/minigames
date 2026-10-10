@@ -7,7 +7,7 @@
         position: relative;
         &__hero-img {
             height: $hero-img-height;
-            width: 100%;
+            width: var(--size-full);
             object-fit: cover;
         }
         &__close {
@@ -135,18 +135,9 @@
             gap: var(--size-2);
         }
         &__comment {
-            $avatar-colors: (
-                var(--color-avatar-random-3),
-                var(--color-primary),
-                var(--color-avatar-random-1),
-                var(--color-avatar-random-2),
-                var(--color-avatar-random-4),
-                var(--color-avatar-random-5)
-            );
-
-            @for $i from 1 through length($avatar-colors) {
-                &:nth-child(#{length($avatar-colors)}n + #{$i}) .comment__avatar {
-                    background-color: nth($avatar-colors, $i);
+            @for $i from 1 through 5 {
+                .comment__avatar--color-#{$i} {
+                    background-color: var(--color-avatar-random-#{$i});
                 }
             }
         }
@@ -176,7 +167,7 @@
         }
         &__skeleton-title {
             height: var(--size-5);
-            width: 60%;
+            width: var(--size-three-fifths);
         }
         &__skeleton-text {
             height: var(--size-2);
@@ -190,7 +181,7 @@
         }
         &__skeleton-section-title {
             height: var(--size-2);
-            width: 30%;
+            width: var(--size-one-third);
         }
     }
 

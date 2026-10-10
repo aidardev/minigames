@@ -53,7 +53,7 @@
                 var(--shadow-level-3);
             border-radius: var(--corner-extra-large);
             background: var(--color-bg);
-            width: 100%;
+            width: var(--size-full);
             max-width: var(--card-width);
             @include styles.max-width(styles.$br-lg) {
                 --card-width: #{styles.rem(480px)};

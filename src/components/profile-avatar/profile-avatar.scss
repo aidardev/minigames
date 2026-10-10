@@ -1,0 +1,15 @@
+@layer components {
+    .profile-avatar {
+        width: var(--size-4);
+        height: var(--size-4);
+        background: var(--color-on-primary);
+        color: var(--color-white);
+        font-size: var(--fs-body-small);
+        font-weight: var(--font-weight-bold);
+        &__image {
+            width: var(--size-full);
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+}

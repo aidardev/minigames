@@ -2,6 +2,14 @@ import type { AuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
 import type { NavigateOptions } from './router';
 
 export const NAVIGATE_EVENT = 'app:navigate';
+export const GAME_PARAM = 'game';
+export const AUTH_PARAM = 'auth';
+
+type AuthGuard = () => boolean;
+
+const authGate: { isBlocked: AuthGuard } = {
+    isBlocked: (): boolean => false,
+};
 
 export interface NavigateEventDetail {
     to: string;
@@ -13,8 +21,8 @@ export function isNavigateEvent(event: Event): event is CustomEvent<NavigateEven
 }
 
 /**
-Components ask for navigation by event, so they never need a reference to the router.
-*/
+ * Components ask for navigation by event, so they never need a reference to the router.
+ */
 export function navigate(to: string, options?: NavigateOptions): void {
     dispatchEvent(
         new CustomEvent<NavigateEventDetail>(NAVIGATE_EVENT, { detail: { to, options } }),
@@ -35,16 +43,27 @@ export function setQueryParameters(
 }
 
 /**
-Sets one query param and keeps the rest.
-*/
+ * Sets one query param and keeps the rest.
+ */
 export function setQueryParameter(key: string, value: string, options?: NavigateOptions): void {
     setQueryParameters({ [key]: value }, options);
 }
 
 export function openGameDetails(slug: string): void {
-    setQueryParameter('game', slug);
+    setQueryParameter(GAME_PARAM, slug);
 }
 
 export function openAuth(tab: AuthTab): void {
-    setQueryParameter('auth', tab);
+    // Blocked before navigating, so no history entry is created for a dialog that never opens.
+    if (authGate.isBlocked()) return;
+
+    setQueryParameter(AUTH_PARAM, tab);
+}
+
+/**
+ * Registers the check that stops Auth from opening (returns true when blocked).
+ * Lets the navigation layer stay free of session and UI dependencies.
+ */
+export function setAuthGuard(isGuard: AuthGuard): void {
+    authGate.isBlocked = isGuard;
 }
