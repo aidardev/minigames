@@ -23,6 +23,10 @@ export abstract class BaseComponent<
         return child;
     }
 
+    protected release(child: BaseComponent): void {
+        if (this.childComponents.delete(child)) child.destroy();
+    }
+
     public destroy(): void {
         for (const child of this.childComponents) {
             child.destroy();

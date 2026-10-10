@@ -15,7 +15,7 @@ $game-details-dialog-width: #{styles.rem(600px)};
         color: var(--color-on-primary);
         border-radius: var(--corner-extra-large);
         width: var(--dialog-width);
-        max-width: 100%;
+        max-width: var(--size-full);
         margin: auto;
         border: none;
         padding: 0;

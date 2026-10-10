@@ -2,6 +2,8 @@ import type { AuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
 import type { NavigateOptions } from './router';
 
 export const NAVIGATE_EVENT = 'app:navigate';
+export const GAME_PARAM = 'game';
+export const AUTH_PARAM = 'auth';
 
 type AuthGuard = () => boolean;
 
@@ -48,14 +50,14 @@ export function setQueryParameter(key: string, value: string, options?: Navigate
 }
 
 export function openGameDetails(slug: string): void {
-    setQueryParameter('game', slug);
+    setQueryParameter(GAME_PARAM, slug);
 }
 
 export function openAuth(tab: AuthTab): void {
     // Blocked before navigating, so no history entry is created for a dialog that never opens.
     if (authGate.isBlocked()) return;
 
-    setQueryParameter('auth', tab);
+    setQueryParameter(AUTH_PARAM, tab);
 }
 
 /**

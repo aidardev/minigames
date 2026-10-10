@@ -6,6 +6,7 @@ import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { AppSession } from '@/services/session/session.types';
 import type { Comment } from '@/types/game-details.types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { CommentLikeButton } from './comment-like-button';
 import { CommentsSection } from './comments-section';
 
 vi.mock('@/api/comments', () => ({
@@ -199,6 +200,21 @@ describe('CommentsSection', () => {
             await vi.waitFor((): void => expect(getTitle(element)).toBe('Comments (4)'));
 
             expect(getRenderedTexts(element)).toStrictEqual(['Hi', 'Old']);
+        });
+
+        it('destroys like buttons from the old list before mounting replacements', async () => {
+            vi.mocked(postComment).mockResolvedValue(createComment('9', 'Hi'));
+            vi.mocked(getComments).mockResolvedValue({
+                comments: [createComment('9', 'Hi'), createComment('1', 'Old')],
+                total: 2,
+            });
+            const destroy = vi.spyOn(CommentLikeButton.prototype, 'destroy');
+            const element = setup([createComment('1', 'Old')], 1);
+
+            sendComment(element, 'Hi');
+            await vi.waitFor((): void => expect(getTitle(element)).toBe('Comments (2)'));
+
+            expect(destroy).toHaveBeenCalledOnce();
         });
 
         it('requests the list for the slug and the email of the posting user', async () => {

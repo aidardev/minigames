@@ -7,7 +7,7 @@
         position: relative;
         &__hero-img {
             height: $hero-img-height;
-            width: 100%;
+            width: var(--size-full);
             object-fit: cover;
         }
         &__close {
@@ -167,7 +167,7 @@
         }
         &__skeleton-title {
             height: var(--size-5);
-            width: 60%;
+            width: var(--size-three-fifths);
         }
         &__skeleton-text {
             height: var(--size-2);
@@ -181,7 +181,7 @@
         }
         &__skeleton-section-title {
             height: var(--size-2);
-            width: 30%;
+            width: var(--size-one-third);
         }
     }
 

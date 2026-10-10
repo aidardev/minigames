@@ -5,6 +5,7 @@ import { toggleCommentLike } from '@/api/comments';
 import { requireSession } from '@/app/require-auth';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { CommentLike } from '@/types/game-details.types';
+import { HttpStatus } from '@/utils/status-codes';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentLikeButton } from './comment-like-button';
 
@@ -186,7 +187,9 @@ describe('CommentLikeButton', () => {
 
     describe('request failure', () => {
         it('shows the server message, keeps the state and unlocks the button', async () => {
-            vi.mocked(toggleCommentLike).mockRejectedValue(new ApiError('Comment not found', 404));
+            vi.mocked(toggleCommentLike).mockRejectedValue(
+                new ApiError('Comment not found', HttpStatus.NOT_FOUND),
+            );
             const element = setup({ isLiked: false, likesCount: 5 });
 
             element.click();
@@ -213,7 +216,9 @@ describe('CommentLikeButton', () => {
         });
 
         it('does not retry on its own, a new request needs a new click', async () => {
-            vi.mocked(toggleCommentLike).mockRejectedValueOnce(new ApiError('Server error', 500));
+            vi.mocked(toggleCommentLike).mockRejectedValueOnce(
+                new ApiError('Server error', HttpStatus.INTERNAL_SERVER_ERROR),
+            );
             vi.mocked(toggleCommentLike).mockResolvedValueOnce({
                 isLikedByCurrentUser: true,
                 likesCount: 6,

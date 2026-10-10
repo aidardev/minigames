@@ -22,7 +22,7 @@
             align-items: center;
         }
         &__inner {
-            width: 100%;
+            width: var(--size-full);
             max-width: calc(var(--container-header-width) + var(--container-padding-x) * 2);
             gap: var(--size-2);
         }
@@ -42,7 +42,7 @@
                 z-index: var(--z-overlay);
                 top: 0;
                 left: 0;
-                width: 100%;
+                width: var(--size-full);
                 height: 100%;
                 overflow-y: auto;
                 transform: translateX(100%);

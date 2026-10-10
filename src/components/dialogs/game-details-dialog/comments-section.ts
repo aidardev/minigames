@@ -19,6 +19,7 @@ export interface CommentsSectionProperties extends GameComments {
 export class CommentsSection extends BaseComponent<'section'> {
     private readonly slug: string;
     private readonly avatarColors = new AvatarColorPicker();
+    private likeButtons: CommentLikeButton[] = [];
 
     constructor({ slug, session, comments, total }: CommentsSectionProperties) {
         super('section', 'game-details__comments');
@@ -57,6 +58,9 @@ export class CommentsSection extends BaseComponent<'section'> {
     }
 
     private showComments({ comments, total }: GameComments): void {
+        for (const button of this.likeButtons) this.release(button);
+        this.likeButtons = [];
+
         this.updateTotal(total);
 
         const body = this.getElement('[data-comments-slot]');
@@ -88,15 +92,15 @@ export class CommentsSection extends BaseComponent<'section'> {
             );
             if (!comment) continue;
 
-            slot.replaceWith(
-                this.adopt(
-                    new CommentLikeButton({
-                        commentId: comment.commentId,
-                        isLiked: comment.isLikedByCurrentUser,
-                        likesCount: comment.likesCount,
-                    }),
-                ).element,
+            const button = this.adopt(
+                new CommentLikeButton({
+                    commentId: comment.commentId,
+                    isLiked: comment.isLikedByCurrentUser,
+                    likesCount: comment.likesCount,
+                }),
             );
+            this.likeButtons.push(button);
+            slot.replaceWith(button.element);
         }
     }
 
