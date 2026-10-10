@@ -4,11 +4,8 @@ import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import { appSession } from '@/services/session/app-session';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
-import { setAuthGuard, setQueryParameter } from './navigation';
+import { AUTH_PARAM, GAME_PARAM, setAuthGuard, setQueryParameter } from './navigation';
 import type { Route, Router } from './router';
-
-const GAME_PARAM = 'game';
-const AUTH_PARAM = 'auth';
 
 interface OpenDialog {
     // What is open, e.g. "game:cat-mail-co" or "auth"; equal keys mean "nothing to do".
