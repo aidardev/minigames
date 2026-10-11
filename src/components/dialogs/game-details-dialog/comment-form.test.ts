@@ -6,7 +6,6 @@ import { requireSession } from '@/app/require-auth';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { AppSession } from '@/services/session/session.types';
 import type { Comment } from '@/types/game-details.types';
-import { HttpStatus } from '@/utils/status-codes';
 import { toRem } from '@/utils/to-rem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CommentForm, getCommentError } from './comment-form';
@@ -348,9 +347,7 @@ describe('CommentForm', () => {
 
     describe('request failure', () => {
         it('shows the server message, keeps the text and unlocks the form', async () => {
-            vi.mocked(postComment).mockRejectedValue(
-                new ApiError('Text is not allowed', HttpStatus.BAD_REQUEST),
-            );
+            vi.mocked(postComment).mockRejectedValue(new ApiError('Text is not allowed', 400));
             const { input, button, onPosted } = setup();
             input.value = 'Great game';
 
@@ -379,9 +376,7 @@ describe('CommentForm', () => {
         });
 
         it('does not retry on its own, a new request needs a new submit', async () => {
-            vi.mocked(postComment).mockRejectedValueOnce(
-                new ApiError('Server error', HttpStatus.INTERNAL_SERVER_ERROR),
-            );
+            vi.mocked(postComment).mockRejectedValueOnce(new ApiError('Server error', 500));
             const { input, onPosted } = setup();
             input.value = 'Great game';
 
