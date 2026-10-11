@@ -59,10 +59,10 @@
             }
 
             &:not(.is-hidden) {
+                $mobile-gap: styles.rem(2.5px);
                 margin-inline: var(--size-05);
                 @include styles.max-width(styles.$br-sm) {
-                    // Hardcoded from figma: no Figma token exists & single token is overkill.
-                    margin-inline: styles.rem(2.5px);
+                    margin-inline: $mobile-gap;
                 }
             }
         }

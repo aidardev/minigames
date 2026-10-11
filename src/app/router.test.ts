@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 
+import { APP_SESSION_LIFETIME_MS, AppSessionStore } from '@/services/session/app-session-store';
+import type { AppSession } from '@/services/session/session.types';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { BaseComponent } from '../components/base-component';
 import { NAVIGATE_EVENT } from './navigation';
@@ -54,6 +56,7 @@ const libraryPages: LibraryPage[] = [];
 const notFoundPages: NotFoundPage[] = [];
 const outlet = document.createElement('main');
 const routeListener = vi.fn();
+const beforeNavigation = vi.fn();
 
 describe('Router', () => {
     let router: Router;
@@ -70,7 +73,14 @@ describe('Router', () => {
         document.body.append(outlet);
         windowListeners = vi.spyOn(globalThis, 'addEventListener');
         documentListeners = vi.spyOn(document, 'addEventListener');
-        router = new Router(outlet, { '/': HomePage, '/library': LibraryPage }, NotFoundPage);
+        beforeNavigation.mockReset();
+        routeListener.mockReset();
+        router = new Router(
+            outlet,
+            { '/': HomePage, '/library': LibraryPage },
+            NotFoundPage,
+            beforeNavigation,
+        );
         router.onRouteChange(routeListener);
         router.start();
         routeListener.mockClear();
@@ -99,6 +109,82 @@ describe('Router', () => {
             query: new URLSearchParams('category=puzzle'),
         });
     });
+
+    it('checks the session at startup and before constructing the next page', () => {
+        expect(beforeNavigation).toHaveBeenCalledOnce();
+        beforeNavigation.mockImplementation(() => {
+            expect(libraryPages).toHaveLength(0);
+        });
+
+        router.navigate('/library');
+
+        expect(beforeNavigation).toHaveBeenCalledTimes(2);
+        expect(libraryPages).toHaveLength(1);
+    });
+
+    it('checks before query updates and dialog route listeners', () => {
+        beforeNavigation.mockImplementation(() => {
+            expect(homePages[0]?.queryChanges).toEqual([]);
+            expect(routeListener).not.toHaveBeenCalled();
+        });
+
+        router.navigate('/?game=cat-mail-co');
+
+        expect(beforeNavigation).toHaveBeenCalledTimes(2);
+        expect(homePages[0]?.queryChanges).toEqual(['game=cat-mail-co']);
+        expect(routeListener).toHaveBeenCalledOnce();
+    });
+
+    it('checks even when navigating to the current URL', () => {
+        router.navigate('/');
+
+        expect(beforeNavigation).toHaveBeenCalledTimes(2);
+        expect(routeListener).not.toHaveBeenCalled();
+    });
+
+    it('checks before rendering a browser history navigation', () => {
+        beforeNavigation.mockImplementation(() => {
+            expect(libraryPages).toHaveLength(0);
+        });
+        history.pushState(undefined, '', '/library');
+
+        dispatchEvent(new PopStateEvent('popstate'));
+
+        expect(beforeNavigation).toHaveBeenCalledTimes(2);
+        expect(libraryPages).toHaveLength(1);
+    });
+
+    it.each(['/library', '/?game=cat-mail-co', '/'])(
+        'expires a delayed session and continues public navigation to %s as a guest',
+        (target) => {
+            vi.useFakeTimers();
+            const signOut = vi.fn<() => Promise<void>>().mockResolvedValue();
+            const onExpired = vi.fn();
+            const session = new AppSessionStore({ signOut, onExpired });
+            let visibleSession: AppSession | undefined;
+            session.subscribe((value) => {
+                visibleSession = value;
+            });
+            session.createSession({ displayName: 'Alex', email: 'alex@example.com' });
+            expect(visibleSession).toBeDefined();
+            beforeNavigation.mockImplementation(() => {
+                session.checkExpiration();
+            });
+            routeListener.mockImplementation(() => {
+                expect(visibleSession).toBeUndefined();
+            });
+            // Move the clock without running the timer, as can happen in a background tab.
+            vi.setSystemTime(Date.now() + APP_SESSION_LIFETIME_MS);
+
+            router.navigate(target);
+
+            expect(visibleSession).toBeUndefined();
+            expect(signOut).toHaveBeenCalledOnce();
+            expect(onExpired).toHaveBeenCalledOnce();
+            expect(location.pathname + location.search).toBe(target);
+            expect(outlet.firstElementChild).not.toBeNull();
+        },
+    );
 
     it('updates a query-aware page without rebuilding it or scrolling', () => {
         router.navigate('/?game=first');

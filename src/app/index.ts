@@ -30,6 +30,9 @@ export function startApp(): void {
             '/library': LibraryPage,
         },
         NotFoundPage,
+        (): void => {
+            appSession.checkExpiration();
+        },
     );
 
     new DialogController(router).start();
