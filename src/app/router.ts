@@ -43,14 +43,21 @@ export class Router {
     private readonly outlet: HTMLElement;
     private readonly routes: Routes;
     private readonly notFound: PageConstructor;
+    private readonly beforeNavigation: () => void;
     private current: BaseComponent | undefined = undefined;
     private currentPath: string | undefined = undefined;
     private listeners: RouteChangeListener[] = [];
 
-    constructor(outlet: HTMLElement, routes: Routes, notFound: PageConstructor) {
+    constructor(
+        outlet: HTMLElement,
+        routes: Routes,
+        notFound: PageConstructor,
+        beforeNavigation: () => void = () => {},
+    ) {
         this.outlet = outlet;
         this.routes = routes;
         this.notFound = notFound;
+        this.beforeNavigation = beforeNavigation;
     }
 
     private mount(route: Route): void {
@@ -64,6 +71,7 @@ export class Router {
     }
 
     private render(): void {
+        this.beforeNavigation();
         const route = Router.readRoute();
 
         if (this.current && route.path === this.currentPath) {
@@ -121,7 +129,10 @@ export class Router {
         const url = `${target.pathname}${target.search}${target.hash}`;
 
         // Navigating to the address we are already on must not add a history entry.
-        if (url === `${location.pathname}${location.search}${location.hash}`) return;
+        if (url === `${location.pathname}${location.search}${location.hash}`) {
+            this.beforeNavigation();
+            return;
+        }
 
         const isPageChange = Router.normalize(target.pathname) !== this.currentPath;
 

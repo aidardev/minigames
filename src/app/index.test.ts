@@ -45,7 +45,9 @@ vi.mock('@/components/footer/footer', () => ({
 vi.mock('@/pages/home/home', () => ({ HomePage: class {} }));
 vi.mock('@/pages/library/library', () => ({ LibraryPage: class {} }));
 vi.mock('@/pages/not-found/not-found', () => ({ NotFoundPage: class {} }));
-vi.mock('@/services/session/app-session', () => ({ appSession: { start: vi.fn() } }));
+vi.mock('@/services/session/app-session', () => ({
+    appSession: { start: vi.fn(), checkExpiration: vi.fn() },
+}));
 vi.mock('./dialog-controller', () => ({
     DialogController: class {
         public start = mocks.dialogControllerStart;
@@ -98,7 +100,12 @@ describe('startApp', () => {
             app?.children[1],
             { '/': HomePage, '/library': LibraryPage },
             NotFoundPage,
+            expect.any(Function),
         );
+
+        const checkSession = mocks.routerConstructor.mock.calls[0]?.[3] as () => void;
+        checkSession();
+        expect(appSession.checkExpiration).toHaveBeenCalledOnce();
 
         mocks.routerListener?.({ path: '/library' });
 
