@@ -3,11 +3,22 @@
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import { appSession } from '@/services/session/app-session';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { handleLogin } from './auth-flow';
 import { DialogController } from './dialog-controller';
 import { NAVIGATE_EVENT, openAuth } from './navigation';
 import type { Route, Router } from './router';
 
-const opened = vi.hoisted(() => ({ auth: 0, game: 0 }));
+const opened = vi.hoisted(() => ({
+    auth: 0,
+    game: 0,
+    authElement: undefined as HTMLElement | undefined,
+    authOptions: undefined as
+        | {
+              onLogin: (values: { email: string; password: string }) => Promise<void>;
+          }
+        | undefined,
+    authSetTab: undefined as ReturnType<typeof vi.fn> | undefined,
+}));
 
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 vi.mock('@/services/session/app-session', () => ({
@@ -23,6 +34,15 @@ vi.mock('@/components/dialogs/auth-dialog/auth-dialog', () => {
         public element = document.createElement('div');
         public close = vi.fn();
         public setTab = vi.fn();
+
+        constructor(options: {
+            onLogin: (values: { email: string; password: string }) => Promise<void>;
+        }) {
+            opened.authElement = this.element;
+            opened.authOptions = options;
+            opened.authSetTab = this.setTab;
+        }
+
         public open(): void {
             opened.auth += 1;
         }
@@ -69,6 +89,9 @@ describe('DialogController auth guard', () => {
     beforeEach(() => {
         opened.auth = 0;
         opened.game = 0;
+        opened.authElement = undefined;
+        opened.authOptions = undefined;
+        opened.authSetTab = undefined;
         vi.resetAllMocks();
     });
 
@@ -138,6 +161,43 @@ describe('DialogController auth guard', () => {
         go('?game=cat-mail-co');
 
         expect(opened.game).toBe(1);
+    });
+
+    it('updates the open Auth dialog when its tab changes in the URL', () => {
+        vi.mocked(appSession.getActiveSession).mockReturnValue(undefined);
+        const { go } = setup();
+
+        go('?auth=login');
+        go('?auth=register');
+
+        expect(opened.auth).toBe(1);
+        expect(opened.authSetTab).toHaveBeenCalledExactlyOnceWith('register');
+    });
+
+    it('removes the Auth query when the user closes the dialog', () => {
+        vi.mocked(appSession.getActiveSession).mockReturnValue(undefined);
+        const { go, router } = setup();
+
+        go('?auth=login');
+        opened.authElement?.dispatchEvent(new Event('close'));
+
+        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('auth');
+    });
+
+    it('removes Auth after a successful login and keeps it open after a failed login', async () => {
+        vi.mocked(appSession.getActiveSession).mockReturnValue(undefined);
+        const { go, router } = setup();
+        go('?auth=login');
+
+        vi.mocked(handleLogin).mockResolvedValue(true);
+        await opened.authOptions?.onLogin({ email: 'a@b.c', password: 'secret1' });
+
+        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('auth');
+
+        vi.mocked(handleLogin).mockResolvedValue(false);
+        await opened.authOptions?.onLogin({ email: 'a@b.c', password: 'secret1' });
+
+        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('auth');
     });
 });
 
