@@ -105,10 +105,9 @@
                 }
 
                 &:active {
-                    // Figma spec: active bold text. Simulating via text-shadow to prevent layout shift
                     text-shadow:
-                        0 0 0.5px currentColor,
-                        0 0 0.5px currentColor;
+                        0 0 var(--size-px) currentColor,
+                        0 0 var(--size-px) currentColor;
                     &::after {
                         transform: scaleX(0);
                     }
