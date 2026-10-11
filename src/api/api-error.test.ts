@@ -1,54 +1,68 @@
-import { HttpStatus } from '@/utils/status-codes';
 import { describe, expect, it } from 'vitest';
 import { ApiError, getErrorMessage, isBadRequestError, isNotFoundError } from './api-error';
 
+const GENERIC_MESSAGE = 'Something went wrong. Please try again.';
+
 describe('ApiError', () => {
-    it('correctly sets message and optional status code', () => {
-        const error = new ApiError('Failed to fetch data', HttpStatus.INTERNAL_SERVER_ERROR);
+    it('keeps the message and the status code', () => {
+        const error = new ApiError('Failed to fetch data', 500);
+
         expect(error.message).toBe('Failed to fetch data');
-        expect(error.status).toBe(HttpStatus.INTERNAL_SERVER_ERROR);
-        expect(error.name).toBe('ApiError');
+        expect(error.status).toBe(500);
     });
 
-    it('allows creating an instance without a status code', () => {
-        const error = new ApiError('Network disconnected');
-        expect(error.status).toBeUndefined();
+    it('has no status when it is not an HTTP error', () => {
+        expect(new ApiError('Network disconnected').status).toBeUndefined();
+    });
+
+    it('is a named Error, so it can be thrown and caught like any other error', () => {
+        const error = new ApiError('boom');
+
+        expect(error).toBeInstanceOf(Error);
+        expect(error.name).toBe('ApiError');
     });
 });
 
 describe('getErrorMessage', () => {
-    it('returns the message of an ApiError instance', () => {
-        expect(
-            getErrorMessage(new ApiError('Server error', HttpStatus.INTERNAL_SERVER_ERROR)),
-        ).toBe('Server error');
+    it('returns the message of an ApiError', () => {
+        expect(getErrorMessage(new ApiError('Game not found', 404))).toBe('Game not found');
     });
 
-    it('returns a generic message for standard Error or unknown exceptions', () => {
-        expect(getErrorMessage(new Error('Unexpected system error'))).toBe(
-            'Something went wrong. Please try again.',
-        );
-        expect(getErrorMessage('some string error')).toBe(
-            'Something went wrong. Please try again.',
-        );
+    it.each([
+        ['a plain Error', new Error('internal details')],
+        ['a string', 'some string error'],
+        ['undefined', undefined],
+    ])('hides the details of %s behind a generic message', (_case, error) => {
+        expect(getErrorMessage(error)).toBe(GENERIC_MESSAGE);
     });
 });
 
 describe('isNotFoundError', () => {
-    it('returns true only for ApiError with status 404', () => {
-        expect(isNotFoundError(new ApiError('Not Found', HttpStatus.NOT_FOUND))).toBe(true);
-        expect(
-            isNotFoundError(new ApiError('Server Error', HttpStatus.INTERNAL_SERVER_ERROR)),
-        ).toBe(false);
-        expect(isNotFoundError(new Error('Not Found'))).toBe(false);
+    it('is true for an ApiError with status 404', () => {
+        expect(isNotFoundError(new ApiError('Not found', 404))).toBe(true);
+    });
+
+    it.each([
+        ['another status', new ApiError('Server error', 500)],
+        ['no status', new ApiError('Network error')],
+        ['a plain Error', new Error('Not found')],
+        ['a non-ApiError object that only looks like one', { status: 404 }],
+    ])('is false for %s', (_case, error) => {
+        expect(isNotFoundError(error)).toBe(false);
     });
 });
 
 describe('isBadRequestError', () => {
-    it('returns true only for ApiError with status 400', () => {
-        expect(isBadRequestError(new ApiError('Invalid input', HttpStatus.BAD_REQUEST))).toBe(true);
-        expect(isBadRequestError(new ApiError('Unauthorized', HttpStatus.UNAUTHORIZED))).toBe(
-            false,
-        );
-        expect(isBadRequestError(new Error('Invalid input'))).toBe(false);
+    it('is true for an ApiError with status 400', () => {
+        expect(isBadRequestError(new ApiError('Invalid input', 400))).toBe(true);
+    });
+
+    it.each([
+        ['another status', new ApiError('Not found', 404)],
+        ['no status', new ApiError('Network error')],
+        ['a plain Error', new Error('Invalid input')],
+        ['a non-ApiError object that only looks like one', { status: 400 }],
+    ])('is false for %s', (_case, error) => {
+        expect(isBadRequestError(error)).toBe(false);
     });
 });

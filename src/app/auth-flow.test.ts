@@ -4,11 +4,11 @@ import { signInWithGoogle } from '@/services/firebase/google-auth';
 import { appSession } from '@/services/session/app-session';
 import { FirebaseError } from 'firebase/app';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
+import { handleGoogleLogin, handleLogin, handleLogout, handleRegister } from './auth-flow';
 
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 vi.mock('@/services/session/app-session', () => ({
-    appSession: { createSession: vi.fn() },
+    appSession: { createSession: vi.fn(), logout: vi.fn() },
 }));
 vi.mock('@/services/firebase/email-auth', () => ({
     signInWithEmail: vi.fn(),
@@ -139,6 +139,36 @@ describe('handleGoogleLogin', () => {
 
         expect(showSnackbar).toHaveBeenCalledWith(
             'Something went wrong. Please try again.',
+            'error',
+        );
+    });
+});
+
+describe('handleLogout', () => {
+    beforeEach(() => {
+        vi.resetAllMocks();
+    });
+
+    it('confirms a successful logout', async () => {
+        vi.mocked(appSession.logout).mockResolvedValue(true);
+
+        await handleLogout();
+
+        expect(appSession.logout).toHaveBeenCalledOnce();
+        expect(showSnackbar).toHaveBeenCalledExactlyOnceWith(
+            'You have been logged out.',
+            'success',
+        );
+    });
+
+    it('reports when Firebase sign-out fails after returning to Guest Mode', async () => {
+        vi.mocked(appSession.logout).mockResolvedValue(false);
+
+        await handleLogout();
+
+        expect(appSession.logout).toHaveBeenCalledOnce();
+        expect(showSnackbar).toHaveBeenCalledWith(
+            'Sign-out could not be completed. You are now in Guest Mode.',
             'error',
         );
     });
