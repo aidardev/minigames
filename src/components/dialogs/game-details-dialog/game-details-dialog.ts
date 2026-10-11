@@ -5,6 +5,7 @@ import closeIcon from '@/assets/icons/close-alt.svg?raw';
 import { AsyncRegion } from '@/components/async-region/async-region';
 import { EmptyState } from '@/components/empty-state/empty-state';
 import { appSession } from '@/services/session/app-session';
+import type { AppSession } from '@/services/session/session.types';
 import type { GameComments, GameDetails } from '@/types/game-details.types';
 import { html, unsafeHtml } from '@/utils/html';
 import { Dialog } from '../dialog';
@@ -21,11 +22,24 @@ export interface GameDetailsDialogProperties {
 export class GameDetailsDialog extends Dialog {
     private readonly detailsRegion: AsyncRegion<GameDetails>;
     private readonly commentsRegion: AsyncRegion<GameComments>;
+    private readonly unsubscribeSession: () => void;
+    private session: AppSession | undefined = appSession.getActiveSession();
 
     private readonly handleActionClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
 
         if (event.target.closest('[data-action="close"]')) this.close();
+    };
+
+    private readonly handleSessionChange = (session: AppSession | undefined): void => {
+        const isSameUser = session?.email === this.session?.email;
+
+        this.session = session;
+
+        if (isSameUser) return;
+
+        this.detailsRegion.load();
+        this.commentsRegion.load();
     };
 
     constructor({ slug }: GameDetailsDialogProperties) {
@@ -47,14 +61,11 @@ export class GameDetailsDialog extends Dialog {
             </div>
         `);
 
-        const session = appSession.getActiveSession();
-        const userEmail = session?.email;
-
         this.detailsRegion = this.adopt(
             new AsyncRegion<GameDetails>(
                 {
                     load: (signal: AbortSignal): Promise<GameDetails> =>
-                        getGameDetails(slug, { signal, userEmail }),
+                        getGameDetails(slug, { signal, userEmail: this.session?.email }),
                     renderSkeleton: (): GameDetailsSkeleton => new GameDetailsSkeleton(),
                     renderSuccess: (game: GameDetails): GameDetailsContent =>
                         new GameDetailsContent(game),
@@ -69,10 +80,10 @@ export class GameDetailsDialog extends Dialog {
             new AsyncRegion<GameComments>(
                 {
                     load: (signal: AbortSignal): Promise<GameComments> =>
-                        getComments(slug, { userEmail, signal }),
+                        getComments(slug, { userEmail: this.session?.email, signal }),
                     renderSkeleton: (): CommentsSkeleton => new CommentsSkeleton(),
                     renderSuccess: (data: GameComments): CommentsSection =>
-                        new CommentsSection({ ...data, slug, session }),
+                        new CommentsSection({ ...data, slug, session: this.session }),
                     renderError: (error) =>
                         isNotFoundError(error) ? document.createElement('div') : undefined,
                 },
@@ -87,6 +98,8 @@ export class GameDetailsDialog extends Dialog {
 
         this.detailsRegion.load();
         this.commentsRegion.load();
+
+        this.unsubscribeSession = appSession.subscribe(this.handleSessionChange);
     }
 
     private createGameNotFound(): EmptyState {
@@ -95,5 +108,10 @@ export class GameDetailsDialog extends Dialog {
             description: 'This game doesn’t exist or may have been removed.',
             action: { label: 'Close', onClick: (): void => this.close() },
         });
+    }
+
+    public override destroy(): void {
+        this.unsubscribeSession();
+        super.destroy();
     }
 }
