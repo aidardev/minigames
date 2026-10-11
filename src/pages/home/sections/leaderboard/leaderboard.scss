@@ -20,7 +20,7 @@
     }
 
     .leaderboard-table {
-        width: 100%;
+        width: var(--size-full);
         border-collapse: collapse;
         text-align: center;
         font-family: var(--font-family-secondary);

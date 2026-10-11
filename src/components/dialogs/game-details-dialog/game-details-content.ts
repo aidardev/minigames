@@ -5,29 +5,34 @@ import type { GameDetails, TopRecord } from '@/types/game-details.types';
 import { formatRelativeDate } from '@/utils/date';
 import { formatCompactNumber } from '@/utils/formatters';
 import { html, unsafeHtml, type SafeHtml } from '@/utils/html';
+import { FavoriteButton } from './favorite-button';
 
 export class GameDetailsContent extends BaseComponent<'div'> {
     private readonly game: GameDetails;
-    private isFavorite: boolean;
-
-    private readonly handleClick = (event: MouseEvent): void => {
-        if (!(event.target instanceof Element)) return;
-
-        if (event.target.closest('[data-action="favorite"]')) this.toggleFavorite();
-    };
 
     constructor(game: GameDetails) {
         super('div', 'game-details__content');
         this.game = game;
-        this.isFavorite = game.isLikedByCurrentUser;
 
         this.setHtml(html`
             ${this.renderHero()}
             <div class="game-details__body">${this.renderInfo()} ${this.renderRecords()}</div>
         `);
 
-        this.element.addEventListener('click', this.handleClick);
-        this.updateFavoriteButton();
+        this.query('[data-favorite-slot]')?.replaceWith(
+            this.adopt(
+                new FavoriteButton({
+                    slug: game.slug,
+                    isFavorited: game.isLikedByCurrentUser,
+                    onChange: ({ likesCount }): void => this.showLikesCount(likesCount),
+                }),
+            ).element,
+        );
+    }
+
+    private showLikesCount(count: number): void {
+        const value = this.getElement('[data-likes-count]');
+        value.textContent = formatCompactNumber(count);
     }
 
     private renderHero(): SafeHtml {
@@ -57,9 +62,9 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                             </div>
                             <div class="game-details__meta-item meta-item meta-item--likes">
                                 ${unsafeHtml(heartIcon)}
-                                <span class="meta-item__value"
-                                    >${formatCompactNumber(this.game.likesCount)}</span
-                                >
+                                <span class="meta-item__value" data-likes-count>
+                                    ${formatCompactNumber(this.game.likesCount)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -81,18 +86,7 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                     >
                         Play Now
                     </button>
-                    <button
-                        class="game-details__favorite btn btn--large"
-                        type="button"
-                        data-action="favorite"
-                        aria-pressed="${String(this.isFavorite)}"
-                        disabled
-                    >
-                        ${unsafeHtml(heartIcon)}
-                        <span data-favorite-label>
-                            ${this.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-                        </span>
-                    </button>
+                    <span data-favorite-slot></span>
                 </div>
             </section>
         `;
@@ -110,24 +104,6 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                 </ol>
             </section>
         `;
-    }
-
-    private updateFavoriteButton(): void {
-        const button = this.query<HTMLButtonElement>('[data-action="favorite"]');
-        if (!button) return;
-
-        button.setAttribute('aria-pressed', String(this.isFavorite));
-        button.classList.toggle('is-active', this.isFavorite);
-
-        const label = button.querySelector<HTMLElement>('[data-favorite-label]');
-        if (label) {
-            label.textContent = this.isFavorite ? 'Remove from Favorites' : 'Add to Favorites';
-        }
-    }
-
-    private toggleFavorite(): void {
-        this.isFavorite = !this.isFavorite;
-        this.updateFavoriteButton();
     }
 
     private renderSpec(label: string, value: string): SafeHtml {

@@ -14,10 +14,10 @@
     .game-card {
         container-type: inline-size;
         container-name: game-card;
-        width: 100%;
+        width: var(--size-full);
         display: flex;
         &__inner {
-            width: 100%;
+            width: var(--size-full);
             display: flex;
             position: relative;
             background: var(--color-white);
@@ -139,7 +139,7 @@
         &__skeleton-title {
             flex: 1 1 auto;
             height: var(--size-3-5);
-            max-width: 50%;
+            max-width: var(--size-half);
         }
 
         &__skeleton-badge {
@@ -158,7 +158,7 @@
             height: var(--size-2);
 
             &--short {
-                width: 60%;
+                width: var(--size-three-fifths);
             }
         }
 
@@ -214,7 +214,7 @@
 
             &__img {
                 aspect-ratio: $card-img-aspect-ratio;
-                width: 100%;
+                width: var(--size-full);
                 height: auto;
             }
 
@@ -244,17 +244,17 @@
             }
 
             &__details {
-                width: 100%;
+                width: var(--size-full);
                 padding-block: var(--size-1-25);
             }
 
             &__skeleton-button {
-                width: 100%;
+                width: var(--size-full);
             }
 
             &__skeleton-title {
-                max-width: 100%;
-                width: 100%;
+                max-width: var(--size-full);
+                width: var(--size-full);
             }
         }
     }

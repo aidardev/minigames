@@ -21,12 +21,13 @@
         }
 
         &__img {
+            // Image width from Figma spec (no standard size token applies for 680px layout container)
+            --width: #{styles.rem(680px)};
+            width: var(--width);
             border-radius: var(--corner-extra-large);
             flex-shrink: 0;
-            // Image width from Figma spec (no standard size token applies for 680px layout container)
-            width: styles.rem(680px);
             @include styles.max-width(styles.$br-xl) {
-                width: 100%;
+                --width: var(--size-full);
                 aspect-ratio: 688 / 300;
                 object-fit: cover;
             }
@@ -51,14 +52,15 @@
         }
 
         &__card-content {
+            // Figma spec: card text layout bound
+            --width: #{styles.rem(586px)};
             display: flex;
             flex-direction: column;
             gap: var(--size-3);
-            // Figma spec: card text layout bound
-            max-width: styles.rem(586px);
+            max-width: var(--width);
             @include styles.max-width(styles.$br-lg) {
+                --width: #{styles.rem(451px)};
                 gap: var(--size-2);
-                max-width: styles.rem(451px);
             }
         }
 

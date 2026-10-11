@@ -7,7 +7,7 @@ $dropdown-width: styles.rem(200px);
     .dropdown {
         position: relative;
         &__btn {
-            width: 100%;
+            width: var(--size-full);
             border: none;
             cursor: pointer;
             background: var(--color-white);
@@ -92,7 +92,7 @@ $dropdown-width: styles.rem(200px);
             }
         }
         &__option {
-            width: 100%;
+            width: var(--size-full);
             border: none;
             background: var(--color-white);
             cursor: pointer;

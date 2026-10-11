@@ -31,7 +31,7 @@
             pointer-events: none;
             svg {
                 display: block;
-                width: 100%;
+                width: var(--size-full);
                 height: 100%;
             }
         }
@@ -39,7 +39,7 @@
         &__input {
             --input-icon-offset: #{styles.rem(52px)};
             display: block;
-            width: 100%;
+            width: var(--size-full);
             border: none;
             background: var(--color-white);
             height: var(--size-6);
@@ -61,6 +61,18 @@
             &:focus-visible {
                 background: var(--color-surface-low);
             }
+
+            &[aria-invalid='true'] {
+                box-shadow: var(--ring-medium-error);
+            }
+        }
+
+        &__error {
+            color: var(--color-error);
+            font-size: var(--fs-label-medium);
+            font-weight: var(--font-weight-medium);
+            line-height: var(--lh-normal);
+            margin-bottom: 0;
         }
 
         &__toggle {
@@ -82,12 +94,20 @@
             height: var(--size-2-5);
             svg {
                 display: block;
-                width: 100%;
+                width: var(--size-full);
                 height: 100%;
             }
             &--hide {
                 display: none;
             }
+        }
+
+        &__toggle[aria-pressed='true'] &__toggle-icon--show {
+            display: none;
+        }
+
+        &__toggle[aria-pressed='true'] &__toggle-icon--hide {
+            display: block;
         }
 
         &--has-password-toggle {

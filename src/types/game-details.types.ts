@@ -28,6 +28,15 @@ export interface GameDetailsResponse {
     data: GameDetails;
 }
 
+export interface Favorite {
+    isFavorited: boolean;
+    likesCount: number;
+}
+
+export interface FavoriteResponse {
+    data: Favorite;
+}
+
 export interface Comment {
     commentId: string;
     authorName: string;
@@ -51,4 +60,23 @@ export interface CommentsResponse {
 export interface GameComments {
     comments: Comment[];
     total: number;
+}
+
+export interface NewComment {
+    userEmail: string;
+    authorName: string;
+    text: string;
+}
+
+export interface NewCommentResponse {
+    data: Comment;
+}
+
+export interface CommentLike {
+    isLikedByCurrentUser: boolean;
+    likesCount: number;
+}
+
+export interface CommentLikeResponse {
+    data: CommentLike;
 }

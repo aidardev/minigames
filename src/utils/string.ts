@@ -1,4 +1,4 @@
-export function getInitials(name: string): string {
+export function getLeaderboardInitials(name: string): string {
     const capitals: string[] = [];
 
     for (const char of name) {

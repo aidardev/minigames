@@ -63,14 +63,26 @@ class SnackbarItem extends BaseComponent<'div'> {
 const activeItems = new Map<string, SnackbarItem>();
 
 function getContainer(): HTMLElement {
-    const existing = document.querySelector<HTMLElement>('.snackbar-container');
-    if (existing) return existing;
+    let container = document.querySelector<HTMLElement>('.snackbar-container');
 
-    const container = document.createElement('div');
-    container.className = 'snackbar-container';
-    document.body.append(container);
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'snackbar-container';
+        container.popover = 'manual';
+        document.body.append(container);
+    }
+
+    if (!container.matches(':popover-open')) container.showPopover();
 
     return container;
+}
+
+export function bringSnackbarsToFront(): void {
+    const container = document.querySelector<HTMLElement>('.snackbar-container');
+    if (!container?.matches(':popover-open')) return;
+
+    container.hidePopover();
+    container.showPopover();
 }
 
 export function showSnackbar(message: string, variant: SnackbarVariant = 'info'): void {

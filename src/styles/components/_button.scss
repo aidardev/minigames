@@ -70,6 +70,11 @@
             @include styles.hover {
                 background-color: var(--color-primary-high);
             }
+
+            &:disabled,
+            &.is-disabled {
+                opacity: 0.5;
+            }
         }
         &--on-primary {
             background-color: var(--color-on-primary);

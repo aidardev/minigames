@@ -9,5 +9,7 @@
         flex-shrink: 0;
         border-radius: var(--corner-full);
         text-transform: uppercase;
+        overflow: hidden;
+        line-height: var(--lh-none);
     }
 }

@@ -1,11 +1,11 @@
 import { AuthDialog, toAuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
-import { setQueryParameter } from './navigation';
+import { showSnackbar } from '@/components/snackbar/snackbar';
+import { appSession } from '@/services/session/app-session';
+import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
+import { AUTH_PARAM, GAME_PARAM, setAuthGuard, setQueryParameter } from './navigation';
 import type { Route, Router } from './router';
-
-const GAME_PARAM = 'game';
-const AUTH_PARAM = 'auth';
 
 interface OpenDialog {
     // What is open, e.g. "game:cat-mail-co" or "auth"; equal keys mean "nothing to do".
@@ -34,14 +34,20 @@ export class DialogController {
         const slug = query.get(GAME_PARAM);
         const auth = query.get(AUTH_PARAM);
 
-        // One dialog at a time; if a hand-written URL has both params, the game wins.
-        if (slug) {
+        // One dialog at a time. Auth wins over a game: it replaces Game Details after a
+        // protected action, and closing it drops only auth, which brings the game back.
+        if (auth) {
+            if (this.isAuthBlocked()) {
+                this.scheduleAuthCleanup();
+                return;
+            }
+
+            this.show('auth', query, (): Omit<OpenDialog, 'key'> => this.createAuth(query));
+        } else if (slug) {
             this.show(`game:${slug}`, query, (): Omit<OpenDialog, 'key'> => ({
                 param: GAME_PARAM,
                 dialog: new GameDetailsDialog({ slug }),
             }));
-        } else if (auth) {
-            this.show('auth', query, (): Omit<OpenDialog, 'key'> => this.createAuth(query));
         } else {
             this.closeCurrent();
         }
@@ -52,6 +58,9 @@ export class DialogController {
             initialTab: toAuthTab(query.get(AUTH_PARAM)),
             // Switching tabs rewrites the URL but must not add a history entry.
             onTabChange: (tab): void => setQueryParameter(AUTH_PARAM, tab, { replace: true }),
+            onLogin: (values): Promise<void> => this.finishAuth(handleLogin(values)),
+            onRegister: (values): Promise<void> => this.finishAuth(handleRegister(values)),
+            onGoogleLogin: (): Promise<void> => this.finishAuth(handleGoogleLogin()),
         });
 
         return {
@@ -95,8 +104,26 @@ export class DialogController {
         this.router.removeQuery(entry.param);
     }
 
+    // Success closes the dialog the same way the URL does: by dropping the auth param.
+    private async finishAuth(attempt: Promise<boolean>): Promise<void> {
+        if (await attempt) this.router.removeQuery(AUTH_PARAM);
+    }
+
+    private isAuthBlocked(): boolean {
+        if (!appSession.getActiveSession()) return false;
+
+        showSnackbar('You are already signed in.', 'info');
+
+        return true;
+    }
+
+    private scheduleAuthCleanup(): void {
+        queueMicrotask((): void => this.router.removeQueryInPlace(AUTH_PARAM));
+    }
+
     // Must be called before router.start(), so a deep link opens its dialog on the first render.
     public start(): void {
+        setAuthGuard((): boolean => this.isAuthBlocked());
         this.router.onRouteChange((route: Route): void => this.sync(route.query));
     }
 }

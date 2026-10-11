@@ -43,14 +43,21 @@ export class Router {
     private readonly outlet: HTMLElement;
     private readonly routes: Routes;
     private readonly notFound: PageConstructor;
+    private readonly beforeNavigation: () => void;
     private current: BaseComponent | undefined = undefined;
     private currentPath: string | undefined = undefined;
     private listeners: RouteChangeListener[] = [];
 
-    constructor(outlet: HTMLElement, routes: Routes, notFound: PageConstructor) {
+    constructor(
+        outlet: HTMLElement,
+        routes: Routes,
+        notFound: PageConstructor,
+        beforeNavigation: () => void = () => {},
+    ) {
         this.outlet = outlet;
         this.routes = routes;
         this.notFound = notFound;
+        this.beforeNavigation = beforeNavigation;
     }
 
     private mount(route: Route): void {
@@ -64,6 +71,7 @@ export class Router {
     }
 
     private render(): void {
+        this.beforeNavigation();
         const route = Router.readRoute();
 
         if (this.current && route.path === this.currentPath) {
@@ -77,6 +85,16 @@ export class Router {
         for (const listener of this.listeners) {
             listener(route);
         }
+    }
+
+    private withoutQuery(keys: string[]): string | undefined {
+        const url = new URL(location.href);
+
+        if (!keys.some((key: string): boolean => url.searchParams.has(key))) return undefined;
+
+        for (const key of keys) url.searchParams.delete(key);
+
+        return `${url.pathname}${url.search}${url.hash}`;
     }
 
     public onRouteChange(listener: RouteChangeListener): void {
@@ -111,7 +129,10 @@ export class Router {
         const url = `${target.pathname}${target.search}${target.hash}`;
 
         // Navigating to the address we are already on must not add a history entry.
-        if (url === `${location.pathname}${location.search}${location.hash}`) return;
+        if (url === `${location.pathname}${location.search}${location.hash}`) {
+            this.beforeNavigation();
+            return;
+        }
 
         const isPageChange = Router.normalize(target.pathname) !== this.currentPath;
 
@@ -132,12 +153,18 @@ export class Router {
      * so open/close actions can be walked through with Back and Forward.
      */
     public removeQuery(...keys: string[]): void {
-        const url = new URL(location.href);
+        const target = this.withoutQuery(keys);
 
-        if (!keys.some((key: string): boolean => url.searchParams.has(key))) return;
+        if (target) this.navigate(target);
+    }
 
-        for (const key of keys) url.searchParams.delete(key);
+    /**
+     * Same as removeQuery, but rewrites the current history entry (used to drop a
+     * query param that must never stay in history, e.g. a blocked dialog).
+     */
+    public removeQueryInPlace(...keys: string[]): void {
+        const target = this.withoutQuery(keys);
 
-        this.navigate(`${url.pathname}${url.search}${url.hash}`);
+        if (target) this.navigate(target, { replace: true });
     }
 }

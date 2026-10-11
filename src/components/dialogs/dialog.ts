@@ -1,5 +1,6 @@
 import { SafeHtml } from '@/utils/html';
 import { BaseComponent } from '../base-component';
+import { bringSnackbarsToFront } from '../snackbar/snackbar';
 import './dialog.scss';
 
 interface DialogOptions {
@@ -10,15 +11,27 @@ interface DialogOptions {
 export abstract class Dialog extends BaseComponent<'dialog'> {
     private readonly content: HTMLElement;
     private pointerDownOnBackdrop = false;
+    private locked = false;
 
     private handlePointerDown = (event: PointerEvent): void => {
         this.pointerDownOnBackdrop = event.target === this.element;
     };
 
     private handleClick = (event: MouseEvent): void => {
-        if (this.pointerDownOnBackdrop && event.target === this.element) {
+        if (!this.locked && this.pointerDownOnBackdrop && event.target === this.element) {
             this.close();
         }
+    };
+
+    // Escape makes the browser fire "cancel" and close the dialog natively.
+    private handleCancel = (event: Event): void => {
+        if (this.locked) event.preventDefault();
+    };
+
+    // Chrome can skip a second cancelable "cancel" without user interaction in between,
+    // so Escape is also stopped at the keydown level.
+    private handleKeyDown = (event: KeyboardEvent): void => {
+        if (this.locked && event.key === 'Escape') event.preventDefault();
     };
 
     private handleClose = async (): Promise<void> => {
@@ -48,6 +61,8 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
     private bindEvents(): void {
         this.element.addEventListener('pointerdown', this.handlePointerDown);
         this.element.addEventListener('click', this.handleClick);
+        this.element.addEventListener('cancel', this.handleCancel);
+        this.element.addEventListener('keydown', this.handleKeyDown);
         this.element.addEventListener('close', this.handleClose);
     }
 
@@ -59,10 +74,19 @@ export abstract class Dialog extends BaseComponent<'dialog'> {
         }
     }
 
+    /**
+     * While locked the user cannot dismiss the dialog (Escape, backdrop click).
+     * Programmatic close() still works, so the owner can close it when the work is done.
+     */
+    protected setLocked(isLocked: boolean): void {
+        this.locked = isLocked;
+    }
+
     public open(): void {
         if (this.element.open) return;
         if (!this.element.isConnected) document.body.append(this.element);
         this.element.showModal();
+        bringSnackbarsToFront();
     }
 
     public close(returnValue?: string): void {

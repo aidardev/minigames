@@ -32,3 +32,7 @@ npm run dev
 | `npm run lint:fix`     | Run ESLint and fix issues                |
 | `npm run format`       | Format the code with Prettier            |
 | `npm run format:check` | Check formatting with Prettier           |
+
+## Client Session
+
+The client app session is stored under `minigames:minigames-aidar:app-session` in `localStorage` and expires five minutes after authentication. This record is used only for client-side UI state; it does not contain credentials or act as a backend authorization token.

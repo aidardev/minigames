@@ -10,7 +10,7 @@ $threshold-compact-mobile: styles.rem(150px);
         border-radius: var(--game-slide-radius);
         overflow: hidden;
         height: var(--game-slide-height);
-        width: 100%;
+        width: var(--size-full);
         display: flex;
         align-items: flex-end;
         box-shadow: var(--ring-medium-on-primary), var(--shadow-level-1);
@@ -18,7 +18,7 @@ $threshold-compact-mobile: styles.rem(150px);
         cursor: pointer;
         &__img {
             position: absolute;
-            width: 100%;
+            width: var(--size-full);
             height: 100%;
             object-fit: cover;
             border-radius: inherit;
@@ -27,7 +27,7 @@ $threshold-compact-mobile: styles.rem(150px);
         }
 
         &__overlay {
-            width: 100%;
+            width: var(--size-full);
             padding: var(--size-2);
             background: var(--gradient-game-slide);
             color: var(--color-white);
@@ -50,7 +50,7 @@ $threshold-compact-mobile: styles.rem(150px);
 
         &__title-text {
             display: block;
-            width: 100%;
+            width: var(--size-full);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;

@@ -2,7 +2,8 @@
 
 @layer components {
     $text-width: 55ch;
-    $code-font-size: clamp(styles.rem(80px), 12vw, styles.rem(144px));
+    $max: styles.rem(144px);
+    $code-font-size: clamp(var(--size-10), 12vw, $max);
 
     .not-found {
         &__inner {

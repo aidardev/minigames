@@ -1,95 +1,72 @@
-import heartIcon from '@/assets/icons/favorite.svg?raw';
-import sendIcon from '@/assets/icons/send.svg?raw';
+import { getComments } from '@/api/comments';
 import { BaseComponent } from '@/components/base-component';
 import { EmptyState } from '@/components/empty-state/empty-state';
+import { showSnackbar } from '@/components/snackbar/snackbar';
+import type { AppSession } from '@/services/session/session.types';
 import type { Comment, GameComments } from '@/types/game-details.types';
+import { AvatarColorPicker } from '@/utils/avatar-color';
 import { formatRelativeDate } from '@/utils/date';
-import { html, type SafeHtml, unsafeHtml } from '@/utils/html';
-import { toRem } from '@/utils/to-rem';
+import { html, type SafeHtml } from '@/utils/html';
+import { getInitial } from '@/utils/profile/profile';
+import { CommentForm } from './comment-form';
+import { CommentLikeButton } from './comment-like-button';
+
+export interface CommentsSectionProperties extends GameComments {
+    slug: string;
+    session: AppSession | undefined;
+}
 
 export class CommentsSection extends BaseComponent<'section'> {
-    private readonly likedComments = new Set<string>();
-    private readonly comments: Comment[];
+    private readonly slug: string;
+    private readonly avatarColors = new AvatarColorPicker();
+    private likeButtons: CommentLikeButton[] = [];
 
-    private handleSubmit = (event: SubmitEvent): void => {
-        const form = event.target;
-
-        if (!(form instanceof HTMLFormElement)) return;
-        if (!form.matches('[data-comment-form]')) return;
-
-        event.preventDefault();
-    };
-
-    private handleInput = (event: Event): void => {
-        const target = event.target;
-
-        if (!(target instanceof HTMLTextAreaElement)) return;
-        if (!target.matches('[data-comment-input]')) return;
-
-        this.resizeTextarea(target);
-    };
-
-    private handleActionClick = (event: MouseEvent): void => {
-        if (!(event.target instanceof Element)) return;
-
-        const action = event.target.closest<HTMLElement>('[data-action="like-comment"]');
-        if (action) {
-            this.toggleCommentLike(action);
-        }
-    };
-
-    constructor({ comments, total }: GameComments) {
+    constructor({ slug, session, comments, total }: CommentsSectionProperties) {
         super('section', 'game-details__comments');
 
-        this.comments = comments;
-
-        for (const comment of comments) {
-            if (comment.isLikedByCurrentUser) {
-                this.likedComments.add(comment.commentId);
-            }
-        }
+        this.slug = slug;
 
         this.setHtml(html`
-            <h3 class="game-details__section-title">Comments (${total})</h3>
-
-            <form class="game-details__comment-form comment-form" data-comment-form>
-                <div class="comment-form__avatar avatar" aria-hidden="true">U</div>
-                <label class="comment-form__label sr-only" for="game-details-comment">
-                    Write a comment
-                </label>
-                <textarea
-                    id="game-details-comment"
-                    class="comment-form__input"
-                    name="comment"
-                    rows="1"
-                    maxlength="1000"
-                    placeholder="Sign in to write a comment"
-                    data-comment-input
-                    disabled
-                ></textarea>
-                <button
-                    class="comment-form__submit btn btn--icon btn--on-primary"
-                    type="submit"
-                    aria-label="Submit comment"
-                    disabled
-                >
-                    ${unsafeHtml(sendIcon)}
-                </button>
-            </form>
-
-            ${
-                comments.length > 0
-                    ? html`
-                          <ul class="game-details__comments-list list-unstyled">
-                              ${comments.map((comment: Comment): SafeHtml => this.renderComment(comment))}
-                          </ul>
-                      `
-                    : html`<div data-comments-empty></div>`
-            }
+            <h3 class="game-details__section-title" data-comments-title></h3>
+            <div data-comment-form-slot></div>
+            <div data-comments-slot></div>
         `);
 
+        this.getElement('[data-comment-form-slot]').replaceWith(
+            this.adopt(
+                new CommentForm({
+                    slug,
+                    session,
+                    onPosted: (activeSession: AppSession): Promise<void> =>
+                        this.refresh(activeSession),
+                }),
+            ).element,
+        );
+
+        this.showComments({ comments, total });
+    }
+
+    private async refresh(session: AppSession): Promise<void> {
+        try {
+            this.showComments(await getComments(this.slug, { userEmail: session.email }));
+        } catch {
+            showSnackbar(
+                'Your comment was posted, but the list could not be refreshed. Reopen the game to see it.',
+                'warning',
+            );
+        }
+    }
+
+    private showComments({ comments, total }: GameComments): void {
+        for (const button of this.likeButtons) this.release(button);
+        this.likeButtons = [];
+
+        this.updateTotal(total);
+
+        const body = this.getElement('[data-comments-slot]');
+
         if (comments.length === 0) {
-            this.query('[data-comments-empty]')?.replaceWith(
+            body.replaceChildren(
                 this.adopt(
                     new EmptyState({
                         title: 'No comments yet',
@@ -97,23 +74,55 @@ export class CommentsSection extends BaseComponent<'section'> {
                     }),
                 ).element,
             );
+            return;
         }
 
-        this.element.addEventListener('click', this.handleActionClick);
-        this.element.addEventListener('submit', this.handleSubmit);
-        this.element.addEventListener('input', this.handleInput);
+        body.innerHTML = this.renderList(comments).value;
+        this.mountLikeButtons(body, comments);
+    }
+
+    private updateTotal(total: number): void {
+        this.getElement('[data-comments-title]').textContent = `Comments (${total})`;
+    }
+
+    private mountLikeButtons(root: HTMLElement, comments: Comment[]): void {
+        for (const slot of root.querySelectorAll<HTMLElement>('[data-like-slot]')) {
+            const comment = comments.find(
+                (item: Comment): boolean => item.commentId === slot.dataset.likeSlot,
+            );
+            if (!comment) continue;
+
+            const button = this.adopt(
+                new CommentLikeButton({
+                    commentId: comment.commentId,
+                    isLiked: comment.isLikedByCurrentUser,
+                    likesCount: comment.likesCount,
+                }),
+            );
+            this.likeButtons.push(button);
+            slot.replaceWith(button.element);
+        }
+    }
+
+    private renderList(comments: Comment[]): SafeHtml {
+        return html`
+            <ul class="game-details__comments-list list-unstyled">
+                ${comments.map((comment: Comment): SafeHtml => this.renderComment(comment))}
+            </ul>
+        `;
     }
 
     private renderComment(comment: Comment): SafeHtml {
-        const isLiked = this.likedComments.has(comment.commentId);
-
         return html`
             <li class="game-details__comment">
                 <article class="comment">
                     <header class="comment__header">
                         <div class="comment__author">
-                            <span class="comment__avatar avatar" aria-hidden="true">
-                                ${comment.authorName.charAt(0).toUpperCase()}
+                            <span
+                                class="comment__avatar avatar comment__avatar--color-${this.avatarColors.getIndex(comment.authorName)}"
+                                aria-hidden="true"
+                            >
+                                ${getInitial(comment.authorName)}
                             </span>
 
                             <h4 class="comment__name">${comment.authorName}</h4>
@@ -125,54 +134,9 @@ export class CommentsSection extends BaseComponent<'section'> {
 
                     <p class="comment__text">${comment.text}</p>
 
-                    <button
-                        class="comment__like btn${isLiked ? ' is-active' : ''}"
-                        type="button"
-                        data-action="like-comment"
-                        data-comment-id="${comment.commentId}"
-                        aria-pressed="${String(isLiked)}"
-                        aria-label="${isLiked ? 'Unlike' : 'Like'} comment"
-                        disabled
-                    >
-                        ${unsafeHtml(heartIcon)}
-                        <span data-comment-like-count>
-                            ${comment.likesCount + (isLiked ? 1 : 0)}
-                        </span>
-                    </button>
+                    <span data-like-slot="${comment.commentId}"></span>
                 </article>
             </li>
         `;
-    }
-
-    private toggleCommentLike(button: HTMLElement): void {
-        const commentId = button.dataset.commentId;
-        if (!commentId) return;
-
-        const isLiked = this.likedComments.has(commentId);
-        if (isLiked) {
-            this.likedComments.delete(commentId);
-        } else {
-            this.likedComments.add(commentId);
-        }
-
-        button.setAttribute('aria-pressed', String(!isLiked));
-        button.setAttribute('aria-label', isLiked ? 'Like comment' : 'Unlike comment');
-        button.classList.toggle('is-active', !isLiked);
-
-        const comment = this.comments.find(
-            (item: Comment): boolean => item.commentId === commentId,
-        );
-        if (!comment) return;
-
-        const count = comment.likesCount + (isLiked ? 0 : 1);
-        const countElement = button.querySelector<HTMLElement>('[data-comment-like-count]');
-        if (countElement) {
-            countElement.textContent = String(count);
-        }
-    }
-
-    private resizeTextarea(textarea: HTMLTextAreaElement): void {
-        textarea.style.height = 'auto';
-        textarea.style.height = toRem(Math.min(textarea.scrollHeight, 88));
     }
 }
