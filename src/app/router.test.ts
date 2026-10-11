@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { BaseComponent } from '../components/base-component';
 import { NAVIGATE_EVENT } from './navigation';
 import { Router, type QueryAware } from './router';
@@ -53,29 +53,39 @@ const homePages: HomePage[] = [];
 const libraryPages: LibraryPage[] = [];
 const notFoundPages: NotFoundPage[] = [];
 const outlet = document.createElement('main');
-const router = new Router(outlet, { '/': HomePage, '/library': LibraryPage }, NotFoundPage);
 const routeListener = vi.fn();
 
 describe('Router', () => {
-    beforeAll(() => {
-        vi.spyOn(globalThis, 'scrollTo').mockImplementation((): void => undefined);
-        document.body.append(outlet);
-        router.onRouteChange(routeListener);
-        router.start();
-    });
+    let router: Router;
+    let windowListeners: MockInstance<typeof globalThis.addEventListener>;
+    let documentListeners: MockInstance<typeof document.addEventListener>;
 
     beforeEach(() => {
+        vi.spyOn(globalThis, 'scrollTo').mockImplementation((): void => undefined);
         homePages.length = 0;
         libraryPages.length = 0;
         notFoundPages.length = 0;
-        for (const link of outlet.querySelectorAll('a')) link.remove();
+        outlet.replaceChildren();
         history.replaceState(undefined, '', '/');
-        dispatchEvent(new PopStateEvent('popstate'));
-        vi.clearAllMocks();
+        document.body.append(outlet);
+        windowListeners = vi.spyOn(globalThis, 'addEventListener');
+        documentListeners = vi.spyOn(document, 'addEventListener');
+        router = new Router(outlet, { '/': HomePage, '/library': LibraryPage }, NotFoundPage);
+        router.onRouteChange(routeListener);
+        router.start();
+        routeListener.mockClear();
+        vi.mocked(scrollTo).mockClear();
     });
 
-    afterAll(() => {
+    afterEach(() => {
+        for (const [type, listener, options] of windowListeners.mock.calls) {
+            removeEventListener(type, listener, options);
+        }
+        for (const [type, listener, options] of documentListeners.mock.calls) {
+            document.removeEventListener(type, listener, options);
+        }
         vi.restoreAllMocks();
+        outlet.remove();
     });
 
     it('mounts the matching page with its initial query and notifies route listeners', () => {
@@ -103,12 +113,13 @@ describe('Router', () => {
     });
 
     it('normalizes page aliases and paths with trailing slashes', () => {
+        const initialHomePageCount = homePages.length;
         router.navigate('/library/');
 
         expect(libraryPages).toHaveLength(1);
         router.navigate('/home/');
 
-        expect(homePages).toHaveLength(1);
+        expect(homePages).toHaveLength(initialHomePageCount + 1);
         expect(libraryPages[0]?.destroyCount).toBe(1);
         expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
     });
