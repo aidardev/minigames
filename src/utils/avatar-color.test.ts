@@ -59,6 +59,29 @@ describe('AvatarColorPicker', () => {
         expect(picker.getIndex('bob')).toBe(AVATAR_COLOR_COUNT);
     });
 
+    it('assigns distinct colors even when random always returns the same value', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0);
+        const picker = new AvatarColorPicker();
+        const colors = Array.from({ length: AVATAR_COLOR_COUNT }, (_, index) =>
+            picker.getIndex(`author-${index}`),
+        );
+
+        expect(new Set(colors).size).toBe(AVATAR_COLOR_COUNT);
+        expect(picker.getIndex('author-0')).toBe(colors[0]);
+    });
+
+    it('reuses a token after exhaustion without changing existing author colors', () => {
+        vi.spyOn(Math, 'random').mockReturnValue(0);
+        const picker = new AvatarColorPicker();
+        for (let index = 0; index < AVATAR_COLOR_COUNT; index += 1) {
+            picker.getIndex(`author-${index}`);
+        }
+
+        expect(picker.getIndex('extra-author')).toBe(1);
+        expect(picker.getIndex('author-0')).toBe(1);
+        expect(picker.getIndex('author-1')).toBe(2);
+    });
+
     it('starts fresh for a new picker, like a reopened comments view', () => {
         const random = vi.spyOn(Math, 'random').mockReturnValue(0);
         const first = new AvatarColorPicker().getIndex('alex');
