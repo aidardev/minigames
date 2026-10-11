@@ -66,6 +66,17 @@ describe('signInWithEmail', () => {
 
         await expect(signInWithEmail({ email: EMAIL, password: PASSWORD })).rejects.toBe(error);
     });
+
+    it.each(['', ' '.repeat(3)])('uses email for an empty displayName: %j', async (displayName) => {
+        vi.mocked(signInWithEmailAndPassword).mockResolvedValue(
+            credentialFor({ displayName, email: EMAIL }),
+        );
+
+        await expect(signInWithEmail({ email: EMAIL, password: PASSWORD })).resolves.toStrictEqual({
+            displayName: 'alex',
+            email: EMAIL,
+        });
+    });
 });
 
 describe('signUpWithEmail', () => {

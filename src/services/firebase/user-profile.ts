@@ -1,5 +1,5 @@
 import type { AppSessionProfile } from '@/services/session/session.types';
-import { getEmailLocalPart } from '@/utils/profile/profile';
+import { getProfileName } from '@/utils/profile/profile';
 import type { User } from 'firebase/auth';
 
 /**
@@ -10,7 +10,7 @@ export function toProfile(user: User): AppSessionProfile {
     const email = user.email ?? '';
 
     return {
-        displayName: user.displayName ?? getEmailLocalPart(email),
+        displayName: getProfileName({ displayName: user.displayName ?? '', email }) ?? '',
         email,
         ...(user.photoURL && { avatarUrl: user.photoURL }),
     };

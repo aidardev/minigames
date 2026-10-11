@@ -50,6 +50,17 @@ describe('handleLogin', () => {
         expect(appSession.createSession).not.toHaveBeenCalled();
         expect(showSnackbar).toHaveBeenCalledWith('Incorrect email or password.', 'error');
     });
+
+    it.each([
+        [' '.repeat(3), 'alex@minigames.com', 'alex'],
+        ['', '', 'Player'],
+        ['  Alex Doe  ', 'alex@minigames.com', 'Alex Doe'],
+    ])('greets with the same resolved name as the header: %j', async (displayName, email, name) => {
+        vi.mocked(signInWithEmail).mockResolvedValue({ displayName, email });
+
+        await expect(handleLogin(LOGIN)).resolves.toBe(true);
+        expect(showSnackbar).toHaveBeenCalledExactlyOnceWith(`Welcome back, ${name}!`, 'success');
+    });
 });
 
 describe('handleRegister', () => {

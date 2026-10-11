@@ -40,7 +40,7 @@ export function getEmailLocalPart(email: string): string {
     return atIndex === -1 ? '' : email.slice(0, atIndex).trim();
 }
 
-function findProfileName({ displayName, email }: AppSessionProfile): string | undefined {
+export function getProfileName({ displayName, email }: AppSessionProfile): string | undefined {
     const name = displayName.trim();
     if (name !== '') return name;
 
@@ -50,7 +50,7 @@ function findProfileName({ displayName, email }: AppSessionProfile): string | un
 }
 
 export function getProfileView(profile: AppSessionProfile): ProfileView {
-    const name = findProfileName(profile);
+    const name = getProfileName(profile);
 
     // The generic name is not a real one, so it must not produce initials like "P".
     return name === undefined

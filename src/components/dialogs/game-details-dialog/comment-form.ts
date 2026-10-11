@@ -6,7 +6,7 @@ import { BaseComponent } from '@/components/base-component';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { AppSession } from '@/services/session/session.types';
 import { html, unsafeHtml } from '@/utils/html';
-import { getInitial } from '@/utils/profile/profile';
+import { getInitial, getProfileView } from '@/utils/profile/profile';
 import { toRem } from '@/utils/to-rem';
 
 const MAX_COMMENT_LENGTH = 500;
@@ -62,7 +62,7 @@ export class CommentForm extends BaseComponent<'form'> {
 
         this.setHtml(html`
             <div class="comment-form__avatar avatar" aria-hidden="true">
-                ${session ? getInitial(session.displayName) : 'U'}
+                ${session ? getInitial(getProfileView(session).name) : 'U'}
             </div>
             <label class="comment-form__label sr-only" for="game-details-comment">
                 Write a comment

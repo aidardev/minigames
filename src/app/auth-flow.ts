@@ -5,6 +5,7 @@ import { signInWithEmail, signUpWithEmail } from '@/services/firebase/email-auth
 import { signInWithGoogle } from '@/services/firebase/google-auth';
 import { appSession } from '@/services/session/app-session';
 import type { AppSessionProfile } from '@/services/session/session.types';
+import { getProfileView } from '@/utils/profile/profile';
 
 /**
  * Runs a Firebase sign-in or registration. On success starts the app session,
@@ -36,21 +37,21 @@ async function canAuthenticate(
 export function handleLogin(values: Readonly<LoginValues>): Promise<boolean> {
     return canAuthenticate(
         () => signInWithEmail(values),
-        ({ displayName }): string => `Welcome back, ${displayName}!`,
+        (profile): string => `Welcome back, ${getProfileView(profile).name}!`,
     );
 }
 
 export function handleRegister(values: Readonly<RegisterValues>): Promise<boolean> {
     return canAuthenticate(
         () => signUpWithEmail(values),
-        ({ displayName }): string => `Account created. Welcome, ${displayName}!`,
+        (profile): string => `Account created. Welcome, ${getProfileView(profile).name}!`,
     );
 }
 
 export function handleGoogleLogin(): Promise<boolean> {
     return canAuthenticate(
         signInWithGoogle,
-        ({ displayName }): string => `Welcome, ${displayName}!`,
+        (profile): string => `Welcome, ${getProfileView(profile).name}!`,
     );
 }
 
