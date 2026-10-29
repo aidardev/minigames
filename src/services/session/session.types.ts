@@ -1,4 +1,5 @@
 export interface AppSessionProfile {
+    uid: string;
     displayName: string;
     email: string;
     avatarUrl?: string;

@@ -26,8 +26,9 @@ function parseSession(raw: string): AppSession | undefined {
 
     if (!isRecord(data)) return;
 
-    const { displayName, email, authenticatedAt, avatarUrl } = data;
+    const { uid, displayName, email, authenticatedAt, avatarUrl } = data;
 
+    if (typeof uid !== 'string' || uid === '') return;
     if (typeof displayName !== 'string' || typeof email !== 'string') return;
     if (typeof authenticatedAt !== 'number' || !Number.isFinite(authenticatedAt)) return;
     // A timestamp from the future would make the session live longer than 5 minutes.
@@ -35,8 +36,8 @@ function parseSession(raw: string): AppSession | undefined {
     if (avatarUrl !== undefined && typeof avatarUrl !== 'string') return;
 
     return avatarUrl === undefined
-        ? { displayName, email, authenticatedAt }
-        : { displayName, email, authenticatedAt, avatarUrl };
+        ? { uid, displayName, email, authenticatedAt }
+        : { uid, displayName, email, authenticatedAt, avatarUrl };
 }
 
 function isExpired(session: AppSession): boolean {
@@ -146,6 +147,7 @@ export class AppSessionStore {
 
     public createSession(profile: AppSessionProfile): void {
         const session: AppSession = {
+            uid: profile.uid,
             displayName: profile.displayName,
             email: profile.email,
             authenticatedAt: Date.now(),

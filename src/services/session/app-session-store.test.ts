@@ -9,7 +9,7 @@ import {
 import type { AppSession } from './session.types';
 
 const START_TIME = new Date('2026-01-01T12:00:00Z').getTime();
-const PROFILE = { displayName: 'Forest Dweller', email: 'student@rs.school' };
+const PROFILE = { displayName: 'Forest Dweller', email: 'student@rs.school', uid: 'user-1' };
 
 interface TestContext {
     store: AppSessionStore;

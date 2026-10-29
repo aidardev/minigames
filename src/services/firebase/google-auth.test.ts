@@ -9,7 +9,10 @@ vi.mock('./firebase', () => ({
 }));
 vi.mock('firebase/auth', () => ({ signInWithPopup: vi.fn() }));
 
+const UID = 'user-1';
+
 interface FakeUser {
+    uid?: string;
     displayName?: string;
     email?: string;
     photoURL?: string;
@@ -27,6 +30,7 @@ describe('signInWithGoogle', () => {
     it('opens the Google popup of the app and maps the user to a profile', async () => {
         vi.mocked(signInWithPopup).mockResolvedValue(
             credentialFor({
+                uid: UID,
                 displayName: 'Alex Doe',
                 email: 'alex@gmail.com',
                 photoURL: 'https://example.com/a.png',
@@ -37,6 +41,7 @@ describe('signInWithGoogle', () => {
 
         expect(signInWithPopup).toHaveBeenCalledWith(auth, googleProvider);
         expect(profile).toStrictEqual({
+            uid: UID,
             displayName: 'Alex Doe',
             email: 'alex@gmail.com',
             avatarUrl: 'https://example.com/a.png',
@@ -45,10 +50,11 @@ describe('signInWithGoogle', () => {
 
     it('omits avatarUrl when the account has no photo', async () => {
         vi.mocked(signInWithPopup).mockResolvedValue(
-            credentialFor({ displayName: 'Alex', email: 'alex@gmail.com' }),
+            credentialFor({ uid: UID, displayName: 'Alex', email: 'alex@gmail.com' }),
         );
 
         await expect(signInWithGoogle()).resolves.toStrictEqual({
+            uid: UID,
             displayName: 'Alex',
             email: 'alex@gmail.com',
         });
