@@ -123,6 +123,7 @@ describe('DialogController auth guard', () => {
 
     it('blocks Auth for an authenticated user, cleans only `auth` in place and notifies once', async () => {
         vi.mocked(appSession.getActiveSession).mockReturnValue({
+            uid: 'user-1',
             displayName: 'A',
             email: 'a@b.c',
             authenticatedAt: Date.now(),
@@ -143,6 +144,7 @@ describe('DialogController auth guard', () => {
 
     it('keeps Game Details instead of opening Auth for an authenticated user', async () => {
         vi.mocked(appSession.getActiveSession).mockReturnValue({
+            uid: 'user-1',
             displayName: 'A',
             email: 'a@b.c',
             authenticatedAt: Date.now(),
@@ -313,6 +315,7 @@ describe('openAuth', () => {
 
     it('does not navigate for an authenticated user', () => {
         vi.mocked(appSession.getActiveSession).mockReturnValue({
+            uid: 'user-1',
             displayName: 'A',
             email: 'a@b.c',
             authenticatedAt: Date.now(),
