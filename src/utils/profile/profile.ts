@@ -11,6 +11,8 @@ export interface ProfileView {
     initials: string;
 }
 
+type NameSource = Pick<AppSessionProfile, 'displayName' | 'email'>;
+
 // Spread iterates by code point, so a character outside the BMP is not split in half.
 function firstAlphanumeric(word: string): string | undefined {
     return [...word].find((character): boolean => ALPHANUMERIC_PATTERN.test(character));
@@ -40,7 +42,7 @@ export function getEmailLocalPart(email: string): string {
     return atIndex === -1 ? '' : email.slice(0, atIndex).trim();
 }
 
-export function getProfileName({ displayName, email }: AppSessionProfile): string | undefined {
+export function getProfileName({ displayName, email }: NameSource): string | undefined {
     const name = displayName.trim();
     if (name !== '') return name;
 
@@ -49,7 +51,7 @@ export function getProfileName({ displayName, email }: AppSessionProfile): strin
     return localPart === '' ? undefined : localPart;
 }
 
-export function getProfileView(profile: AppSessionProfile): ProfileView {
+export function getProfileView(profile: NameSource): ProfileView {
     const name = getProfileName(profile);
 
     // The generic name is not a real one, so it must not produce initials like "P".

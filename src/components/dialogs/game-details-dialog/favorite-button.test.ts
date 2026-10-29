@@ -12,7 +12,12 @@ vi.mock('@/api/favorites', () => ({ toggleFavorite: vi.fn() }));
 vi.mock('@/app/require-auth', () => ({ requireSession: vi.fn() }));
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 
-const SESSION = { displayName: 'Alex', email: 'alex@example.com', authenticatedAt: 1 };
+const SESSION = {
+    uid: 'user-1',
+    displayName: 'Alex',
+    email: 'alex@example.com',
+    authenticatedAt: 1,
+};
 const SLUG = 'cat-mail-co';
 
 function setup(isFavorited = false) {

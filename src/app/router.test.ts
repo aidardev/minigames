@@ -165,7 +165,11 @@ describe('Router', () => {
             session.subscribe((value) => {
                 visibleSession = value;
             });
-            session.createSession({ displayName: 'Alex', email: 'alex@example.com' });
+            session.createSession({
+                uid: 'user-1',
+                displayName: 'Alex',
+                email: 'alex@example.com',
+            });
             expect(visibleSession).toBeDefined();
             beforeNavigation.mockImplementation(() => {
                 session.checkExpiration();

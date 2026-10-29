@@ -13,7 +13,12 @@ vi.mock('@/app/require-auth', () => ({ requireSession: vi.fn() }));
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 
 const COMMENT_ID = 'c1b2-uuid';
-const SESSION = { displayName: 'Alex', email: 'alex@minigames.com', authenticatedAt: 1 };
+const SESSION = {
+    uid: 'user-1',
+    displayName: 'Alex',
+    email: 'alex@minigames.com',
+    authenticatedAt: 1,
+};
 
 function createDeferred<T>(): PromiseWithResolvers<T> {
     return Promise.withResolvers<T>();

@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,6 +14,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+export const database = getFirestore(app);
 
 function createGoogleProvider(): GoogleAuthProvider {
     const provider = new GoogleAuthProvider();
@@ -26,4 +28,10 @@ export const googleProvider = createGoogleProvider();
 
 export function signOutFirebaseUser(): Promise<void> {
     return signOut(auth);
+}
+
+export async function waitForAuthUid(): Promise<string | undefined> {
+    await auth.authStateReady();
+
+    return auth.currentUser?.uid;
 }

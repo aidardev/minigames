@@ -30,8 +30,18 @@ vi.mock('./comments-section', () => ({
 const SLUG = 'cat-mail-co';
 const GAME = { slug: SLUG } as GameDetails;
 const COMMENTS: GameComments = { comments: [], total: 0 };
-const ALEX: AppSession = { displayName: 'Alex', email: 'alex@minigames.com', authenticatedAt: 1 };
-const SAM: AppSession = { displayName: 'Sam', email: 'sam@minigames.com', authenticatedAt: 1 };
+const ALEX: AppSession = {
+    uid: 'user-1',
+    displayName: 'Alex',
+    email: 'alex@minigames.com',
+    authenticatedAt: 1,
+};
+const SAM: AppSession = {
+    uid: 'user-2',
+    displayName: 'Sam',
+    email: 'sam@minigames.com',
+    authenticatedAt: 1,
+};
 
 interface TestContext {
     dialog: GameDetailsDialog;
