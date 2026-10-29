@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validCollection(d) {
+      return d.keys().hasOnly(['name', 'description', 'color', 'itemsCount', 'createdAt', 'updatedAt'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 60
+        && d.description is string && d.description.size() <= 300
+        && d.color is string && d.color.size() <= 20
+        && d.itemsCount is int && d.itemsCount >= 0
+        && d.createdAt is timestamp
+        && d.updatedAt is timestamp;
+    }
+
+    function validItem(d, slug) {
+      return d.keys().hasOnly(['slug', 'title', 'image', 'addedAt'])
+        && d.slug == slug
+        && d.title is string && d.title.size() >= 1 && d.title.size() <= 200
+        && d.image is string && d.image.size() <= 2000
+        && d.addedAt is timestamp;
+    }
+
+    match /users/{uid}/collections/{collectionId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validCollection(request.resource.data);
+
+      match /items/{slug} {
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid) && validItem(request.resource.data, slug);
+      }
+    }
+  }
+}
