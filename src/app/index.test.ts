@@ -3,6 +3,7 @@
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
+import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { startApp } from './index';
@@ -45,8 +46,11 @@ vi.mock('@/components/footer/footer', () => ({
 vi.mock('@/pages/home/home', () => ({ HomePage: class {} }));
 vi.mock('@/pages/library/library', () => ({ LibraryPage: class {} }));
 vi.mock('@/pages/not-found/not-found', () => ({ NotFoundPage: class {} }));
+vi.mock('@/services/collections/collections-store', () => ({
+    collectionsStore: { setUser: vi.fn() },
+}));
 vi.mock('@/services/session/app-session', () => ({
-    appSession: { start: vi.fn(), checkExpiration: vi.fn() },
+    appSession: { start: vi.fn(), checkExpiration: vi.fn(), subscribe: vi.fn() },
 }));
 vi.mock('./dialog-controller', () => ({
     DialogController: class {
@@ -89,6 +93,10 @@ describe('startApp', () => {
         expect(app?.children[1]?.classList.contains('app__outlet')).toBe(true);
         expect(app?.children[2]).toBe(mocks.footerElement);
         expect(appSession.start).toHaveBeenCalledOnce();
+        expect(appSession.subscribe).toHaveBeenCalledOnce();
+        expect(vi.mocked(appSession.subscribe).mock.invocationCallOrder[0]).toBeLessThan(
+            vi.mocked(appSession.start).mock.invocationCallOrder[0],
+        );
         expect(mocks.routerStart).toHaveBeenCalledOnce();
         expect(mocks.dialogControllerStart).toHaveBeenCalledOnce();
         expect(mocks.headerConstructor).toHaveBeenCalledExactlyOnceWith({ session: appSession });
@@ -110,5 +118,25 @@ describe('startApp', () => {
         mocks.routerListener?.({ path: '/library' });
 
         expect(mocks.headerSetActivePath).toHaveBeenCalledWith('/library');
+    });
+
+    it('passes session changes and logout to the collections store', () => {
+        startApp();
+        const listener = vi.mocked(appSession.subscribe).mock.calls[0]?.[0];
+        const session = {
+            uid: 'user-1',
+            displayName: 'Alex',
+            email: 'alex@example.com',
+            authenticatedAt: Date.now(),
+        };
+
+        listener?.(session);
+        expect(collectionsStore.setUser).toHaveBeenLastCalledWith('user-1');
+
+        listener?.({ ...session, uid: 'user-2' });
+        expect(collectionsStore.setUser).toHaveBeenLastCalledWith('user-2');
+
+        listener?.(undefined);
+        expect(collectionsStore.setUser).toHaveBeenLastCalledWith(undefined);
     });
 });
