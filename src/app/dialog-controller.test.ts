@@ -93,7 +93,8 @@ function setup(): {
 
     return {
         router,
-        go: (search: string): void => listener({ path: '/', query: new URLSearchParams(search) }),
+        go: (search: string): void =>
+            listener({ path: '/', query: new URLSearchParams(search), params: {} }),
     };
 }
 
