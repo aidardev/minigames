@@ -5,7 +5,7 @@ import type { AppSession } from '@/services/session/session.types';
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from 'vitest';
 import { BaseComponent } from '../components/base-component';
 import { NAVIGATE_EVENT } from './navigation';
-import { Router, type QueryAware } from './router';
+import { Router, type QueryAware, type RouteParameters } from './router';
 
 class HomePage extends BaseComponent<'div'> implements QueryAware {
     public readonly initialQuery: URLSearchParams;
@@ -51,9 +51,39 @@ class NotFoundPage extends BaseComponent<'div'> {
     }
 }
 
+class CollectionPage extends BaseComponent<'div'> implements QueryAware {
+    public readonly initialQuery: URLSearchParams;
+    public readonly params: RouteParameters;
+    public readonly queryChanges: string[] = [];
+    public destroyCount = 0;
+
+    constructor(query: URLSearchParams, parameters: RouteParameters) {
+        super('div');
+        this.initialQuery = new URLSearchParams(query);
+        this.params = parameters;
+        collectionPages.push(this);
+    }
+
+    public onQueryChange(query: URLSearchParams): void {
+        this.queryChanges.push(query.toString());
+    }
+
+    public override destroy(): void {
+        this.destroyCount += 1;
+        super.destroy();
+    }
+}
+
 const homePages: HomePage[] = [];
 const libraryPages: LibraryPage[] = [];
 const notFoundPages: NotFoundPage[] = [];
+const collectionPages: CollectionPage[] = [];
+const routes = {
+    '/': HomePage,
+    '/library': LibraryPage,
+    '/profile/collections/:id': CollectionPage,
+    '/profile/collections/featured': LibraryPage,
+};
 const outlet = document.createElement('main');
 const routeListener = vi.fn();
 const beforeNavigation = vi.fn();
@@ -68,6 +98,7 @@ describe('Router', () => {
         homePages.length = 0;
         libraryPages.length = 0;
         notFoundPages.length = 0;
+        collectionPages.length = 0;
         outlet.replaceChildren();
         history.replaceState(undefined, '', '/');
         document.body.append(outlet);
@@ -75,12 +106,7 @@ describe('Router', () => {
         documentListeners = vi.spyOn(document, 'addEventListener');
         beforeNavigation.mockReset();
         routeListener.mockReset();
-        router = new Router(
-            outlet,
-            { '/': HomePage, '/library': LibraryPage },
-            NotFoundPage,
-            beforeNavigation,
-        );
+        router = new Router(outlet, routes, NotFoundPage, beforeNavigation);
         router.onRouteChange(routeListener);
         router.start();
         routeListener.mockClear();
@@ -88,6 +114,7 @@ describe('Router', () => {
     });
 
     afterEach(() => {
+        vi.useRealTimers();
         for (const [type, listener, options] of windowListeners.mock.calls) {
             removeEventListener(type, listener, options);
         }
@@ -107,6 +134,7 @@ describe('Router', () => {
         expect(routeListener).toHaveBeenLastCalledWith({
             path: '/library',
             query: new URLSearchParams('category=puzzle'),
+            params: {},
         });
     });
 
@@ -220,6 +248,117 @@ describe('Router', () => {
         expect(notFoundPages).toHaveLength(1);
         expect(outlet.firstElementChild).toBe(notFoundPages[0]?.element);
         expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it('passes path params and query separately to a dynamic page and route listeners', () => {
+        router.navigate('/profile/collections/first?game=cat-mail-co');
+
+        expect(collectionPages).toHaveLength(1);
+        expect(collectionPages[0]?.params).toStrictEqual({ id: 'first' });
+        expect(collectionPages[0]?.initialQuery.get('game')).toBe('cat-mail-co');
+        expect(outlet.firstElementChild).toBe(collectionPages[0]?.element);
+        expect(routeListener).toHaveBeenLastCalledWith({
+            path: '/profile/collections/first',
+            query: new URLSearchParams('game=cat-mail-co'),
+            params: { id: 'first' },
+        });
+    });
+
+    it('destroys the old page and mounts a new one when a path parameter changes', () => {
+        router.navigate('/profile/collections/first');
+        const previous = collectionPages[0];
+
+        router.navigate('/profile/collections/second');
+
+        expect(collectionPages).toHaveLength(2);
+        expect(previous?.destroyCount).toBe(1);
+        expect(collectionPages[1]?.params.id).toBe('second');
+        expect(outlet.children).toHaveLength(1);
+        expect(scrollTo).toHaveBeenLastCalledWith(0, 0);
+    });
+
+    it('keeps a dynamic page when only the query changes', () => {
+        router.navigate('/profile/collections/first');
+        vi.mocked(scrollTo).mockClear();
+
+        router.navigate('/profile/collections/first?game=cat-mail-co');
+
+        expect(collectionPages).toHaveLength(1);
+        expect(collectionPages[0]?.destroyCount).toBe(0);
+        expect(collectionPages[0]?.queryChanges).toStrictEqual(['game=cat-mail-co']);
+        expect(routeListener).toHaveBeenLastCalledWith({
+            path: '/profile/collections/first',
+            query: new URLSearchParams('game=cat-mail-co'),
+            params: { id: 'first' },
+        });
+        expect(scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('prefers a static page over a previously registered dynamic route', () => {
+        router.navigate('/profile/collections/featured');
+
+        expect(collectionPages).toHaveLength(0);
+        expect(libraryPages).toHaveLength(1);
+        expect(routeListener).toHaveBeenLastCalledWith({
+            path: '/profile/collections/featured',
+            query: new URLSearchParams(),
+            params: {},
+        });
+    });
+
+    it.each(['/profile/collections/first', '/profile/collections/first/'])(
+        'restores a dynamic page and its query at startup from %s',
+        (path) => {
+            history.replaceState(undefined, '', `${path}?game=cat-mail-co`);
+            const freshOutlet = document.createElement('main');
+
+            new Router(freshOutlet, routes, NotFoundPage).start();
+
+            expect(collectionPages).toHaveLength(1);
+            expect(collectionPages[0]?.params).toStrictEqual({ id: 'first' });
+            expect(collectionPages[0]?.initialQuery.get('game')).toBe('cat-mail-co');
+            expect(freshOutlet.firstElementChild).toBe(collectionPages[0]?.element);
+        },
+    );
+
+    it.each([
+        '/profile/collections',
+        '/profile/collections/first/items',
+        '/profile/collections/%E0%A4%A',
+    ])('mounts Not Found for an invalid dynamic path %s', (path) => {
+        router.navigate(path);
+
+        expect(collectionPages).toHaveLength(0);
+        expect(notFoundPages).toHaveLength(1);
+        expect(routeListener).toHaveBeenLastCalledWith({
+            path,
+            query: new URLSearchParams(),
+            params: {},
+        });
+    });
+
+    it('restores path params and query through browser Back and Forward', async () => {
+        router.navigate('/profile/collections/first?game=cat-mail-co');
+        router.navigate('/profile/collections/second');
+
+        const back = new Promise<void>((resolve) => {
+            addEventListener('popstate', () => resolve(), { once: true });
+        });
+        history.back();
+        await back;
+
+        expect(collectionPages.at(-1)?.params.id).toBe('first');
+        expect(collectionPages.at(-1)?.initialQuery.get('game')).toBe('cat-mail-co');
+
+        const forward = new Promise<void>((resolve) => {
+            addEventListener('popstate', () => resolve(), { once: true });
+        });
+        history.forward();
+        await forward;
+
+        expect(collectionPages.at(-1)?.params.id).toBe('second');
+        expect(collectionPages.at(-1)?.initialQuery.has('game')).toBe(false);
+        expect(outlet.children).toHaveLength(1);
     });
 
     it('does not add history for the current URL and supports replacing an entry', () => {

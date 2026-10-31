@@ -1,9 +1,13 @@
 import type { BaseComponent } from '../components/base-component';
 import { isNavigateEvent, NAVIGATE_EVENT } from './navigation';
+import { matchRoute, type RouteParameters } from './route-matcher';
+
+export type { RouteParameters } from './route-matcher';
 
 export interface Route {
     path: string;
     query: URLSearchParams;
+    params: RouteParameters;
 }
 
 export interface NavigateOptions {
@@ -16,7 +20,7 @@ export interface QueryAware {
     onQueryChange(query: URLSearchParams): void;
 }
 
-type PageConstructor = new (query: URLSearchParams) => BaseComponent;
+type PageConstructor = new (query: URLSearchParams, parameters: RouteParameters) => BaseComponent;
 type Routes = Record<string, PageConstructor>;
 type RouteChangeListener = (route: Route) => void;
 
@@ -31,13 +35,6 @@ export class Router {
         const trimmed = path.replace(/\/+$/, '') || '/';
 
         return PATH_ALIASES[trimmed] ?? trimmed;
-    }
-
-    private static readRoute(): Route {
-        return {
-            path: this.normalize(location.pathname),
-            query: new URLSearchParams(location.search),
-        };
     }
 
     private readonly outlet: HTMLElement;
@@ -60,26 +57,30 @@ export class Router {
         this.beforeNavigation = beforeNavigation;
     }
 
-    private mount(route: Route): void {
-        const Page = this.routes[route.path] ?? this.notFound;
-
+    private mount(route: Route, Page: PageConstructor): void {
         this.current?.destroy();
         // The page receives the initial query so a deep link can restore its state immediately.
-        this.current = new Page(route.query);
+        this.current = new Page(route.query, route.params);
         this.currentPath = route.path;
         this.outlet.append(this.current.element);
     }
 
     private render(): void {
         this.beforeNavigation();
-        const route = Router.readRoute();
+        const path = Router.normalize(location.pathname);
+        const match = matchRoute(path, Object.keys(this.routes));
+        const route: Route = {
+            path,
+            query: new URLSearchParams(location.search),
+            params: match?.params ?? {},
+        };
 
         if (this.current && route.path === this.currentPath) {
             // Same page, new query (a dialog opened, a filter changed): rebuilding would
             // refetch everything and reset the page, so the page is only notified.
             if (isQueryAware(this.current)) this.current.onQueryChange(route.query);
         } else {
-            this.mount(route);
+            this.mount(route, match ? this.routes[match.pattern] : this.notFound);
         }
 
         for (const listener of this.listeners) {
