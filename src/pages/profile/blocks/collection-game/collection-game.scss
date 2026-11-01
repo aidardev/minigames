@@ -1,0 +1,35 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    $game-cover-ratio: #{16 / 10};
+
+    .collection-game {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-2);
+        height: 100%;
+        min-width: 0;
+
+        &__image {
+            display: block;
+            width: var(--size-full);
+            aspect-ratio: $game-cover-ratio;
+            object-fit: cover;
+            border-radius: var(--corner-large);
+            box-shadow: var(--shadow-card);
+        }
+
+        &__name {
+            margin-bottom: 0;
+            padding-inline: var(--size-05);
+            font-size: var(--fs-body-large);
+            font-weight: var(--font-weight-semi-bold);
+            line-height: var(--lh-normal);
+            overflow-wrap: anywhere;
+
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-body-medium);
+            }
+        }
+    }
+}

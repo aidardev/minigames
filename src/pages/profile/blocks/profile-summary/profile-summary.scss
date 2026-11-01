@@ -1,0 +1,163 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    $stat-min-width: styles.rem(156px);
+
+    .profile-summary {
+        padding: var(--size-5);
+        border: var(--border-width-medium) solid var(--color-on-primary);
+        box-shadow: var(--shadow-level-05);
+        border-radius: var(--corner-extra-large);
+        background: var(--color-white);
+
+        @include styles.max-width(styles.$br-lg) {
+            padding: var(--size-4);
+        }
+
+        @include styles.max-width(styles.$br-sm) {
+            padding: var(--size-3);
+        }
+
+        &__body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--size-6);
+
+            @include styles.max-width(styles.$br-lg) {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--size-4);
+            }
+        }
+
+        &__identity {
+            display: flex;
+            align-items: center;
+            gap: var(--size-3);
+            min-width: 0;
+
+            @include styles.max-width(styles.$br-sm) {
+                align-items: flex-start;
+                gap: var(--size-2);
+            }
+        }
+
+        &__avatar {
+            flex-shrink: 0;
+            width: var(--size-12);
+            height: var(--size-12);
+            border: var(--border-width-medium) solid var(--color-on-primary);
+            border-radius: var(--corner-larger);
+            background: var(--color-primary);
+            color: var(--color-on-primary);
+            font-size: var(--fs-headline-large);
+            box-shadow: var(--shadow-level-05);
+
+            @include styles.max-width(styles.$br-sm) {
+                width: var(--size-8);
+                height: var(--size-8);
+                border-radius: var(--corner-large);
+                font-size: var(--fs-headline-medium);
+            }
+        }
+
+        &__details {
+            min-width: 0;
+        }
+
+        &__name {
+            margin-bottom: var(--size-1);
+            font-size: var(--fs-headline-large);
+            overflow-wrap: anywhere;
+
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-headline-medium);
+            }
+        }
+
+        &__email {
+            display: flex;
+            align-items: center;
+            gap: var(--size-075);
+            margin-bottom: 0;
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-small);
+            overflow-wrap: anywhere;
+
+            > span:first-child {
+                display: inline-flex;
+                flex-shrink: 0;
+            }
+
+            svg {
+                flex-shrink: 0;
+                width: var(--size-2);
+                height: var(--size-2);
+            }
+
+            @include styles.max-width(styles.$br-sm) {
+                font-size: var(--fs-label-medium);
+            }
+        }
+
+        &__stats {
+            display: grid;
+            grid-template-columns: repeat(2, minmax($stat-min-width, 1fr));
+            flex-shrink: 0;
+            gap: var(--size-2);
+            margin: 0;
+
+            @include styles.max-width(styles.$br-lg) {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        &__stat {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: flex-start;
+            justify-content: center;
+            gap: var(--size-1-5);
+            padding: var(--size-3);
+            border-radius: var(--corner-large);
+            background: var(--color-surface);
+
+            dt {
+                display: flex;
+                align-items: center;
+                gap: var(--size-075);
+                color: var(--color-on-bg);
+                font-size: var(--fs-body-small);
+            }
+
+            dd {
+                margin: 0;
+                font-size: var(--fs-headline-large);
+                font-weight: var(--font-weight-bold);
+                line-height: var(--lh-heading);
+            }
+
+            @include styles.max-width(styles.$br-sm) {
+                padding: var(--size-2);
+
+                dt {
+                    gap: var(--size-05);
+                    font-size: var(--fs-label-medium);
+                }
+            }
+        }
+
+        &__stat-icon {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+            color: var(--color-on-primary);
+
+            svg {
+                width: var(--size-2);
+                height: var(--size-2);
+            }
+        }
+    }
+}
