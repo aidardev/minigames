@@ -3,6 +3,7 @@
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
+import { ProfilePage } from '@/pages/profile/profile';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -46,6 +47,7 @@ vi.mock('@/components/footer/footer', () => ({
 vi.mock('@/pages/home/home', () => ({ HomePage: class {} }));
 vi.mock('@/pages/library/library', () => ({ LibraryPage: class {} }));
 vi.mock('@/pages/not-found/not-found', () => ({ NotFoundPage: class {} }));
+vi.mock('@/pages/profile/profile', () => ({ ProfilePage: class {} }));
 vi.mock('@/services/collections/collections-store', () => ({
     collectionsStore: { setUser: vi.fn() },
 }));
@@ -106,7 +108,7 @@ describe('startApp', () => {
 
         expect(mocks.routerConstructor).toHaveBeenCalledExactlyOnceWith(
             app?.children[1],
-            { '/': HomePage, '/library': LibraryPage },
+            { '/': HomePage, '/library': LibraryPage, '/profile': ProfilePage },
             NotFoundPage,
             expect.any(Function),
         );
