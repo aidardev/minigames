@@ -4,12 +4,16 @@ import { html } from '@/utils/html';
 import './collection-game.scss';
 
 export class CollectionGame extends BaseComponent<'article'> {
-    constructor({ title, image }: GamePreview) {
+    constructor({ slug, title, image }: GamePreview) {
         super('article', 'collection-game');
 
+        this.element.dataset.slug = slug;
+
         this.setHtml(html`
-            <img class="collection-game__image" src="${image}" alt="" loading="lazy">
-            <h4 class="collection-game__name">${title}</h4>
+            <button class="collection-game__inner" type="button" aria-haspopup="dialog">
+                <img class="collection-game__image" src="${image}" alt="" loading="lazy">
+                <span class="collection-game__name">${title}</span>
+            </button>
         `);
     }
 }

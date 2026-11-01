@@ -107,12 +107,6 @@
                 background: var(--color-on-bg-low);
             }
 
-            &:focus-visible {
-                outline: var(--border-width-medium) solid var(--color-tertiary);
-                outline-offset: var(--outline-offset);
-                border-radius: var(--corner-medium);
-            }
-
             @include styles.max-width(styles.$br-lg) {
                 grid-auto-columns: $game-width-tablet;
                 gap: var(--size-3);

@@ -1,5 +1,5 @@
 import type { GamePreview } from '@/types/collection.types';
-import type { CollectionSectionProperties } from './blocks/collection-section/collection-section';
+import type { CollectionSectionData } from './blocks/collection-section/collection-section';
 
 export const PROFILE_PREVIEW = {
     displayName: 'Alex Morgan',
@@ -12,7 +12,7 @@ function game(slug: string, title: string): GamePreview {
 
 const PREVIEW_DATE = new Date('2026-11-01T12:00:00Z');
 
-export const COLLECTIONS_PREVIEW: readonly CollectionSectionProperties[] = [
+export const COLLECTIONS_PREVIEW: readonly CollectionSectionData[] = [
     {
         id: 'slow-evenings',
         name: 'Slow evenings',

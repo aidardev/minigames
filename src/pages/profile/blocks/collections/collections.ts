@@ -1,14 +1,15 @@
+import { openGameDetails } from '@/app/navigation';
 import addIcon from '@/assets/icons/add.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import { html, unsafeHtml } from '@/utils/html';
 import {
     CollectionSection,
-    type CollectionSectionProperties,
+    type CollectionSectionData,
 } from '../collection-section/collection-section';
 import './collections.scss';
 
 export class CollectionsSection extends BaseComponent<'section'> {
-    constructor(collections: readonly CollectionSectionProperties[]) {
+    constructor(collections: readonly CollectionSectionData[]) {
         super('section', 'profile-collections');
         this.element.setAttribute('aria-labelledby', 'collections-title');
 
@@ -38,7 +39,10 @@ export class CollectionsSection extends BaseComponent<'section'> {
         const list = this.getElement('[data-collections-list]');
 
         for (const collection of collections) {
-            list.append(this.adopt(new CollectionSection(collection)).element);
+            list.append(
+                this.adopt(new CollectionSection({ ...collection, onGameClick: openGameDetails }))
+                    .element,
+            );
         }
     }
 }

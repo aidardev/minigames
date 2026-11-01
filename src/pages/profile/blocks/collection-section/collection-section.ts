@@ -6,9 +6,13 @@ import { html, unsafeHtml } from '@/utils/html';
 import { CollectionGame } from '../collection-game/collection-game';
 import './collection-section.scss';
 
-export interface CollectionSectionProperties {
+export interface CollectionSectionData {
     collection: Collection;
     games: readonly GamePreview[];
+}
+
+export interface CollectionSectionProperties extends CollectionSectionData {
+    onGameClick: (slug: string) => void;
 }
 
 const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
@@ -19,9 +23,26 @@ const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
 });
 
 export class CollectionSection extends BaseComponent<'section'> {
-    constructor({ collection, games }: CollectionSectionProperties) {
+    private onGameClick?: (slug: string) => void;
+
+    private handleClick = (event: Event): void => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const card = target.closest<HTMLElement>('.collection-game');
+        if (!card) return;
+
+        const slug = card.dataset.slug;
+        if (slug) {
+            this.onGameClick?.(slug);
+        }
+    };
+
+    constructor({ collection, games, onGameClick }: CollectionSectionProperties) {
         super('section', 'collection-section');
         this.element.setAttribute('aria-label', collection.name);
+
+        this.onGameClick = onGameClick;
 
         const { name, description, itemsCount, updatedAt } = collection;
 
@@ -77,7 +98,6 @@ export class CollectionSection extends BaseComponent<'section'> {
         const list = document.createElement('ul');
         list.className = 'collection-section__games list-unstyled';
         list.setAttribute('aria-label', `Games in ${name}`);
-        list.tabIndex = 0;
 
         for (const game of games) {
             const item = document.createElement('li');
@@ -87,5 +107,7 @@ export class CollectionSection extends BaseComponent<'section'> {
         }
 
         content.replaceWith(list);
+
+        this.element.addEventListener('click', this.handleClick);
     }
 }
