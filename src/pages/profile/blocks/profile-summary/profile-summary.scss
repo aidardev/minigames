@@ -148,6 +148,11 @@
             }
         }
 
+        &__stat-placeholder {
+            width: var(--size-7);
+            height: calc(var(--lh-heading) * 1em);
+        }
+
         &__stat-icon {
             display: flex;
             align-items: center;

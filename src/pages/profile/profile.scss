@@ -19,4 +19,12 @@
             }
         }
     }
+
+    .profile-collections-content {
+        min-width: 0;
+
+        &__notice {
+            margin-bottom: var(--size-4);
+        }
+    }
 }
