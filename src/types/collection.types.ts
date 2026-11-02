@@ -8,7 +8,7 @@ export interface CollectionInput {
 
 export interface Collection extends CollectionInput {
     id: string;
-    itemsCount: number;
+    itemsCount: number | undefined;
     createdAt: Date;
     updatedAt: Date;
 }
