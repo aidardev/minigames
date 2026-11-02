@@ -3,7 +3,9 @@ import type { Collection } from '@/types/collection.types';
 import { listCollections } from './collections-repo';
 
 export interface CollectionsState {
-    readonly collections: readonly Collection[];
+    readonly uid: string | undefined;
+    // undefined means no successful response yet; [] is a loaded, empty list.
+    readonly collections: readonly Collection[] | undefined;
     readonly status: 'idle' | 'loading' | 'ready' | 'error';
     readonly error: Error | undefined;
 }
@@ -12,10 +14,10 @@ type CollectionsListener = (state: CollectionsState) => void;
 
 export class CollectionsStore {
     private readonly listeners = new Set<CollectionsListener>();
-    private uid: string | undefined;
     private requestId = 0;
     private state: CollectionsState = {
-        collections: [],
+        uid: undefined,
+        collections: undefined,
         status: 'idle',
         error: undefined,
     };
@@ -40,18 +42,17 @@ export class CollectionsStore {
     }
 
     public setUser(uid: string | undefined): void {
-        if (this.uid === uid) return;
+        if (this.state.uid === uid) return;
 
-        this.uid = uid;
         // Invalidate pending requests even if the next account has the same uid later.
         this.requestId += 1;
-        this.setState({ collections: [], status: 'idle', error: undefined });
+        this.setState({ uid, collections: undefined, status: 'idle', error: undefined });
 
         if (uid !== undefined) void this.reload();
     }
 
     public async reload(): Promise<void> {
-        const uid = this.uid;
+        const { uid } = this.state;
         if (uid === undefined) return;
 
         const requestId = ++this.requestId;
@@ -84,7 +85,7 @@ export class CollectionsStore {
 
         if (requestId !== this.requestId) return;
 
-        this.setState({ collections, status: 'ready', error: undefined });
+        this.setState({ uid, collections, status: 'ready', error: undefined });
     }
 }
 

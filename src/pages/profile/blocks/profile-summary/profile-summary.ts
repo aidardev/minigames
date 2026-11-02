@@ -27,6 +27,7 @@ export class ProfileSummary extends BaseComponent<'section'> {
     private readonly email: HTMLElement;
     private readonly collectionsCount: HTMLElement;
     private readonly gamesCount: HTMLElement;
+    private statistics: ProfileStatistics | undefined;
 
     constructor({ profile, collectionsCount, gamesCount }: ProfileSummaryProperties) {
         super('section', 'profile-summary');
@@ -100,7 +101,12 @@ export class ProfileSummary extends BaseComponent<'section'> {
     }
 
     public updateStatistics({ collectionsCount, gamesCount }: ProfileStatistics): void {
-        this.renderCount(this.collectionsCount, collectionsCount);
-        this.renderCount(this.gamesCount, gamesCount);
+        if (collectionsCount !== this.statistics?.collectionsCount) {
+            this.renderCount(this.collectionsCount, collectionsCount);
+        }
+        if (gamesCount !== this.statistics?.gamesCount) {
+            this.renderCount(this.gamesCount, gamesCount);
+        }
+        this.statistics = { collectionsCount, gamesCount };
     }
 }

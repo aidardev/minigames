@@ -1,4 +1,3 @@
-import { AsyncRegion } from '@/components/async-region/async-region';
 import { BaseComponent } from '@/components/base-component';
 import { ErrorBanner } from '@/components/error-banner/error-banner';
 import { listItems } from '@/services/collections/collections-repo';
@@ -14,6 +13,8 @@ interface ProfileCollectionsProperties {
     onStatisticsChange: (statistics: ProfileStatistics) => void;
 }
 
+type LoadError = 'collections' | 'games';
+
 export class ProfileCollections extends BaseComponent<'div'> {
     private readonly uid: string;
     private readonly onStatisticsChange: (statistics: ProfileStatistics) => void;
@@ -22,7 +23,12 @@ export class ProfileCollections extends BaseComponent<'div'> {
     private readonly outlet = document.createElement('div');
     private content: BaseComponent | undefined;
     private errorBanner: ErrorBanner | undefined;
-    private displayedCollections: readonly Collection[] | undefined;
+    private displayedError: LoadError | undefined;
+    private state: CollectionsState = collectionsStore.getState();
+    private itemsStatus: 'loading' | 'ready' | 'error' | undefined;
+    // Only complete results replace the visible snapshot, including an empty result.
+    private snapshot: readonly CollectionSectionData[] | undefined;
+    private requestId = 0;
 
     constructor({ uid, onStatisticsChange }: ProfileCollectionsProperties) {
         super('div', 'profile-collections-content');
@@ -32,7 +38,7 @@ export class ProfileCollections extends BaseComponent<'div'> {
         this.notice.className = 'profile-collections-content__notice';
         this.element.append(this.notice, this.outlet);
 
-        this.unsubscribe = collectionsStore.subscribe((state): void => this.renderState(state));
+        this.unsubscribe = collectionsStore.subscribe((state): void => this.receiveState(state));
     }
 
     private show(content: BaseComponent): void {
@@ -41,105 +47,118 @@ export class ProfileCollections extends BaseComponent<'div'> {
         this.outlet.replaceChildren(content.element);
     }
 
-    private clearNotice(): void {
+    private receiveState(state: CollectionsState): void {
+        this.state = state;
+
+        if (state.uid !== this.uid || state.collections === undefined) {
+            this.requestId += 1;
+            this.itemsStatus = undefined;
+            this.snapshot = undefined;
+        } else if (!this.itemsStatus || state.status === 'ready') {
+            void this.loadItems(state.collections);
+            return;
+        }
+
+        this.render();
+    }
+
+    private async loadItems(collections: readonly Collection[]): Promise<void> {
+        const requestId = ++this.requestId;
+        this.itemsStatus = 'loading';
+        this.render();
+
+        let data: CollectionSectionData[];
+
+        try {
+            data = await Promise.all(
+                collections.map(async (collection): Promise<CollectionSectionData> => ({
+                    collection,
+                    games: await listItems(this.uid, collection.id),
+                })),
+            );
+        } catch {
+            if (requestId !== this.requestId) return;
+            this.itemsStatus = 'error';
+            this.render();
+            return;
+        }
+
+        // Firestore reads continue in the background; only the current request may publish.
+        if (requestId !== this.requestId) return;
+
+        this.snapshot = data;
+        this.itemsStatus = 'ready';
+        this.show(new CollectionsSection(data));
+        this.render();
+    }
+
+    private retry(error: LoadError): void {
+        if (error === 'collections') {
+            void collectionsStore.reload();
+        } else if (this.state.uid === this.uid && this.state.collections !== undefined) {
+            void this.loadItems(this.state.collections);
+        }
+    }
+
+    private renderError(error: LoadError | undefined): void {
+        if (error === this.displayedError) return;
         if (this.errorBanner) this.release(this.errorBanner);
         this.errorBanner = undefined;
+        this.displayedError = error;
         this.notice.hidden = true;
-    }
 
-    private renderState(state: CollectionsState): void {
-        this.clearNotice();
+        if (!error) return;
 
-        if (state.status === 'idle' || state.status === 'loading') {
-            this.outlet.setAttribute('aria-busy', 'true');
-
-            if (state.collections.length > 0) {
-                this.showCollections(state.collections);
-            } else {
-                this.displayedCollections = undefined;
-                this.onStatisticsChange({ collectionsCount: 'loading', gamesCount: 'loading' });
-                this.show(new CollectionsSkeleton());
-            }
-            return;
-        }
-
-        this.outlet.removeAttribute('aria-busy');
-
-        if (state.status === 'error') {
-            const banner = new ErrorBanner({
-                message: 'Your collections could not be loaded. Please try again.',
-                onRetry: (): void => {
-                    void collectionsStore.reload();
-                },
-            });
-
-            if (state.collections.length > 0) {
-                this.showCollections(state.collections);
-                this.errorBanner = this.adopt(banner);
-                this.notice.replaceChildren(banner.element);
-                this.notice.hidden = false;
-            } else {
-                this.onStatisticsChange({
-                    collectionsCount: 'unavailable',
-                    gamesCount: 'unavailable',
-                });
-                this.show(banner);
-            }
-            return;
-        }
-
-        this.showCollections(state.collections);
-    }
-
-    private showCollections(collections: readonly Collection[]): void {
-        if (collections === this.displayedCollections) return;
-        this.displayedCollections = collections;
-
-        if (collections.length === 0) {
-            this.onStatisticsChange({ collectionsCount: 0, gamesCount: 0 });
-            this.show(new CollectionsSection([]));
-            return;
-        }
-
-        const region = new AsyncRegion<CollectionSectionData[]>({
-            load: (): Promise<CollectionSectionData[]> =>
-                Promise.all(
-                    collections.map(async (collection): Promise<CollectionSectionData> => ({
-                        collection,
-                        games: await listItems(this.uid, collection.id),
-                    })),
-                ),
-            renderSkeleton: (): CollectionsSkeleton => {
-                this.onStatisticsChange({
-                    collectionsCount: collections.length,
-                    gamesCount: 'loading',
-                });
-                return new CollectionsSkeleton();
-            },
-            renderSuccess: (data): CollectionsSection => {
-                const gamesCount = new Set(
-                    data.flatMap(({ games }) => games.map(({ slug }) => slug)),
-                ).size;
-                this.onStatisticsChange({ collectionsCount: data.length, gamesCount });
-                return new CollectionsSection(data);
-            },
-            renderError: (_error, retry): ErrorBanner => {
-                this.onStatisticsChange({
-                    collectionsCount: collections.length,
-                    gamesCount: 'unavailable',
-                });
-                return new ErrorBanner({
-                    message: 'The games in your collections could not be loaded. Please try again.',
-                    onRetry: retry,
-                });
-            },
+        const banner = new ErrorBanner({
+            message:
+                error === 'collections'
+                    ? 'Your collections could not be loaded. Please try again.'
+                    : 'The games in your collections could not be loaded. Please try again.',
+            onRetry: (): void => this.retry(error),
         });
 
-        this.show(region);
-        void region.load();
+        this.errorBanner = this.adopt(banner);
+        this.notice.replaceChildren(banner.element);
+        this.notice.hidden = false;
+    }
+
+    private render(): void {
+        const isOwned = this.state.uid === this.uid;
+        const collections = isOwned ? this.state.collections : undefined;
+        const error =
+            isOwned && this.state.status === 'error'
+                ? 'collections'
+                : this.itemsStatus === 'error'
+                  ? 'games'
+                  : undefined;
+        const isLoading = !error && (collections === undefined || this.itemsStatus === 'loading');
+        const isBusy = isLoading || (isOwned && this.state.status === 'loading');
+        this.outlet.setAttribute('aria-busy', String(isBusy));
+
+        if (this.snapshot === undefined) {
+            this.onStatisticsChange({
+                collectionsCount: collections?.length ?? (error ? 'unavailable' : 'loading'),
+                gamesCount: error ? 'unavailable' : 'loading',
+            });
+            if (error) {
+                if (this.content) this.release(this.content);
+                this.content = undefined;
+                this.outlet.replaceChildren();
+            } else if (!(this.content instanceof CollectionsSkeleton)) {
+                this.show(new CollectionsSkeleton());
+            }
+        } else {
+            const gamesCount = new Set(
+                this.snapshot.flatMap(({ games }) => games.map(({ slug }) => slug)),
+            ).size;
+            this.onStatisticsChange({ collectionsCount: this.snapshot.length, gamesCount });
+        }
+
+        this.renderError(error);
     }
 
     public override destroy(): void {
+        this.requestId += 1;
         this.unsubscribe();
         super.destroy();
     }

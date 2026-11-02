@@ -43,7 +43,8 @@ export class CollectionSection extends BaseComponent<'section'> {
 
         this.onGameClick = onGameClick;
 
-        const { name, description, itemsCount, updatedAt } = collection;
+        const { name, description, updatedAt } = collection;
+        const gamesCount = games.length;
 
         this.setHtml(html`
             <header class="collection-section__header">
@@ -51,7 +52,7 @@ export class CollectionSection extends BaseComponent<'section'> {
                     <div class="collection-section__heading">
                         <h3 class="collection-section__title">${name}</h3>
                         <span class="collection-section__count">
-                            ${itemsCount} ${itemsCount === 1 ? 'game' : 'games'}
+                            ${gamesCount} ${gamesCount === 1 ? 'game' : 'games'}
                         </span>
                     </div>
                     ${description && html`<p class="collection-section__description">${description}</p>`}

@@ -30,7 +30,8 @@ describe('CollectionsStore', () => {
         await store.reload();
 
         expect(store.getState()).toStrictEqual({
-            collections: [],
+            uid: undefined,
+            collections: undefined,
             status: 'idle',
             error: undefined,
         });
@@ -92,7 +93,8 @@ describe('CollectionsStore', () => {
         store.setUser(undefined);
 
         expect(store.getState()).toStrictEqual({
-            collections: [],
+            uid: undefined,
+            collections: undefined,
             status: 'idle',
             error: undefined,
         });
@@ -131,6 +133,7 @@ describe('CollectionsStore', () => {
             await Promise.allSettled([pending.promise]);
 
             expect(store.getState()).toStrictEqual({
+                uid: 'user-1',
                 collections: [],
                 status: 'ready',
                 error: undefined,
@@ -147,7 +150,8 @@ describe('CollectionsStore', () => {
         vi.mocked(listCollections).mockResolvedValue([]);
         store.setUser('user-2');
 
-        expect(store.getState().collections).toStrictEqual([]);
+        expect(store.getState().collections).toBeUndefined();
+        expect(store.getState().uid).toBe('user-2');
         expect(store.getState().status).toBe('loading');
         await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
         expect(listCollections).toHaveBeenLastCalledWith('user-2');
@@ -177,6 +181,7 @@ describe('CollectionsStore', () => {
         await store.reload();
 
         expect(store.getState()).toStrictEqual({
+            uid: 'user-1',
             collections: [COLLECTION],
             status: 'error',
             error,
@@ -203,5 +208,27 @@ describe('CollectionsStore', () => {
 
         expect(store.getState().collections).toStrictEqual([]);
         expect(store.getState().status).toBe('ready');
+    });
+
+    it('distinguishes an unloaded list from a successful empty list, including refresh errors', async () => {
+        const pending = Promise.withResolvers<Collection[]>();
+        vi.mocked(listCollections).mockReturnValueOnce(pending.promise);
+        const store = new CollectionsStore();
+        store.setUser('user-1');
+
+        expect(store.getState().uid).toBe('user-1');
+        expect(store.getState().collections).toBeUndefined();
+        pending.resolve([]);
+        await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
+
+        const empty = store.getState().collections;
+        vi.mocked(listCollections).mockRejectedValueOnce(new Error('Offline'));
+        const reload = store.reload();
+        expect(store.getState().collections).toBe(empty);
+        await reload;
+
+        expect(store.getState().collections).toEqual([]);
+        expect(store.getState().collections).toBe(empty);
+        expect(store.getState().status).toBe('error');
     });
 });
