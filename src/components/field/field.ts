@@ -3,53 +3,88 @@ import eyeIcon from '@/assets/icons/visibility.svg?raw';
 import { html, SafeHtml, unsafeHtml } from '@/utils/html';
 import './field.scss';
 
-export interface FieldOptions {
+interface CommonFieldOptions {
     id: string;
     name: string;
     label: string;
-    type: 'text' | 'email' | 'password';
     placeholder: string;
-    icon: string;
-    autocomplete: string;
+    autocomplete?: string;
+    maxLength?: number;
+    required?: boolean;
+    autofocus?: boolean;
+    optional?: boolean;
+}
+
+interface InputFieldOptions extends CommonFieldOptions {
+    type: 'text' | 'email' | 'password';
+    icon?: string;
     passwordToggle?: boolean;
 }
 
+interface TextareaFieldOptions extends CommonFieldOptions {
+    type: 'textarea';
+    rows?: number;
+    icon?: never;
+    passwordToggle?: never;
+}
+
+export type FieldOptions = InputFieldOptions | TextareaFieldOptions;
+
 export function renderField(options: FieldOptions): SafeHtml {
-    const {
-        id,
-        name,
-        label,
-        type,
-        placeholder,
-        icon,
-        autocomplete,
-        passwordToggle = false,
-    } = options;
+    const { id, name, label, icon, optional = false } = options;
+    const hasIcon = Boolean(icon);
+    const hasPasswordToggle = options.type === 'password' && options.passwordToggle;
 
     return html`
-        <div class="field${passwordToggle ? ' field--has-password-toggle' : ''}">
-            <label class="field__label" for="${id}">${label}</label>
+        <div
+            class="field${hasIcon ? ' field--has-icon' : ''}${
+                hasPasswordToggle ? ' field--has-password-toggle' : ''
+            }"
+        >
+            <label class="field__label" for="${id}">
+                ${label} ${optional ? html`<span class="field__optional">(optional)</span>` : ''}
+            </label>
             <div class="field__control">
-                <span class="field__icon" aria-hidden="true">${unsafeHtml(icon)}</span>
-                <input
-                    class="field__input"
-                    id="${id}"
-                    name="${name}"
-                    type="${type}"
-                    placeholder="${placeholder}"
-                    autocomplete="${autocomplete}"
-                    aria-describedby="${id}-error"
-                >
-                ${passwordToggle ? renderPasswordToggle() : ''}
+                ${
+                    icon
+                        ? html`<span class="field__icon" aria-hidden="true"
+                              >${unsafeHtml(icon)}</span
+                          >`
+                        : ''
+                }
+                ${renderControl(options)} ${hasPasswordToggle ? renderPasswordToggle() : ''}
             </div>
-            <p
-                class="field__error"
-                id="${id}-error"
-                data-field-error="${name}"
-                aria-live="polite"
-                hidden
-            ></p>
+            ${renderFieldError(id, name)}
         </div>
+    `;
+}
+
+function renderControl(options: FieldOptions): SafeHtml {
+    const attributes = html`
+        id="${options.id}" name="${options.name}" placeholder="${options.placeholder}"
+        autocomplete="${options.autocomplete ?? 'off'}" aria-describedby="${options.id}-error"
+        ${options.maxLength === undefined ? '' : html`maxlength="${options.maxLength}"`}
+        ${options.required ? html`required` : ''} ${options.autofocus ? html`autofocus` : ''}
+    `;
+
+    return options.type === 'textarea'
+        ? html`<textarea
+              class="field__input field__input--multiline"
+              ${attributes}
+              rows="${options.rows ?? 4}"
+          ></textarea>`
+        : html`<input class="field__input" ${attributes} type="${options.type}">`;
+}
+
+function renderFieldError(id: string, name: string): SafeHtml {
+    return html`
+        <p
+            class="field__error"
+            id="${id}-error"
+            data-field-error="${name}"
+            aria-live="polite"
+            hidden
+        ></p>
     `;
 }
 
