@@ -1,4 +1,4 @@
-import { openGameDetails } from '@/app/navigation';
+import { openCreateCollection, openGameDetails } from '@/app/navigation';
 import addIcon from '@/assets/icons/add.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import { html, unsafeHtml } from '@/utils/html';
@@ -36,6 +36,10 @@ export class CollectionsSection extends BaseComponent<'section'> {
             </header>
             <div class="profile-collections__list" data-collections-list></div>
         `);
+
+        this.getElement('.profile-collections__create').addEventListener('click', (): void => {
+            openCreateCollection();
+        });
 
         const list = this.getElement('[data-collections-list]');
 

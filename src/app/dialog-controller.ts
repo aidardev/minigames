@@ -1,10 +1,17 @@
 import { AuthDialog, toAuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
+import { CreateCollectionDialog } from '@/components/dialogs/create-collection-dialog/create-collection-dialog';
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import { appSession } from '@/services/session/app-session';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
-import { AUTH_PARAM, GAME_PARAM, setAuthGuard, setQueryParameter } from './navigation';
+import {
+    AUTH_PARAM,
+    CREATE_COLLECTION_PARAM,
+    GAME_PARAM,
+    setAuthGuard,
+    setQueryParameter,
+} from './navigation';
 import type { Route, Router } from './router';
 
 interface OpenDialog {
@@ -43,6 +50,11 @@ export class DialogController {
             }
 
             this.show('auth', query, (): Omit<OpenDialog, 'key'> => this.createAuth(query));
+        } else if (query.get(CREATE_COLLECTION_PARAM) === 'true') {
+            this.show('create-collection', query, (): Omit<OpenDialog, 'key'> => ({
+                param: CREATE_COLLECTION_PARAM,
+                dialog: new CreateCollectionDialog(),
+            }));
         } else if (slug) {
             this.show(`game:${slug}`, query, (): Omit<OpenDialog, 'key'> => ({
                 param: GAME_PARAM,

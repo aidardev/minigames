@@ -10,7 +10,11 @@ import type { Collection, CollectionItem } from '@/types/collection.types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ProfilePage } from './profile';
 
-vi.mock('@/app/navigation', () => ({ openAuth: vi.fn(), openGameDetails: vi.fn() }));
+vi.mock('@/app/navigation', () => ({
+    openAuth: vi.fn(),
+    openCreateCollection: vi.fn(),
+    openGameDetails: vi.fn(),
+}));
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
 vi.mock('@/services/session/app-session', () => ({ appSession: { subscribe: vi.fn() } }));
 vi.mock('@/services/collections/collections-repo', () => ({

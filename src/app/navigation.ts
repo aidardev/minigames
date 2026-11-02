@@ -4,6 +4,7 @@ import type { NavigateOptions } from './router';
 export const NAVIGATE_EVENT = 'app:navigate';
 export const GAME_PARAM = 'game';
 export const AUTH_PARAM = 'auth';
+export const CREATE_COLLECTION_PARAM = 'createCollection';
 
 type AuthGuard = () => boolean;
 
@@ -51,6 +52,10 @@ export function setQueryParameter(key: string, value: string, options?: Navigate
 
 export function openGameDetails(slug: string): void {
     setQueryParameter(GAME_PARAM, slug);
+}
+
+export function openCreateCollection(): void {
+    setQueryParameter(CREATE_COLLECTION_PARAM, 'true');
 }
 
 export function openAuth(tab: AuthTab): void {
