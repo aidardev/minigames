@@ -2,6 +2,7 @@ import { openGameDetails } from '@/app/navigation';
 import addIcon from '@/assets/icons/add.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import { html, unsafeHtml } from '@/utils/html';
+import { CollectionEmptyState } from '../collection-section/collection-empty-state';
 import {
     CollectionSection,
     type CollectionSectionData,
@@ -37,6 +38,19 @@ export class CollectionsSection extends BaseComponent<'section'> {
         `);
 
         const list = this.getElement('[data-collections-list]');
+
+        if (collections.length === 0) {
+            list.append(
+                this.adopt(
+                    new CollectionEmptyState({
+                        title: 'No collections yet',
+                        description:
+                            'Your favorite games will have a home here. Explore the library and discover something you love.',
+                    }),
+                ).element,
+            );
+            return;
+        }
 
         for (const collection of collections) {
             list.append(

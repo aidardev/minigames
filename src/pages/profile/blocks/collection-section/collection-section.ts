@@ -1,9 +1,8 @@
-import arrowIcon from '@/assets/icons/arrow-forward.svg?raw';
-import collectionsIcon from '@/assets/icons/collections.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import type { Collection, GamePreview } from '@/types/collection.types';
-import { html, unsafeHtml } from '@/utils/html';
+import { html } from '@/utils/html';
 import { CollectionGame } from '../collection-game/collection-game';
+import { CollectionEmptyState } from './collection-empty-state';
 import './collection-section.scss';
 
 export interface CollectionSectionData {
@@ -70,28 +69,7 @@ export class CollectionSection extends BaseComponent<'section'> {
         const content = this.getElement('[data-collection-content]');
 
         if (games.length === 0) {
-            content.innerHTML = html`
-                <div class="collection-section__empty">
-                    <span class="collection-section__empty-icon" aria-hidden="true">
-                        ${unsafeHtml(collectionsIcon)}
-                    </span>
-                    <div class="collection-section__empty-text">
-                        <p class="collection-section__empty-title">Start with something you love</p>
-                        <p class="collection-section__empty-description">
-                            A cozy escape, a new adventure, or a little brain break. Find your first
-                            game and make this collection yours.
-                        </p>
-                    </div>
-                    <a
-                        class="collection-section__browse btn btn--medium btn--primary"
-                        href="/library"
-                        data-link
-                    >
-                        Explore the library
-                        <span aria-hidden="true">${unsafeHtml(arrowIcon)}</span>
-                    </a>
-                </div>
-            `.value;
+            content.replaceWith(this.adopt(new CollectionEmptyState()).element);
             return;
         }
 
