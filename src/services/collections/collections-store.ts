@@ -1,6 +1,6 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import type { Collection, CollectionInput } from '@/types/collection.types';
-import { createCollection, listCollections } from './collections-repo';
+import { createCollection, listCollections, updateCollection } from './collections-repo';
 
 export interface CollectionsState {
     readonly uid: string | undefined;
@@ -29,6 +29,28 @@ export class CollectionsStore {
         for (const listener of this.listeners) listener(state);
     }
 
+    private async write(operation: (uid: string) => Promise<string>): Promise<string | undefined> {
+        const { uid } = this.state;
+        if (uid === undefined) throw new Error('Sign in to save a collection.');
+        const userVersion = this.userVersion;
+
+        let id: string;
+        try {
+            const authUid = await waitForAuthUid();
+            if (userVersion !== this.userVersion) return;
+            if (authUid !== uid) throw new Error('Please sign in again to save a collection.');
+
+            id = await operation(uid);
+        } catch (error) {
+            if (userVersion !== this.userVersion) return;
+            throw error;
+        }
+
+        if (userVersion !== this.userVersion) return;
+        void this.reload();
+        return id;
+    }
+
     public getState(): CollectionsState {
         return this.state;
     }
@@ -53,26 +75,15 @@ export class CollectionsStore {
         if (uid !== undefined) void this.reload();
     }
 
-    public async create(input: Readonly<CollectionInput>): Promise<string | undefined> {
-        const { uid } = this.state;
-        if (uid === undefined) throw new Error('Sign in to create a collection.');
-        const userVersion = this.userVersion;
+    public create(input: Readonly<CollectionInput>): Promise<string | undefined> {
+        return this.write((uid) => createCollection(uid, input));
+    }
 
-        let id: string;
-        try {
-            const authUid = await waitForAuthUid();
-            if (userVersion !== this.userVersion) return;
-            if (authUid !== uid) throw new Error('Please sign in again to create a collection.');
-
-            id = await createCollection(uid, input);
-        } catch (error) {
-            if (userVersion !== this.userVersion) return;
-            throw error;
-        }
-
-        if (userVersion !== this.userVersion) return;
-        void this.reload();
-        return id;
+    public update(id: string, input: Readonly<CollectionInput>): Promise<string | undefined> {
+        return this.write(async (uid) => {
+            await updateCollection(uid, id, input);
+            return id;
+        });
     }
 
     public async reload(): Promise<void> {

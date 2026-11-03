@@ -1,11 +1,15 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import type { Collection } from '@/types/collection.types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCollection, listCollections } from './collections-repo';
+import { createCollection, listCollections, updateCollection } from './collections-repo';
 import { CollectionsStore } from './collections-store';
 
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
-vi.mock('./collections-repo', () => ({ listCollections: vi.fn(), createCollection: vi.fn() }));
+vi.mock('./collections-repo', () => ({
+    listCollections: vi.fn(),
+    createCollection: vi.fn(),
+    updateCollection: vi.fn(),
+}));
 
 const COLLECTION: Collection = {
     id: 'collection-1',
@@ -29,6 +33,7 @@ describe('CollectionsStore', () => {
         vi.mocked(waitForAuthUid).mockResolvedValue('user-1');
         vi.mocked(listCollections).mockResolvedValue([COLLECTION]);
         vi.mocked(createCollection).mockResolvedValue('new-collection');
+        vi.mocked(updateCollection).mockResolvedValue(undefined);
     });
 
     it('starts empty and does not load collections for a guest', async () => {
@@ -238,6 +243,55 @@ describe('CollectionsStore', () => {
         expect(store.getState().collections).toEqual([]);
         expect(store.getState().collections).toBe(empty);
         expect(store.getState().status).toBe('error');
+    });
+
+    describe('updates', () => {
+        const input = { name: 'Updated name', description: 'Updated notes' };
+
+        it('updates the existing record and refreshes the collection list', async () => {
+            const store = await readyStore();
+            vi.mocked(listCollections).mockResolvedValueOnce([{ ...COLLECTION, ...input }]);
+
+            await expect(store.update(COLLECTION.id, input)).resolves.toBe(COLLECTION.id);
+            await vi.waitFor(() =>
+                expect(store.getState().collections?.[0]?.name).toBe(input.name),
+            );
+            expect(updateCollection).toHaveBeenCalledExactlyOnceWith(
+                'user-1',
+                COLLECTION.id,
+                input,
+            );
+            expect(createCollection).not.toHaveBeenCalled();
+        });
+
+        it('keeps a successful update separate from a failed list refresh', async () => {
+            const store = await readyStore();
+            vi.mocked(listCollections).mockRejectedValueOnce(new Error('Refresh failed'));
+
+            await expect(store.update(COLLECTION.id, input)).resolves.toBe(COLLECTION.id);
+            await vi.waitFor(() => expect(store.getState().status).toBe('error'));
+            expect(store.getState().collections).toEqual([COLLECTION]);
+            expect(updateCollection).toHaveBeenCalledOnce();
+        });
+
+        it.each(['resolve', 'reject'] as const)(
+            'ignores an update that %ss after logout and login to the same account',
+            async (outcome) => {
+                const store = await readyStore();
+                const pending = Promise.withResolvers<void>();
+                vi.mocked(updateCollection).mockReturnValueOnce(pending.promise);
+                const saving = store.update(COLLECTION.id, input);
+                await vi.waitFor(() => expect(updateCollection).toHaveBeenCalledOnce());
+                store.setUser(undefined);
+                store.setUser('user-1');
+                await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
+
+                if (outcome === 'resolve') pending.resolve();
+                else pending.reject(new Error('Old failure'));
+                await expect(saving).resolves.toBeUndefined();
+                expect(listCollections).toHaveBeenCalledTimes(2);
+            },
+        );
     });
 
     describe('creation', () => {
