@@ -3,6 +3,7 @@ import { CreateCollectionDialog } from '@/components/dialogs/create-collection-d
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
+import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
 import {
@@ -12,6 +13,7 @@ import {
     setAuthGuard,
     setQueryParameter,
 } from './navigation';
+import { requireSession } from './require-auth';
 import type { Route, Router } from './router';
 
 interface OpenDialog {
@@ -51,10 +53,19 @@ export class DialogController {
 
             this.show('auth', query, (): Omit<OpenDialog, 'key'> => this.createAuth(query));
         } else if (query.get(CREATE_COLLECTION_PARAM) === 'true') {
-            this.show('create-collection', query, (): Omit<OpenDialog, 'key'> => ({
-                param: CREATE_COLLECTION_PARAM,
-                dialog: new CreateCollectionDialog(),
-            }));
+            const session = appSession.getActiveSession();
+            if (!session) {
+                this.closeCurrent();
+                queueMicrotask((): void => {
+                    this.router.removeQueryInPlace(CREATE_COLLECTION_PARAM);
+                    requireSession('Sign in to create a collection.');
+                });
+                return;
+            }
+
+            this.show(`create-collection:${session.uid}`, query, (): Omit<OpenDialog, 'key'> =>
+                this.createCollection(session.uid),
+            );
         } else if (slug) {
             this.show(`game:${slug}`, query, (): Omit<OpenDialog, 'key'> => ({
                 param: GAME_PARAM,
@@ -63,6 +74,19 @@ export class DialogController {
         } else {
             this.closeCurrent();
         }
+    }
+
+    private createCollection(uid: string): Omit<OpenDialog, 'key'> {
+        const dialog = new CreateCollectionDialog({
+            onCreate: async (values): Promise<string | undefined> => {
+                if (this.current?.dialog !== dialog) return;
+                const session = requireSession('Sign in to create a collection.');
+                if (session?.uid !== uid) return;
+
+                return collectionsStore.create(values);
+            },
+        });
+        return { param: CREATE_COLLECTION_PARAM, dialog };
     }
 
     private createAuth(query: URLSearchParams): Omit<OpenDialog, 'key'> {
@@ -136,6 +160,16 @@ export class DialogController {
     // Must be called before router.start(), so a deep link opens its dialog on the first render.
     public start(): void {
         setAuthGuard((): boolean => this.isAuthBlocked());
+        appSession.subscribe((session): void => {
+            if (
+                this.current?.param !== CREATE_COLLECTION_PARAM ||
+                this.current.key === `create-collection:${session?.uid}`
+            ) {
+                return;
+            }
+            this.closeCurrent();
+            this.router.removeQueryInPlace(CREATE_COLLECTION_PARAM);
+        });
         this.router.onRouteChange((route: Route): void => this.sync(route.query));
     }
 }

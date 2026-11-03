@@ -1,7 +1,9 @@
 // @vitest-environment jsdom
 
 import type { AuthDialogOptions } from '@/components/dialogs/auth-dialog/auth-dialog';
+import type { CreateCollectionDialogOptions } from '@/components/dialogs/create-collection-dialog/create-collection-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
+import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
@@ -18,11 +20,36 @@ const opened = vi.hoisted(() => ({
     authClose: undefined as ReturnType<typeof vi.fn> | undefined,
     gameClose: undefined as ReturnType<typeof vi.fn> | undefined,
     gameElement: undefined as HTMLElement | undefined,
+    collection: 0,
+    collectionOptions: undefined as CreateCollectionDialogOptions | undefined,
+    collectionElement: undefined as HTMLElement | undefined,
+    collectionClose: undefined as ReturnType<typeof vi.fn> | undefined,
 }));
 
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 vi.mock('@/services/session/app-session', () => ({
-    appSession: { getActiveSession: vi.fn() },
+    appSession: { getActiveSession: vi.fn(), subscribe: vi.fn() },
+}));
+vi.mock('@/services/collections/collections-store', () => ({
+    collectionsStore: { create: vi.fn() },
+}));
+vi.mock('@/components/dialogs/create-collection-dialog/create-collection-dialog', () => ({
+    CreateCollectionDialog: class {
+        public element = document.createElement('div');
+        public close = vi.fn((): void => {
+            this.element.dispatchEvent(new Event('close'));
+        });
+
+        constructor(options: CreateCollectionDialogOptions) {
+            opened.collectionOptions = options;
+            opened.collectionElement = this.element;
+            opened.collectionClose = this.close;
+        }
+
+        public open(): void {
+            opened.collection += 1;
+        }
+    },
 }));
 vi.mock('./auth-flow', () => ({
     handleLogin: vi.fn(),
@@ -108,6 +135,10 @@ describe('DialogController auth guard', () => {
         opened.authClose = undefined;
         opened.gameClose = undefined;
         opened.gameElement = undefined;
+        opened.collection = 0;
+        opened.collectionOptions = undefined;
+        opened.collectionElement = undefined;
+        opened.collectionClose = undefined;
         vi.resetAllMocks();
     });
 
@@ -299,6 +330,96 @@ describe('DialogController auth guard', () => {
         opened.gameElement?.dispatchEvent(new Event('close'));
 
         expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('game');
+    });
+
+    describe('collection creation', () => {
+        const user = {
+            uid: 'user-1',
+            displayName: 'A',
+            email: 'a@b.c',
+            authenticatedAt: Date.now(),
+        };
+
+        it('connects the dialog to the store and removes only its own query on close', async () => {
+            vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+            vi.mocked(collectionsStore.create).mockResolvedValue('new-id');
+            const { go, router } = setup();
+            go('?createCollection=true&game=sudoku');
+            go('?createCollection=true&game=sudoku');
+            expect(opened.collection).toBe(1);
+
+            const values = { name: 'Cozy games', description: '' };
+            await expect(opened.collectionOptions?.onCreate(values)).resolves.toBe('new-id');
+            expect(collectionsStore.create).toHaveBeenCalledExactlyOnceWith(values);
+            opened.collectionElement?.dispatchEvent(new Event('close'));
+            expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('createCollection');
+        });
+
+        it('requires sign-in for a guest instead of opening a writable dialog', async () => {
+            const { go, router } = setup();
+            go('?createCollection=true');
+            await Promise.resolve();
+
+            expect(opened.collection).toBe(0);
+            expect(router.removeQueryInPlace).toHaveBeenCalledExactlyOnceWith('createCollection');
+            expect(showSnackbar).toHaveBeenCalledExactlyOnceWith(
+                'Sign in to create a collection.',
+                'warning',
+            );
+            expect(collectionsStore.create).not.toHaveBeenCalled();
+        });
+
+        it.each([undefined, { ...user, uid: 'user-2' }])(
+            'closes and clears the dialog on an account change: %j',
+            (session) => {
+                vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+                const { go, router } = setup();
+                go('?createCollection=true');
+                const onSessionChange = vi.mocked(appSession.subscribe).mock.calls[0]?.[0];
+                onSessionChange?.(session);
+
+                expect(opened.collectionClose).toHaveBeenCalledOnce();
+                expect(router.removeQueryInPlace).toHaveBeenCalledExactlyOnceWith(
+                    'createCollection',
+                );
+            },
+        );
+
+        it('preserves the dialog when only the current account identity changes', () => {
+            vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+            const { go, router } = setup();
+            go('?createCollection=true');
+            const onSessionChange = vi.mocked(appSession.subscribe).mock.calls[0]?.[0];
+            onSessionChange?.({ ...user, displayName: 'Updated name' });
+
+            expect(opened.collectionClose).not.toHaveBeenCalled();
+            expect(router.removeQueryInPlace).not.toHaveBeenCalled();
+        });
+
+        it('checks the session again before submission', async () => {
+            vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+            const { go } = setup();
+            go('?createCollection=true');
+            vi.mocked(appSession.getActiveSession).mockReturnValue(undefined);
+
+            await expect(
+                opened.collectionOptions?.onCreate({ name: 'Cozy games', description: '' }),
+            ).resolves.toBeUndefined();
+            expect(collectionsStore.create).not.toHaveBeenCalled();
+        });
+
+        it('ignores a submit callback belonging to a replaced dialog', async () => {
+            vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+            const { go } = setup();
+            go('?createCollection=true');
+            const options = opened.collectionOptions;
+            go('?game=sudoku');
+
+            await expect(
+                options?.onCreate({ name: 'Cozy games', description: '' }),
+            ).resolves.toBeUndefined();
+            expect(collectionsStore.create).not.toHaveBeenCalled();
+        });
     });
 });
 

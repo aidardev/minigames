@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 
 import { openAuth, openGameDetails } from '@/app/navigation';
-import { listCollections, listItems } from '@/services/collections/collections-repo';
+import {
+    createCollection,
+    listCollections,
+    listItems,
+} from '@/services/collections/collections-repo';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import { appSession } from '@/services/session/app-session';
@@ -18,6 +22,7 @@ vi.mock('@/app/navigation', () => ({
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
 vi.mock('@/services/session/app-session', () => ({ appSession: { subscribe: vi.fn() } }));
 vi.mock('@/services/collections/collections-repo', () => ({
+    createCollection: vi.fn(),
     listCollections: vi.fn(),
     listItems: vi.fn(),
 }));
@@ -342,6 +347,27 @@ describe('ProfilePage', () => {
         expect(page.element.querySelector('[data-collections-count]')?.textContent).toBe('0');
         expect(page.element.querySelector('[data-games-count]')?.textContent).toBe('0');
         expect(listItems).not.toHaveBeenCalled();
+    });
+
+    it('shows a newly created empty collection and updates statistics after the store refresh', async () => {
+        vi.mocked(listCollections).mockResolvedValueOnce([]);
+        const page = mount(USER);
+        await vi.waitFor(() => expect(page.element.textContent).toContain('No collections yet'));
+        const created = { ...COLLECTION, id: 'new-id', name: 'Cozy evenings', itemsCount: 0 };
+        vi.mocked(createCollection).mockResolvedValueOnce(created.id);
+        vi.mocked(listCollections).mockResolvedValueOnce([created]);
+        vi.mocked(listItems).mockResolvedValueOnce([]);
+
+        await collectionsStore.create({ name: created.name, description: created.description });
+        await vi.waitFor(() => expect(page.element.textContent).toContain(created.name));
+
+        expect(page.element.textContent).not.toContain('No collections yet');
+        expect(page.element.querySelector('[data-collections-count]')?.textContent).toBe('1');
+        expect(page.element.querySelector('[data-games-count]')?.textContent).toBe('0');
+        expect(page.element.querySelector('.collection-section__count')?.textContent?.trim()).toBe(
+            '0 games',
+        );
+        expect(page.element.querySelector('.error-banner')).toBeNull();
     });
 
     it.each([undefined, 100])(
