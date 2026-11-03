@@ -5,6 +5,7 @@ import type {
     CollectionItem,
     GamePreview,
 } from '@/types/collection.types';
+import { FirebaseError } from 'firebase/app';
 import {
     collection,
     deleteDoc,
@@ -24,15 +25,9 @@ import {
     type DocumentData,
     type DocumentReference,
 } from 'firebase/firestore';
+import { CollectionNotFoundError } from './collection-errors';
 
 const BATCH_SIZE = 500;
-
-export class CollectionNotFoundError extends Error {
-    constructor() {
-        super('Collection not found.');
-        this.name = 'CollectionNotFoundError';
-    }
-}
 
 function collectionsReference(uid: string): CollectionReference {
     return collection(database, 'users', uid, 'collections');
@@ -134,10 +129,17 @@ export async function updateCollection(
     collectionId: string,
     input: CollectionInput,
 ): Promise<void> {
-    await updateDoc(collectionReference(uid, collectionId), {
-        ...normalize(input),
-        updatedAt: serverTimestamp(),
-    });
+    try {
+        await updateDoc(collectionReference(uid, collectionId), {
+            ...normalize(input),
+            updatedAt: serverTimestamp(),
+        });
+    } catch (error) {
+        if (error instanceof FirebaseError && error.code === 'not-found') {
+            throw new CollectionNotFoundError();
+        }
+        throw error;
+    }
 }
 
 export async function deleteCollection(uid: string, collectionId: string): Promise<void> {

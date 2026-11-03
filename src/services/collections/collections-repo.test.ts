@@ -1,6 +1,22 @@
-import { doc, getDoc, getDocs, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
+import { FirebaseError } from 'firebase/app';
+import {
+    doc,
+    getDoc,
+    getDocs,
+    serverTimestamp,
+    setDoc,
+    Timestamp,
+    updateDoc,
+} from 'firebase/firestore';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCollection, getCollection, listCollections, listItems } from './collections-repo';
+import { CollectionNotFoundError } from './collection-errors';
+import {
+    createCollection,
+    getCollection,
+    listCollections,
+    listItems,
+    updateCollection,
+} from './collections-repo';
 
 vi.mock('@/services/firebase/firebase', () => ({ database: {} }));
 vi.mock('firebase/firestore', async (importOriginal) => ({
@@ -12,6 +28,7 @@ vi.mock('firebase/firestore', async (importOriginal) => ({
     getDoc: vi.fn(),
     getDocs: vi.fn(),
     setDoc: vi.fn(),
+    updateDoc: vi.fn(),
 }));
 
 const CREATED_AT = Timestamp.fromDate(new Date('2026-01-01T12:00:00Z'));
@@ -147,6 +164,53 @@ describe('collection creation', () => {
 
         await expect(
             createCollection('user-1', { name: 'Cozy games', description: '' }),
+        ).rejects.toBe(error);
+    });
+});
+
+describe('collection updates', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('updates only metadata and the server modification time without creating a document', async () => {
+        const reference = { id: 'existing-id' } as ReturnType<typeof doc>;
+        vi.mocked(doc).mockReturnValue(reference);
+        vi.mocked(updateDoc).mockResolvedValue(undefined);
+
+        await updateCollection('user-1', 'existing-id', {
+            name: '  New name  ',
+            description: '  New notes  ',
+        });
+
+        expect(doc).toHaveBeenCalledExactlyOnceWith(
+            expect.anything(),
+            'users',
+            'user-1',
+            'collections',
+            'existing-id',
+        );
+        expect(updateDoc).toHaveBeenCalledExactlyOnceWith(reference, {
+            name: 'New name',
+            description: 'New notes',
+            updatedAt: serverTimestamp(),
+        });
+        expect(setDoc).not.toHaveBeenCalled();
+    });
+
+    it('turns a missing document into a collection-specific error', async () => {
+        vi.mocked(updateDoc).mockRejectedValueOnce(
+            new FirebaseError('not-found', 'Missing document'),
+        );
+        await expect(
+            updateCollection('user-1', 'missing-id', { name: 'Name', description: '' }),
+        ).rejects.toBeInstanceOf(CollectionNotFoundError);
+        expect(setDoc).not.toHaveBeenCalled();
+    });
+
+    it('preserves other update failures', async () => {
+        const error = new FirebaseError('permission-denied', 'Denied');
+        vi.mocked(updateDoc).mockRejectedValueOnce(error);
+        await expect(
+            updateCollection('user-1', 'existing-id', { name: 'Name', description: '' }),
         ).rejects.toBe(error);
     });
 });
