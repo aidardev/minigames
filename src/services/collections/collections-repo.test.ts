@@ -1,6 +1,6 @@
-import { getDoc, getDocs, Timestamp } from 'firebase/firestore';
+import { doc, getDoc, getDocs, serverTimestamp, setDoc, Timestamp } from 'firebase/firestore';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getCollection, listCollections, listItems } from './collections-repo';
+import { createCollection, getCollection, listCollections, listItems } from './collections-repo';
 
 vi.mock('@/services/firebase/firebase', () => ({ database: {} }));
 vi.mock('firebase/firestore', async (importOriginal) => ({
@@ -11,6 +11,7 @@ vi.mock('firebase/firestore', async (importOriginal) => ({
     orderBy: vi.fn(),
     getDoc: vi.fn(),
     getDocs: vi.fn(),
+    setDoc: vi.fn(),
 }));
 
 const CREATED_AT = Timestamp.fromDate(new Date('2026-01-01T12:00:00Z'));
@@ -116,5 +117,36 @@ describe('collections repository reads', () => {
         );
 
         await expect(listItems('user-1', 'collection-1')).rejects.toThrow('Invalid collection');
+    });
+});
+
+describe('collection creation', () => {
+    beforeEach(() => vi.clearAllMocks());
+
+    it('writes normalized fields, an empty count and server timestamps before returning the ID', async () => {
+        const reference = { id: 'new-id' } as ReturnType<typeof doc>;
+        vi.mocked(doc).mockReturnValue(reference);
+        vi.mocked(setDoc).mockResolvedValue(undefined);
+
+        await expect(
+            createCollection('user-1', { name: '  Cozy games  ', description: '  Notes  ' }),
+        ).resolves.toBe('new-id');
+        expect(setDoc).toHaveBeenCalledExactlyOnceWith(reference, {
+            name: 'Cozy games',
+            description: 'Notes',
+            itemsCount: 0,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        });
+    });
+
+    it('propagates a failed write instead of returning a collection ID', async () => {
+        vi.mocked(doc).mockReturnValue({ id: 'new-id' } as ReturnType<typeof doc>);
+        const error = new Error('permission-denied');
+        vi.mocked(setDoc).mockRejectedValueOnce(error);
+
+        await expect(
+            createCollection('user-1', { name: 'Cozy games', description: '' }),
+        ).rejects.toBe(error);
     });
 });

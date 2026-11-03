@@ -1,6 +1,6 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
-import type { Collection } from '@/types/collection.types';
-import { listCollections } from './collections-repo';
+import type { Collection, CollectionInput } from '@/types/collection.types';
+import { createCollection, listCollections } from './collections-repo';
 
 export interface CollectionsState {
     readonly uid: string | undefined;
@@ -15,6 +15,7 @@ type CollectionsListener = (state: CollectionsState) => void;
 export class CollectionsStore {
     private readonly listeners = new Set<CollectionsListener>();
     private requestId = 0;
+    private userVersion = 0;
     private state: CollectionsState = {
         uid: undefined,
         collections: undefined,
@@ -46,9 +47,32 @@ export class CollectionsStore {
 
         // Invalidate pending requests even if the next account has the same uid later.
         this.requestId += 1;
+        this.userVersion += 1;
         this.setState({ uid, collections: undefined, status: 'idle', error: undefined });
 
         if (uid !== undefined) void this.reload();
+    }
+
+    public async create(input: Readonly<CollectionInput>): Promise<string | undefined> {
+        const { uid } = this.state;
+        if (uid === undefined) throw new Error('Sign in to create a collection.');
+        const userVersion = this.userVersion;
+
+        let id: string;
+        try {
+            const authUid = await waitForAuthUid();
+            if (userVersion !== this.userVersion) return;
+            if (authUid !== uid) throw new Error('Please sign in again to create a collection.');
+
+            id = await createCollection(uid, input);
+        } catch (error) {
+            if (userVersion !== this.userVersion) return;
+            throw error;
+        }
+
+        if (userVersion !== this.userVersion) return;
+        void this.reload();
+        return id;
     }
 
     public async reload(): Promise<void> {

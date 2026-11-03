@@ -1,11 +1,11 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import type { Collection } from '@/types/collection.types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { listCollections } from './collections-repo';
+import { createCollection, listCollections } from './collections-repo';
 import { CollectionsStore } from './collections-store';
 
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
-vi.mock('./collections-repo', () => ({ listCollections: vi.fn() }));
+vi.mock('./collections-repo', () => ({ listCollections: vi.fn(), createCollection: vi.fn() }));
 
 const COLLECTION: Collection = {
     id: 'collection-1',
@@ -16,11 +16,19 @@ const COLLECTION: Collection = {
     updatedAt: new Date('2026-01-01'),
 };
 
+async function readyStore(): Promise<CollectionsStore> {
+    const store = new CollectionsStore();
+    store.setUser('user-1');
+    await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
+    return store;
+}
+
 describe('CollectionsStore', () => {
     beforeEach(() => {
         vi.resetAllMocks();
         vi.mocked(waitForAuthUid).mockResolvedValue('user-1');
         vi.mocked(listCollections).mockResolvedValue([COLLECTION]);
+        vi.mocked(createCollection).mockResolvedValue('new-collection');
     });
 
     it('starts empty and does not load collections for a guest', async () => {
@@ -230,5 +238,129 @@ describe('CollectionsStore', () => {
         expect(store.getState().collections).toEqual([]);
         expect(store.getState().collections).toBe(empty);
         expect(store.getState().status).toBe('error');
+    });
+
+    describe('creation', () => {
+        const input = { name: 'Cozy games', description: '' };
+
+        it('requires an authenticated account', async () => {
+            const store = new CollectionsStore();
+            await expect(store.create(input)).rejects.toThrow('Sign in');
+            expect(createCollection).not.toHaveBeenCalled();
+        });
+
+        it('creates for the owner and refreshes the list after the write', async () => {
+            const store = await readyStore();
+            const write = Promise.withResolvers<string>();
+            vi.mocked(createCollection).mockReturnValueOnce(write.promise);
+            vi.mocked(listCollections).mockResolvedValue([
+                COLLECTION,
+                { ...COLLECTION, id: 'new' },
+            ]);
+
+            const saving = store.create(input);
+            await vi.waitFor(() => expect(createCollection).toHaveBeenCalledOnce());
+            expect(store.getState().status).toBe('ready');
+            expect(listCollections).toHaveBeenCalledOnce();
+            write.resolve('new');
+
+            await expect(saving).resolves.toBe('new');
+            await vi.waitFor(() => expect(store.getState().collections).toHaveLength(2));
+            expect(createCollection).toHaveBeenCalledExactlyOnceWith('user-1', input);
+            expect(listCollections).toHaveBeenCalledTimes(2);
+        });
+
+        it.each([undefined, 'another-user'])(
+            'does not write when Firebase Auth uid is %s',
+            async (uid) => {
+                const store = await readyStore();
+                vi.mocked(waitForAuthUid).mockResolvedValue(uid);
+
+                await expect(store.create(input)).rejects.toThrow('sign in again');
+                expect(createCollection).not.toHaveBeenCalled();
+            },
+        );
+
+        it('does not write if the session ends while waiting for Auth', async () => {
+            const store = await readyStore();
+            const auth = Promise.withResolvers<string | undefined>();
+            vi.mocked(waitForAuthUid).mockReturnValueOnce(auth.promise);
+            const saving = store.create(input);
+            store.setUser(undefined);
+            auth.resolve('user-1');
+
+            await expect(saving).resolves.toBeUndefined();
+            expect(createCollection).not.toHaveBeenCalled();
+        });
+
+        it('does not report a completed write as a failure when refreshing the list fails', async () => {
+            const store = await readyStore();
+            vi.mocked(listCollections).mockRejectedValueOnce(new Error('Refresh failed'));
+
+            await expect(store.create(input)).resolves.toBe('new-collection');
+            await vi.waitFor(() => expect(store.getState().status).toBe('error'));
+            expect(store.getState().collections).toEqual([COLLECTION]);
+            expect(createCollection).toHaveBeenCalledOnce();
+        });
+
+        it('returns the saved ID while the list refresh is still pending', async () => {
+            const store = await readyStore();
+            const refresh = Promise.withResolvers<Collection[]>();
+            vi.mocked(listCollections).mockReturnValueOnce(refresh.promise);
+
+            await expect(store.create(input)).resolves.toBe('new-collection');
+            expect(store.getState().status).toBe('loading');
+            refresh.resolve([COLLECTION]);
+            await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
+        });
+
+        it('propagates a write failure without refreshing or clearing the list', async () => {
+            const store = await readyStore();
+            const previous = store.getState();
+            const error = new Error('Write failed');
+            vi.mocked(createCollection).mockRejectedValueOnce(error);
+
+            await expect(store.create(input)).rejects.toBe(error);
+            expect(store.getState()).toBe(previous);
+            expect(listCollections).toHaveBeenCalledOnce();
+        });
+
+        it.each(['resolve', 'reject'] as const)(
+            'ignores a write that %ss after switching accounts',
+            async (outcome) => {
+                const store = await readyStore();
+                const write = Promise.withResolvers<string>();
+                vi.mocked(createCollection).mockReturnValueOnce(write.promise);
+                const saving = store.create(input);
+                await vi.waitFor(() => expect(createCollection).toHaveBeenCalledOnce());
+                vi.mocked(waitForAuthUid).mockResolvedValue('user-2');
+                vi.mocked(listCollections).mockResolvedValue([]);
+                store.setUser('user-2');
+                await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
+                const current = store.getState();
+
+                if (outcome === 'resolve') write.resolve('old-id');
+                else write.reject(new Error('Old failure'));
+
+                await expect(saving).resolves.toBeUndefined();
+                expect(store.getState()).toBe(current);
+                expect(listCollections).toHaveBeenCalledTimes(2);
+            },
+        );
+
+        it('ignores a write from a previous login to the same account', async () => {
+            const store = await readyStore();
+            const write = Promise.withResolvers<string>();
+            vi.mocked(createCollection).mockReturnValueOnce(write.promise);
+            const saving = store.create(input);
+            await vi.waitFor(() => expect(createCollection).toHaveBeenCalledOnce());
+            store.setUser(undefined);
+            store.setUser('user-1');
+            await vi.waitFor(() => expect(store.getState().status).toBe('ready'));
+
+            write.resolve('old-id');
+            await expect(saving).resolves.toBeUndefined();
+            expect(listCollections).toHaveBeenCalledTimes(2);
+        });
     });
 });
