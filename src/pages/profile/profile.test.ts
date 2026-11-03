@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 
-import { openAuth, openGameDetails } from '@/app/navigation';
+import { openAuth, openEditCollection, openGameDetails } from '@/app/navigation';
 import {
     createCollection,
     listCollections,
     listItems,
+    updateCollection,
 } from '@/services/collections/collections-repo';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { waitForAuthUid } from '@/services/firebase/firebase';
@@ -17,6 +18,7 @@ import { ProfilePage } from './profile';
 vi.mock('@/app/navigation', () => ({
     openAuth: vi.fn(),
     openCreateCollection: vi.fn(),
+    openEditCollection: vi.fn(),
     openGameDetails: vi.fn(),
 }));
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
@@ -25,6 +27,7 @@ vi.mock('@/services/collections/collections-repo', () => ({
     createCollection: vi.fn(),
     listCollections: vi.fn(),
     listItems: vi.fn(),
+    updateCollection: vi.fn(),
 }));
 
 const USER: AppSession = {
@@ -347,6 +350,51 @@ describe('ProfilePage', () => {
         expect(page.element.querySelector('[data-collections-count]')?.textContent).toBe('0');
         expect(page.element.querySelector('[data-games-count]')?.textContent).toBe('0');
         expect(listItems).not.toHaveBeenCalled();
+    });
+
+    it.each([{ games: [] }, { games: [GAME] }])(
+        'opens the editor for a collection with games $games',
+        async ({ games }) => {
+            vi.mocked(listCollections).mockResolvedValueOnce([COLLECTION]);
+            vi.mocked(listItems).mockResolvedValueOnce(games);
+            const page = mount(USER);
+            await vi.waitFor(() =>
+                expect(page.element.querySelector('.collection-section__edit')).not.toBeNull(),
+            );
+
+            page.element
+                .querySelector(':scope .collection-section__edit svg')
+                ?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+
+            expect(openEditCollection).toHaveBeenCalledExactlyOnceWith(COLLECTION.id);
+            expect(openGameDetails).not.toHaveBeenCalled();
+        },
+    );
+
+    it('updates collection metadata after saving while keeping games and statistics', async () => {
+        const page = mount(USER);
+        await waitForGames(page);
+        const updated = {
+            ...COLLECTION,
+            name: 'Updated puzzles',
+            description: 'Updated description',
+            updatedAt: new Date('2026-01-04T12:00:00Z'),
+        };
+        vi.mocked(updateCollection).mockResolvedValueOnce(undefined);
+        vi.mocked(listCollections).mockResolvedValueOnce([updated, OTHER_COLLECTION]);
+
+        await collectionsStore.update(updated.id, {
+            name: updated.name,
+            description: updated.description,
+        });
+        await vi.waitFor(() => expect(page.element.textContent).toContain(updated.name));
+
+        expect(page.element.textContent).toContain(updated.description);
+        expect(page.element.querySelector('time')?.dateTime).toBe(updated.updatedAt.toISOString());
+        expect(page.element.querySelector('[data-collections-count]')?.textContent).toBe('2');
+        expect(page.element.querySelector('[data-games-count]')?.textContent).toBe('2');
+        expect(page.element.querySelectorAll('.collection-game')).toHaveLength(3);
+        expect(page.element.querySelector('.error-banner')).toBeNull();
     });
 
     it('shows a newly created empty collection and updates statistics after the store refresh', async () => {

@@ -1,6 +1,7 @@
+import editIcon from '@/assets/icons/edit.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import type { Collection, GamePreview } from '@/types/collection.types';
-import { html } from '@/utils/html';
+import { html, unsafeHtml } from '@/utils/html';
 import { CollectionGame } from '../collection-game/collection-game';
 import { CollectionEmptyState } from './collection-empty-state';
 import './collection-section.scss';
@@ -12,6 +13,7 @@ export interface CollectionSectionData {
 
 export interface CollectionSectionProperties extends CollectionSectionData {
     onGameClick: (slug: string) => void;
+    onEdit: (id: string) => void;
 }
 
 const DATE_FORMAT = new Intl.DateTimeFormat('en-US', {
@@ -37,7 +39,7 @@ export class CollectionSection extends BaseComponent<'section'> {
         }
     };
 
-    constructor({ collection, games, onGameClick }: CollectionSectionProperties) {
+    constructor({ collection, games, onGameClick, onEdit }: CollectionSectionProperties) {
         super('section', 'collection-section');
         this.element.setAttribute('aria-label', collection.name);
 
@@ -57,15 +59,28 @@ export class CollectionSection extends BaseComponent<'section'> {
                     </div>
                     ${description && html`<p class="collection-section__description">${description}</p>`}
                 </div>
-                <span class="collection-section__updated">
-                    Updated
-                    <time datetime="${updatedAt.toISOString()}">
-                        ${DATE_FORMAT.format(updatedAt)}
-                    </time>
-                </span>
+                <div class="collection-section__actions">
+                    <button
+                        class="collection-section__edit btn btn--small btn--outline-on-primary"
+                        type="button"
+                        aria-label="Edit collection ${name}"
+                    >
+                        ${unsafeHtml(editIcon)} Edit collection
+                    </button>
+                    <span class="collection-section__updated">
+                        Updated
+                        <time datetime="${updatedAt.toISOString()}">
+                            ${DATE_FORMAT.format(updatedAt)}
+                        </time>
+                    </span>
+                </div>
             </header>
             <div data-collection-content></div>
         `);
+
+        this.getElement('.collection-section__edit').addEventListener('click', (): void => {
+            onEdit(collection.id);
+        });
 
         const content = this.getElement('[data-collection-content]');
 

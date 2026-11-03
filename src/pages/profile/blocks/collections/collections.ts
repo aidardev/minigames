@@ -1,4 +1,4 @@
-import { openCreateCollection, openGameDetails } from '@/app/navigation';
+import { openCreateCollection, openEditCollection, openGameDetails } from '@/app/navigation';
 import addIcon from '@/assets/icons/add.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import { html, unsafeHtml } from '@/utils/html';
@@ -58,8 +58,13 @@ export class CollectionsSection extends BaseComponent<'section'> {
 
         for (const collection of collections) {
             list.append(
-                this.adopt(new CollectionSection({ ...collection, onGameClick: openGameDetails }))
-                    .element,
+                this.adopt(
+                    new CollectionSection({
+                        ...collection,
+                        onGameClick: openGameDetails,
+                        onEdit: openEditCollection,
+                    }),
+                ).element,
             );
         }
     }

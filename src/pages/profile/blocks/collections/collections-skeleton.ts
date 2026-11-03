@@ -32,7 +32,10 @@ export class CollectionsSkeleton extends BaseComponent<'section'> {
                                     ${skeletonHtml('profile-skeleton__collection-title')}
                                     ${skeletonHtml('profile-skeleton__description')}
                                 </div>
-                                ${skeletonHtml('profile-skeleton__date')}
+                                <div class="collection-section__actions">
+                                    ${skeletonHtml('profile-skeleton__edit')}
+                                    ${skeletonHtml('profile-skeleton__date')}
+                                </div>
                             </div>
                             <ul class="collection-section__games list-unstyled">
                                 ${Array.from(

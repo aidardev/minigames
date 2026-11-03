@@ -80,6 +80,24 @@
             font-size: var(--fs-label-medium);
         }
 
+        &__actions {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            flex-shrink: 0;
+            gap: var(--size-1-5);
+
+            @include styles.max-width(styles.$br-sm) {
+                align-items: flex-start;
+            }
+        }
+
+        &__edit {
+            background-color: var(--color-white);
+            font-size: var(--fs-body-small);
+            gap: var(--size-1);
+        }
+
         &__games {
             display: grid;
             grid-auto-flow: column;
