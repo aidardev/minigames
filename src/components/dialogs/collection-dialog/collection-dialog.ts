@@ -1,6 +1,7 @@
 import closeIcon from '@/assets/icons/close-alt.svg?raw';
 import { renderField } from '@/components/field/field';
 import { showSnackbar } from '@/components/snackbar/snackbar';
+import { CollectionNotFoundError } from '@/services/collections/collection-errors';
 import {
     COLLECTION_DESCRIPTION_MAX_LENGTH,
     COLLECTION_NAME_MAX_LENGTH,
@@ -9,16 +10,40 @@ import {
 import { html, unsafeHtml } from '@/utils/html';
 import { FormValidator } from '@/utils/validation/form-validator';
 import { Dialog } from '../dialog';
+import './collection-dialog.scss';
 import { collectionSchema } from './collection-validation';
-import './create-collection-dialog.scss';
 
-export interface CreateCollectionDialogOptions {
-    onCreate: (values: Readonly<CollectionInput>) => Promise<string | undefined>;
-}
+type SaveCollection = (values: Readonly<CollectionInput>) => Promise<string | undefined>;
 
-export class CreateCollectionDialog extends Dialog {
-    private readonly onCreate: CreateCollectionDialogOptions['onCreate'];
-    private readonly validator = new FormValidator<CollectionInput>(collectionSchema);
+export type CollectionDialogOptions =
+    | { mode: 'create'; onSave: SaveCollection }
+    | { mode: 'edit'; initialValues: Readonly<CollectionInput>; onSave: SaveCollection };
+
+const LABELS = {
+    create: {
+        title: 'New collection',
+        subtitle: 'Give your games a place of their own.',
+        submit: 'Create collection',
+        pending: 'Creating…',
+        success: 'Collection created.',
+        error: 'Your collection could not be created. Please try again.',
+    },
+    edit: {
+        title: 'Edit collection',
+        subtitle: 'Update the name and description of your collection.',
+        submit: 'Save changes',
+        pending: 'Saving…',
+        success: 'Collection updated.',
+        error: 'Your collection could not be updated. Please try again.',
+    },
+} as const;
+
+export class CollectionDialog extends Dialog {
+    private static nextId = 0;
+    private readonly onSave: SaveCollection;
+    private readonly mode: CollectionDialogOptions['mode'];
+    private readonly initialValues: Readonly<CollectionInput>;
+    private readonly validator: FormValidator<CollectionInput>;
     private readonly form: HTMLFormElement;
     private readonly submitButton: HTMLButtonElement;
     private isPending = false;
@@ -48,38 +73,47 @@ export class CreateCollectionDialog extends Dialog {
             this.validator.setValue(field, this.fieldInput(field).value);
         }
         this.renderValidation();
-        if (!this.validator.isValid()) return;
+        if (!this.validator.isValid() || !this.hasChanges()) return;
 
         const { name, description } = this.validator.getValues();
-        void this.create({ name: name.trim(), description: description.trim() });
+        void this.save({ name: name.trim(), description: description.trim() });
     };
 
-    constructor({ onCreate }: CreateCollectionDialogOptions) {
-        super({ label: 'Create collection', modifier: 'dialog--create-collection' });
-        this.onCreate = onCreate;
+    constructor(options: CollectionDialogOptions) {
+        const labels = LABELS[options.mode];
+        super({ label: labels.title, modifier: 'dialog--collection' });
+        this.mode = options.mode;
+        this.onSave = options.onSave;
+        this.initialValues =
+            options.mode === 'edit'
+                ? {
+                      name: options.initialValues.name,
+                      description: options.initialValues.description,
+                  }
+                : { name: '', description: '' };
+        this.validator = new FormValidator<CollectionInput>(collectionSchema, this.initialValues);
+        const fieldPrefix = `collection-form-${++CollectionDialog.nextId}`;
 
         this.setContent(html`
-            <form class="create-collection" novalidate>
-                <header class="create-collection__header">
+            <form class="collection-form" novalidate>
+                <header class="collection-form__header">
                     <div>
-                        <h2 class="create-collection__title">New collection</h2>
-                        <p class="create-collection__subtitle">
-                            Give your games a place of their own.
-                        </p>
+                        <h2 class="collection-form__title">${labels.title}</h2>
+                        <p class="collection-form__subtitle">${labels.subtitle}</p>
                     </div>
                     <button
-                        class="create-collection__close dialog__close btn btn--icon"
+                        class="collection-form__close dialog__close btn btn--icon"
                         type="button"
                         data-action="close"
-                        aria-label="Close create collection"
+                        aria-label="Close collection dialog"
                     >
                         ${unsafeHtml(closeIcon)}
                     </button>
                 </header>
 
-                <div class="create-collection__fields">
+                <div class="collection-form__fields">
                     ${renderField({
-                        id: 'create-collection-name',
+                        id: `${fieldPrefix}-name`,
                         name: 'name',
                         label: 'Name',
                         type: 'text',
@@ -89,7 +123,7 @@ export class CreateCollectionDialog extends Dialog {
                         autofocus: true,
                     })}
                     ${renderField({
-                        id: 'create-collection-description',
+                        id: `${fieldPrefix}-description`,
                         name: 'description',
                         label: 'Description',
                         type: 'textarea',
@@ -99,7 +133,7 @@ export class CreateCollectionDialog extends Dialog {
                     })}
                 </div>
 
-                <footer class="create-collection__actions">
+                <footer class="collection-form__actions">
                     <button
                         class="btn btn--medium btn--outline-on-primary"
                         type="button"
@@ -108,7 +142,7 @@ export class CreateCollectionDialog extends Dialog {
                         Cancel
                     </button>
                     <button class="btn btn--medium btn--primary" type="submit">
-                        Create collection
+                        ${labels.submit}
                     </button>
                 </footer>
             </form>
@@ -116,6 +150,9 @@ export class CreateCollectionDialog extends Dialog {
 
         this.form = this.getElement<HTMLFormElement>('form');
         this.submitButton = this.getElement<HTMLButtonElement>('button[type="submit"]');
+        for (const field of this.validator.fields) {
+            this.fieldInput(field).value = this.initialValues[field];
+        }
         this.element.addEventListener('click', this.handleActionClick);
         this.form.addEventListener('submit', this.handleSubmit);
         for (const type of ['input', 'change', 'focusout']) {
@@ -138,7 +175,17 @@ export class CreateCollectionDialog extends Dialog {
             input.removeAttribute('aria-invalid');
             if (message !== undefined) input.setAttribute('aria-invalid', 'true');
         }
-        this.submitButton.disabled = this.isPending || !this.validator.isValid();
+        this.submitButton.disabled =
+            this.isPending || !this.validator.isValid() || !this.hasChanges();
+    }
+
+    private hasChanges(): boolean {
+        if (this.mode === 'create') return true;
+        const values = this.validator.getValues();
+        return (
+            values.name.trim() !== this.initialValues.name.trim() ||
+            values.description.trim() !== this.initialValues.description.trim()
+        );
     }
 
     private setPending(isPending: boolean): void {
@@ -150,21 +197,26 @@ export class CreateCollectionDialog extends Dialog {
         >('input, textarea, button')) {
             control.disabled = isPending;
         }
-        this.submitButton.textContent = isPending ? 'Creating…' : 'Create collection';
+        const labels = LABELS[this.mode];
+        this.submitButton.textContent = isPending ? labels.pending : labels.submit;
         this.renderValidation();
     }
 
-    private async create(values: Readonly<CollectionInput>): Promise<void> {
+    private async save(values: Readonly<CollectionInput>): Promise<void> {
         this.setPending(true);
         try {
-            const id = await this.onCreate(values);
+            const id = await this.onSave(values);
             if (id === undefined || this.isDisposed) return;
 
-            showSnackbar('Collection created.', 'success');
+            showSnackbar(LABELS[this.mode].success, 'success');
             this.close();
-        } catch {
+        } catch (error) {
             if (!this.isDisposed) {
-                showSnackbar('Your collection could not be created. Please try again.', 'error');
+                const message =
+                    error instanceof CollectionNotFoundError
+                        ? 'This collection was not found or is no longer available.'
+                        : LABELS[this.mode].error;
+                showSnackbar(message, 'error');
             }
         } finally {
             if (!this.isDisposed) this.setPending(false);

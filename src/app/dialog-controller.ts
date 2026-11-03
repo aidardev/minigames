@@ -1,14 +1,16 @@
 import { AuthDialog, toAuthTab } from '@/components/dialogs/auth-dialog/auth-dialog';
-import { CreateCollectionDialog } from '@/components/dialogs/create-collection-dialog/create-collection-dialog';
+import { CollectionDialog } from '@/components/dialogs/collection-dialog/collection-dialog';
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
+import type { Collection } from '@/types/collection.types';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
 import {
     AUTH_PARAM,
     CREATE_COLLECTION_PARAM,
+    EDIT_COLLECTION_PARAM,
     GAME_PARAM,
     setAuthGuard,
     setQueryParameter,
@@ -34,14 +36,21 @@ Keeps at most one dialog open, driven entirely by the URL.
 export class DialogController {
     private readonly router: Router;
     private current: OpenDialog | undefined;
+    private query = new URLSearchParams();
+    private collectionOwner: string | undefined;
 
     constructor(router: Router) {
         this.router = router;
     }
 
     private sync(query: URLSearchParams): void {
+        this.query = query;
+        if (!query.has(CREATE_COLLECTION_PARAM) && !query.has(EDIT_COLLECTION_PARAM)) {
+            this.collectionOwner = undefined;
+        }
         const slug = query.get(GAME_PARAM);
         const auth = query.get(AUTH_PARAM);
+        const collectionId = query.get(EDIT_COLLECTION_PARAM);
 
         // One dialog at a time. Auth wins over a game: it replaces Game Details after a
         // protected action, and closing it drops only auth, which brings the game back.
@@ -52,20 +61,16 @@ export class DialogController {
             }
 
             this.show('auth', query, (): Omit<OpenDialog, 'key'> => this.createAuth(query));
+        } else if (collectionId) {
+            const uid = this.collectionUser(query, EDIT_COLLECTION_PARAM);
+            if (uid) this.showEditCollection(uid, collectionId, query);
         } else if (query.get(CREATE_COLLECTION_PARAM) === 'true') {
-            const session = appSession.getActiveSession();
-            if (!session) {
-                this.closeCurrent();
-                queueMicrotask((): void => {
-                    this.router.removeQueryInPlace(CREATE_COLLECTION_PARAM);
-                    requireSession('Sign in to create a collection.');
-                });
-                return;
+            const uid = this.collectionUser(query, CREATE_COLLECTION_PARAM);
+            if (uid) {
+                this.show(`create-collection:${uid}`, query, (): Omit<OpenDialog, 'key'> =>
+                    this.createCollectionDialog(uid),
+                );
             }
-
-            this.show(`create-collection:${session.uid}`, query, (): Omit<OpenDialog, 'key'> =>
-                this.createCollection(session.uid),
-            );
         } else if (slug) {
             this.show(`game:${slug}`, query, (): Omit<OpenDialog, 'key'> => ({
                 param: GAME_PARAM,
@@ -76,17 +81,78 @@ export class DialogController {
         }
     }
 
-    private createCollection(uid: string): Omit<OpenDialog, 'key'> {
-        const dialog = new CreateCollectionDialog({
-            onCreate: async (values): Promise<string | undefined> => {
-                if (this.current?.dialog !== dialog) return;
-                const session = requireSession('Sign in to create a collection.');
-                if (session?.uid !== uid) return;
+    private collectionUser(query: URLSearchParams, parameter: string): string | undefined {
+        const session = appSession.getActiveSession();
+        if (session) {
+            this.collectionOwner = session.uid;
+            return session.uid;
+        }
 
+        this.closeCurrent();
+        this.collectionOwner = undefined;
+        queueMicrotask((): void => {
+            if (this.query !== query) return;
+            this.router.removeQueryInPlace(parameter);
+            const action = parameter === EDIT_COLLECTION_PARAM ? 'edit' : 'create';
+            requireSession(`Sign in to ${action} a collection.`);
+        });
+        return undefined;
+    }
+
+    private showEditCollection(uid: string, id: string, query: URLSearchParams): void {
+        const key = `edit-collection:${uid}:${id}`;
+        if (this.current?.key === key) return;
+
+        const state = collectionsStore.getState();
+        if (state.uid !== uid || state.collections === undefined) {
+            this.closeCurrent();
+            return;
+        }
+        const collection = state.collections.find((item) => item.id === id);
+        if (collection) {
+            this.show(key, query, (): Omit<OpenDialog, 'key'> =>
+                this.createEditCollectionDialog(uid, collection),
+            );
+            return;
+        }
+
+        this.closeCurrent();
+        if (state.status !== 'ready') return;
+        showSnackbar('This collection was not found or is no longer available.', 'error');
+        queueMicrotask((): void => {
+            if (this.query === query) this.router.removeQueryInPlace(EDIT_COLLECTION_PARAM);
+        });
+    }
+
+    private canSaveCollection(dialog: Dialog, uid: string): boolean {
+        if (this.current?.dialog !== dialog) return false;
+        return requireSession('Sign in to save a collection.')?.uid === uid;
+    }
+
+    private createCollectionDialog(uid: string): Omit<OpenDialog, 'key'> {
+        const dialog = new CollectionDialog({
+            mode: 'create',
+            onSave: async (values): Promise<string | undefined> => {
+                if (!this.canSaveCollection(dialog, uid)) return;
                 return collectionsStore.create(values);
             },
         });
         return { param: CREATE_COLLECTION_PARAM, dialog };
+    }
+
+    private createEditCollectionDialog(
+        uid: string,
+        collection: Collection,
+    ): Omit<OpenDialog, 'key'> {
+        const dialog = new CollectionDialog({
+            mode: 'edit',
+            initialValues: { name: collection.name, description: collection.description },
+            onSave: async (values): Promise<string | undefined> => {
+                if (!this.canSaveCollection(dialog, uid)) return;
+                return collectionsStore.update(collection.id, values);
+            },
+        });
+        return { param: EDIT_COLLECTION_PARAM, dialog };
     }
 
     private createAuth(query: URLSearchParams): Omit<OpenDialog, 'key'> {
@@ -161,14 +227,27 @@ export class DialogController {
     public start(): void {
         setAuthGuard((): boolean => this.isAuthBlocked());
         appSession.subscribe((session): void => {
+            if (this.collectionOwner === undefined || this.collectionOwner === session?.uid) {
+                return;
+            }
+            this.collectionOwner = undefined;
             if (
-                this.current?.param !== CREATE_COLLECTION_PARAM ||
-                this.current.key === `create-collection:${session?.uid}`
+                this.current?.param === CREATE_COLLECTION_PARAM ||
+                this.current?.param === EDIT_COLLECTION_PARAM
+            ) {
+                this.closeCurrent();
+            }
+            this.router.removeQueryInPlace(CREATE_COLLECTION_PARAM, EDIT_COLLECTION_PARAM);
+        });
+        collectionsStore.subscribe((state): void => {
+            if (
+                !this.query.get(EDIT_COLLECTION_PARAM) ||
+                this.current?.param === EDIT_COLLECTION_PARAM ||
+                state.uid !== this.collectionOwner
             ) {
                 return;
             }
-            this.closeCurrent();
-            this.router.removeQueryInPlace(CREATE_COLLECTION_PARAM);
+            this.sync(this.query);
         });
         this.router.onRouteChange((route: Route): void => this.sync(route.query));
     }

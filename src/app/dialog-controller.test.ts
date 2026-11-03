@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
 import type { AuthDialogOptions } from '@/components/dialogs/auth-dialog/auth-dialog';
-import type { CreateCollectionDialogOptions } from '@/components/dialogs/create-collection-dialog/create-collection-dialog';
+import type { CollectionDialogOptions } from '@/components/dialogs/collection-dialog/collection-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
+import type { CollectionsState } from '@/services/collections/collections-store';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -21,7 +22,7 @@ const opened = vi.hoisted(() => ({
     gameClose: undefined as ReturnType<typeof vi.fn> | undefined,
     gameElement: undefined as HTMLElement | undefined,
     collection: 0,
-    collectionOptions: undefined as CreateCollectionDialogOptions | undefined,
+    collectionOptions: undefined as CollectionDialogOptions | undefined,
     collectionElement: undefined as HTMLElement | undefined,
     collectionClose: undefined as ReturnType<typeof vi.fn> | undefined,
 }));
@@ -31,16 +32,16 @@ vi.mock('@/services/session/app-session', () => ({
     appSession: { getActiveSession: vi.fn(), subscribe: vi.fn() },
 }));
 vi.mock('@/services/collections/collections-store', () => ({
-    collectionsStore: { create: vi.fn() },
+    collectionsStore: { create: vi.fn(), update: vi.fn(), getState: vi.fn(), subscribe: vi.fn() },
 }));
-vi.mock('@/components/dialogs/create-collection-dialog/create-collection-dialog', () => ({
-    CreateCollectionDialog: class {
+vi.mock('@/components/dialogs/collection-dialog/collection-dialog', () => ({
+    CollectionDialog: class {
         public element = document.createElement('div');
         public close = vi.fn((): void => {
             this.element.dispatchEvent(new Event('close'));
         });
 
-        constructor(options: CreateCollectionDialogOptions) {
+        constructor(options: CollectionDialogOptions) {
             opened.collectionOptions = options;
             opened.collectionElement = this.element;
             opened.collectionClose = this.close;
@@ -140,6 +141,12 @@ describe('DialogController auth guard', () => {
         opened.collectionElement = undefined;
         opened.collectionClose = undefined;
         vi.resetAllMocks();
+        vi.mocked(collectionsStore.getState).mockReturnValue({
+            uid: 'user-1',
+            collections: [],
+            status: 'ready',
+            error: undefined,
+        });
     });
 
     it('opens Auth from the URL for a guest', () => {
@@ -349,7 +356,7 @@ describe('DialogController auth guard', () => {
             expect(opened.collection).toBe(1);
 
             const values = { name: 'Cozy games', description: '' };
-            await expect(opened.collectionOptions?.onCreate(values)).resolves.toBe('new-id');
+            await expect(opened.collectionOptions?.onSave(values)).resolves.toBe('new-id');
             expect(collectionsStore.create).toHaveBeenCalledExactlyOnceWith(values);
             opened.collectionElement?.dispatchEvent(new Event('close'));
             expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('createCollection');
@@ -381,6 +388,7 @@ describe('DialogController auth guard', () => {
                 expect(opened.collectionClose).toHaveBeenCalledOnce();
                 expect(router.removeQueryInPlace).toHaveBeenCalledExactlyOnceWith(
                     'createCollection',
+                    'editCollection',
                 );
             },
         );
@@ -403,7 +411,7 @@ describe('DialogController auth guard', () => {
             vi.mocked(appSession.getActiveSession).mockReturnValue(undefined);
 
             await expect(
-                opened.collectionOptions?.onCreate({ name: 'Cozy games', description: '' }),
+                opened.collectionOptions?.onSave({ name: 'Cozy games', description: '' }),
             ).resolves.toBeUndefined();
             expect(collectionsStore.create).not.toHaveBeenCalled();
         });
@@ -416,10 +424,184 @@ describe('DialogController auth guard', () => {
             go('?game=sudoku');
 
             await expect(
-                options?.onCreate({ name: 'Cozy games', description: '' }),
+                options?.onSave({ name: 'Cozy games', description: '' }),
             ).resolves.toBeUndefined();
             expect(collectionsStore.create).not.toHaveBeenCalled();
         });
+    });
+});
+
+describe('collection editing', () => {
+    const user = { uid: 'user-1', displayName: 'A', email: 'a@b.c', authenticatedAt: Date.now() };
+    const collection = {
+        id: 'collection-1',
+        name: 'Cozy games',
+        description: 'After work',
+        itemsCount: 1,
+        createdAt: new Date('2026-01-01'),
+        updatedAt: new Date('2026-01-02'),
+    };
+
+    beforeEach(() => {
+        vi.resetAllMocks();
+        opened.collection = 0;
+        opened.game = 0;
+        opened.collectionOptions = undefined;
+        opened.collectionElement = undefined;
+        opened.collectionClose = undefined;
+        vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+        vi.mocked(collectionsStore.getState).mockReturnValue({
+            uid: user.uid,
+            collections: [collection],
+            status: 'ready',
+            error: undefined,
+        });
+    });
+
+    it('opens a prefilled editor, updates the selected record and removes only the edit query', async () => {
+        vi.mocked(collectionsStore.update).mockResolvedValue(collection.id);
+        const { go, router } = setup();
+        go('?editCollection=collection-1&game=sudoku');
+        const options = opened.collectionOptions;
+        if (options?.mode !== 'edit') throw new Error('Missing editor');
+        expect(options.initialValues).toEqual({
+            name: collection.name,
+            description: collection.description,
+        });
+        const values = { name: 'New name', description: 'New notes' };
+        await expect(options.onSave(values)).resolves.toBe(collection.id);
+        expect(collectionsStore.update).toHaveBeenCalledExactlyOnceWith(collection.id, values);
+        expect(collectionsStore.create).not.toHaveBeenCalled();
+        opened.collectionElement?.dispatchEvent(new Event('close'));
+        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('editCollection');
+        go('?game=sudoku');
+        expect(opened.game).toBe(1);
+    });
+
+    it('waits for the list on a deep link before opening an editor', () => {
+        let state: CollectionsState = {
+            uid: user.uid,
+            collections: undefined,
+            status: 'loading',
+            error: undefined,
+        };
+        vi.mocked(collectionsStore.getState).mockImplementation(() => state);
+        const { go } = setup();
+        go('?editCollection=collection-1');
+        expect(opened.collection).toBe(0);
+        state = { uid: user.uid, collections: [collection], status: 'ready', error: undefined };
+        vi.mocked(collectionsStore.subscribe).mock.calls[0]?.[0](state);
+        expect(opened.collection).toBe(1);
+        expect(opened.collectionOptions?.mode).toBe('edit');
+    });
+
+    it('keeps an open draft when the store or unrelated query changes', () => {
+        const { go } = setup();
+        go('?editCollection=collection-1');
+        const options = opened.collectionOptions;
+        const next: CollectionsState = {
+            uid: user.uid,
+            collections: [{ ...collection, name: 'Server update' }],
+            status: 'ready',
+            error: undefined,
+        };
+        vi.mocked(collectionsStore.getState).mockReturnValue(next);
+        vi.mocked(collectionsStore.subscribe).mock.calls[0]?.[0](next);
+        go('?editCollection=collection-1&game=sudoku');
+        expect(opened.collection).toBe(1);
+        expect(opened.collectionOptions).toBe(options);
+    });
+
+    it('does not confuse a failed list load with a missing collection and allows loading to recover', () => {
+        const failed: CollectionsState = {
+            uid: user.uid,
+            collections: undefined,
+            status: 'error',
+            error: new Error('Offline'),
+        };
+        vi.mocked(collectionsStore.getState).mockReturnValue(failed);
+        const { go, router } = setup();
+        go('?editCollection=collection-1');
+        expect(opened.collection).toBe(0);
+        expect(showSnackbar).not.toHaveBeenCalled();
+        expect(router.removeQueryInPlace).not.toHaveBeenCalled();
+        const ready: CollectionsState = {
+            uid: user.uid,
+            collections: [collection],
+            status: 'ready',
+            error: undefined,
+        };
+        vi.mocked(collectionsStore.getState).mockReturnValue(ready);
+        vi.mocked(collectionsStore.subscribe).mock.calls[0]?.[0](ready);
+        expect(opened.collection).toBe(1);
+    });
+
+    it('reports a missing collection only after a successful list response', async () => {
+        const { go, router } = setup();
+        go('?editCollection=missing');
+        await Promise.resolve();
+        expect(opened.collection).toBe(0);
+        expect(showSnackbar).toHaveBeenCalledExactlyOnceWith(
+            'This collection was not found or is no longer available.',
+            'error',
+        );
+        expect(router.removeQueryInPlace).toHaveBeenCalledExactlyOnceWith('editCollection');
+    });
+
+    it('does not open a pending editor after the account changes', () => {
+        vi.mocked(collectionsStore.getState).mockReturnValue({
+            uid: user.uid,
+            collections: undefined,
+            status: 'loading',
+            error: undefined,
+        });
+        const { go, router } = setup();
+        go('?editCollection=collection-1');
+        vi.mocked(appSession.getActiveSession).mockReturnValue(undefined);
+        vi.mocked(appSession.subscribe).mock.calls[0]?.[0](undefined);
+        vi.mocked(collectionsStore.subscribe).mock.calls[0]?.[0]({
+            uid: user.uid,
+            collections: [collection],
+            status: 'ready',
+            error: undefined,
+        });
+        expect(opened.collection).toBe(0);
+        expect(showSnackbar).not.toHaveBeenCalled();
+        expect(router.removeQueryInPlace).toHaveBeenCalledExactlyOnceWith(
+            'createCollection',
+            'editCollection',
+        );
+    });
+
+    it('closes an active editor on an account change', () => {
+        const { go, router } = setup();
+        go('?editCollection=collection-1');
+        vi.mocked(appSession.subscribe).mock.calls[0]?.[0]({ ...user, uid: 'user-2' });
+        expect(opened.collectionClose).toHaveBeenCalledOnce();
+        expect(router.removeQueryInPlace).toHaveBeenCalledExactlyOnceWith(
+            'createCollection',
+            'editCollection',
+        );
+    });
+
+    it('replaces editors when the ID changes and rejects callbacks from the previous editor', async () => {
+        vi.mocked(collectionsStore.getState).mockReturnValue({
+            uid: user.uid,
+            collections: [collection, { ...collection, id: 'collection-2' }],
+            status: 'ready',
+            error: undefined,
+        });
+        const { go } = setup();
+        go('?editCollection=collection-1');
+        const previous = opened.collectionOptions;
+        const close = opened.collectionClose;
+        go('?editCollection=collection-2');
+        expect(opened.collection).toBe(2);
+        expect(close).toHaveBeenCalledOnce();
+        await expect(
+            previous?.onSave({ name: 'Old draft', description: '' }),
+        ).resolves.toBeUndefined();
+        expect(collectionsStore.update).not.toHaveBeenCalled();
     });
 });
 
