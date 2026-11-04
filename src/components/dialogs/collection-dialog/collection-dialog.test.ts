@@ -1,18 +1,36 @@
 // @vitest-environment jsdom
 
 import { showSnackbar } from '@/components/snackbar/snackbar';
-import type { CollectionInput } from '@/types/collection.types';
+import type { CollectionInput, CollectionItem } from '@/types/collection.types';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Dialog } from '../dialog';
 import { CollectionDialog, type CollectionDialogOptions } from './collection-dialog';
 
 vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 
 const dialogs: CollectionDialog[] = [];
 
-function setup(initialValues?: Readonly<CollectionInput>) {
+function confirmation(): HTMLDialogElement {
+    const element = document.querySelector<HTMLDialogElement>(
+        'dialog[open]:has(.delete-collection)',
+    );
+    if (!element) throw new Error('Missing confirmation dialog');
+    return element;
+}
+
+function confirmationButton(selector: string): HTMLButtonElement {
+    const button = confirmation().querySelector<HTMLButtonElement>(selector);
+    if (!button) throw new Error(`Missing confirmation button: ${selector}`);
+    return button;
+}
+
+function setup(initialValues?: Readonly<CollectionInput>, games: readonly CollectionItem[] = []) {
     const onSave = vi.fn<CollectionDialogOptions['onSave']>().mockResolvedValue('saved-id');
+    const onDelete = vi.fn<() => Promise<string | undefined>>().mockResolvedValue('saved-id');
     const dialog = new CollectionDialog(
-        initialValues ? { mode: 'edit', initialValues, onSave } : { mode: 'create', onSave },
+        initialValues
+            ? { mode: 'edit', initialValues, onSave, loadGames: async () => games, onDelete }
+            : { mode: 'create', onSave },
     );
     const close = vi.fn();
     Object.defineProperty(dialog.element, 'close', { value: close });
@@ -42,6 +60,8 @@ function setup(initialValues?: Readonly<CollectionInput>) {
     return {
         dialog,
         onSave,
+        onDelete,
+        query,
         close,
         input,
         type,
@@ -51,12 +71,29 @@ function setup(initialValues?: Readonly<CollectionInput>) {
 }
 
 describe('CollectionDialog', () => {
-    beforeEach(() => vi.clearAllMocks());
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.spyOn(Dialog.prototype, 'open').mockImplementation(function (this: Dialog): void {
+            document.body.append(this.element);
+            this.element.open = true;
+            Object.defineProperties(this.element, {
+                getAnimations: { value: () => [] },
+                close: {
+                    value: (returnValue?: string): void => {
+                        if (returnValue !== undefined) this.element.returnValue = returnValue;
+                        this.element.open = false;
+                        this.element.dispatchEvent(new Event('close'));
+                    },
+                },
+            });
+        });
+    });
 
     afterEach(() => {
         for (const dialog of dialogs) dialog.destroy();
         dialogs.length = 0;
         document.body.replaceChildren();
+        vi.restoreAllMocks();
     });
 
     it('rejects blank names and values exceeding the field limits', () => {
@@ -105,10 +142,13 @@ describe('CollectionDialog', () => {
         expect(button.disabled).toBe(false);
         submit();
 
-        expect(onSave).toHaveBeenCalledExactlyOnceWith({
-            name: initial.name,
-            description: 'New notes',
-        });
+        expect(onSave).toHaveBeenCalledExactlyOnceWith(
+            {
+                name: initial.name,
+                description: 'New notes',
+            },
+            [],
+        );
         await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
         expect(showSnackbar).toHaveBeenCalledWith('Collection updated.', 'success');
     });
@@ -162,6 +202,88 @@ describe('CollectionDialog', () => {
         await pending.promise;
 
         expect(close).not.toHaveBeenCalled();
+        expect(showSnackbar).not.toHaveBeenCalled();
+    });
+
+    it('stages removals with Undo and retains them and the form draft after a failed save', async () => {
+        const initial = { name: 'Cozy games', description: 'After work' };
+        const game: CollectionItem = {
+            slug: 'sudoku',
+            title: 'Sudoku',
+            image: '/sudoku.jpg',
+            addedAt: new Date(),
+        };
+        const { query, button, type, submit, onSave, input, close } = setup(initial, [game]);
+        await vi.waitFor(() => expect(query('[data-remove-game]').textContent).toContain('Remove'));
+        const removeButton = query('[data-remove-game]');
+        const icon = removeButton.querySelector('svg');
+        removeButton.click();
+        expect(query('[data-remove-game]')).toBe(removeButton);
+        expect(removeButton.querySelector('svg')).toBe(icon);
+        expect(removeButton.classList.contains('btn--danger-text')).toBe(true);
+        expect(button.disabled).toBe(false);
+        expect(onSave).not.toHaveBeenCalled();
+        query('[data-remove-game]').click();
+        expect(button.disabled).toBe(true);
+        query('[data-remove-game]').click();
+        type('description', 'My draft');
+        onSave.mockRejectedValueOnce(new Error('Offline'));
+        submit();
+        await vi.waitFor(() => expect(button.disabled).toBe(false));
+        expect(input('description').value).toBe('My draft');
+        expect(query('[data-remove-game]').textContent).toContain('Undo');
+        expect(close).not.toHaveBeenCalled();
+        submit();
+        expect(onSave).toHaveBeenLastCalledWith({ name: initial.name, description: 'My draft' }, [
+            'sudoku',
+        ]);
+        await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
+    });
+
+    it('requires confirmation to delete and preserves the draft when deletion fails', async () => {
+        const { query, type, input, submit, onSave, onDelete, close, dialog } = setup({
+            name: 'Cozy games',
+            description: '',
+        });
+        type('description', 'Keep this draft');
+        query('[data-action="ask-delete"]').click();
+        expect(onDelete).not.toHaveBeenCalled();
+        expect(confirmation()).not.toBe(dialog.element);
+        confirmationButton('[autofocus]').click();
+        expect(input('description').value).toBe('Keep this draft');
+        query('[data-action="ask-delete"]').click();
+        const pending = Promise.withResolvers<string>();
+        onDelete.mockReturnValueOnce(pending.promise);
+        confirmationButton('[data-action="delete"]').click();
+        submit();
+        expect(onSave).not.toHaveBeenCalled();
+        expect(onDelete).toHaveBeenCalledOnce();
+        expect(query<HTMLFormElement>('form').inert).toBe(true);
+        expect(confirmation().querySelectorAll('button:enabled')).toHaveLength(0);
+        pending.reject(new Error('Offline'));
+        await vi.waitFor(() =>
+            expect(confirmationButton('[data-action="delete"]').disabled).toBe(false),
+        );
+        expect(close).not.toHaveBeenCalled();
+        expect(input('description').value).toBe('Keep this draft');
+        confirmationButton('[data-action="delete"]').click();
+        await vi.waitFor(() => expect(close).toHaveBeenCalledWith('deleted'));
+        expect(showSnackbar).toHaveBeenCalledWith('Collection deleted.', 'success');
+    });
+
+    it('closes a pending confirmation with its editor and ignores a late deletion result', async () => {
+        const { dialog, query, onDelete, close } = setup({ name: 'Cozy games', description: '' });
+        const pending = Promise.withResolvers<string>();
+        onDelete.mockReturnValueOnce(pending.promise);
+        query('[data-action="ask-delete"]').click();
+        const child = confirmation();
+        confirmationButton('[data-action="delete"]').click();
+        dialog.close();
+        expect(child.open).toBe(false);
+        pending.resolve('deleted-id');
+        await pending.promise;
+        expect(close).toHaveBeenCalledOnce();
+        expect(close).not.toHaveBeenCalledWith('deleted');
         expect(showSnackbar).not.toHaveBeenCalled();
     });
 });

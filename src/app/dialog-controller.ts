@@ -3,6 +3,7 @@ import { CollectionDialog } from '@/components/dialogs/collection-dialog/collect
 import type { Dialog } from '@/components/dialogs/dialog';
 import { GameDetailsDialog } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
+import { listItems } from '@/services/collections/collections-repo';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import type { Collection } from '@/types/collection.types';
@@ -32,13 +33,14 @@ interface OpenDialog {
 type DialogFactory = () => Omit<OpenDialog, 'key'>;
 
 /**
-Keeps at most one dialog open, driven entirely by the URL.
+Owns the primary dialog selected by the URL. Local confirmations belong to their editor.
 */
 export class DialogController {
     private readonly router: Router;
     private current: OpenDialog | undefined;
     private query = new URLSearchParams();
     private collectionOwner: string | undefined;
+    private route: Route | undefined;
 
     constructor(router: Router) {
         this.router = router;
@@ -135,16 +137,16 @@ export class DialogController {
         });
     }
 
-    private canSaveCollection(dialog: Dialog, uid: string): boolean {
+    private canManageCollection(dialog: Dialog, uid: string): boolean {
         if (this.current?.dialog !== dialog) return false;
-        return requireSession('Sign in to save a collection.')?.uid === uid;
+        return requireSession('Sign in to manage your collections.')?.uid === uid;
     }
 
     private createCollectionDialog(uid: string): Omit<OpenDialog, 'key'> {
         const dialog = new CollectionDialog({
             mode: 'create',
             onSave: async (values): Promise<string | undefined> => {
-                if (!this.canSaveCollection(dialog, uid)) return;
+                if (!this.canManageCollection(dialog, uid)) return;
                 return collectionsStore.create(values);
             },
         });
@@ -158,9 +160,18 @@ export class DialogController {
         const dialog = new CollectionDialog({
             mode: 'edit',
             initialValues: { name: collection.name, description: collection.description },
-            onSave: async (values): Promise<string | undefined> => {
-                if (!this.canSaveCollection(dialog, uid)) return;
-                return collectionsStore.update(collection.id, values);
+            loadGames: async () => {
+                if (!this.canManageCollection(dialog, uid)) return;
+                const games = await listItems(uid, collection.id);
+                if (this.canManageCollection(dialog, uid)) return games;
+            },
+            onSave: async (values, removedSlugs = []): Promise<string | undefined> => {
+                if (!this.canManageCollection(dialog, uid)) return;
+                return collectionsStore.update(collection.id, values, removedSlugs);
+            },
+            onDelete: async (): Promise<string | undefined> => {
+                if (!this.canManageCollection(dialog, uid)) return;
+                return collectionsStore.delete(collection.id);
             },
         });
         return { param: EDIT_COLLECTION_PARAM, dialog };
@@ -214,6 +225,15 @@ export class DialogController {
 
         // Closed by the user (Escape, backdrop, close button): reflect it in the URL.
         this.current = undefined;
+        if (
+            entry.param === EDIT_COLLECTION_PARAM &&
+            entry.dialog.element.returnValue === 'deleted' &&
+            this.route?.path.startsWith('/profile/collections/') &&
+            this.route.params.id === this.query.get(EDIT_COLLECTION_PARAM)
+        ) {
+            this.router.navigate('/profile', { replace: true });
+            return;
+        }
         if (entry.param === GAME_PARAM) {
             this.router.removeQuery(GAME_PARAM, COLLECTION_PICKER_PARAM);
         } else {
@@ -264,6 +284,9 @@ export class DialogController {
             }
             this.sync(this.query);
         });
-        this.router.onRouteChange((route: Route): void => this.sync(route.query));
+        this.router.onRouteChange((route: Route): void => {
+            this.route = route;
+            this.sync(route.query);
+        });
     }
 }
