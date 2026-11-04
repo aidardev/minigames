@@ -1,6 +1,6 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
-import type { Collection, CollectionInput } from '@/types/collection.types';
-import { createCollection, listCollections, updateCollection } from './collections-repo';
+import type { Collection, CollectionInput, GamePreview } from '@/types/collection.types';
+import { addGame, createCollection, listCollections, updateCollection } from './collections-repo';
 
 export interface CollectionsState {
     readonly uid: string | undefined;
@@ -29,18 +29,18 @@ export class CollectionsStore {
         for (const listener of this.listeners) listener(state);
     }
 
-    private async write(operation: (uid: string) => Promise<string>): Promise<string | undefined> {
+    private async write<T>(operation: (uid: string) => Promise<T>): Promise<T | undefined> {
         const { uid } = this.state;
         if (uid === undefined) throw new Error('Sign in to save a collection.');
         const userVersion = this.userVersion;
 
-        let id: string;
+        let result: T;
         try {
             const authUid = await waitForAuthUid();
             if (userVersion !== this.userVersion) return;
             if (authUid !== uid) throw new Error('Please sign in again to save a collection.');
 
-            id = await operation(uid);
+            result = await operation(uid);
         } catch (error) {
             if (userVersion !== this.userVersion) return;
             throw error;
@@ -48,7 +48,7 @@ export class CollectionsStore {
 
         if (userVersion !== this.userVersion) return;
         void this.reload();
-        return id;
+        return result;
     }
 
     public getState(): CollectionsState {
@@ -84,6 +84,10 @@ export class CollectionsStore {
             await updateCollection(uid, id, input);
             return id;
         });
+    }
+
+    public addGame(id: string, game: Readonly<GamePreview>): Promise<boolean | undefined> {
+        return this.write((uid) => addGame(uid, id, game));
     }
 
     public async reload(): Promise<void> {
