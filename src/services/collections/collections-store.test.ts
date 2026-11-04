@@ -1,7 +1,7 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import type { Collection } from '@/types/collection.types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createCollection, listCollections, updateCollection } from './collections-repo';
+import { addGame, createCollection, listCollections, updateCollection } from './collections-repo';
 import { CollectionsStore } from './collections-store';
 
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
@@ -9,6 +9,7 @@ vi.mock('./collections-repo', () => ({
     listCollections: vi.fn(),
     createCollection: vi.fn(),
     updateCollection: vi.fn(),
+    addGame: vi.fn(),
 }));
 
 const COLLECTION: Collection = {
@@ -51,6 +52,19 @@ describe('CollectionsStore', () => {
         expect(waitForAuthUid).not.toHaveBeenCalled();
         expect(listCollections).not.toHaveBeenCalled();
     });
+
+    it.each([true, false])(
+        'returns the add-game result (%s) and refreshes collections',
+        async (added) => {
+            const store = await readyStore();
+            const game = { slug: 'cat-mail-co', title: 'Cat Mail Co.', image: '/cat.jpg' };
+            vi.mocked(addGame).mockResolvedValueOnce(added);
+
+            await expect(store.addGame(COLLECTION.id, game)).resolves.toBe(added);
+            expect(addGame).toHaveBeenCalledExactlyOnceWith('user-1', COLLECTION.id, game);
+            await vi.waitFor(() => expect(listCollections).toHaveBeenCalledTimes(2));
+        },
+    );
 
     it('notifies subscribers immediately and stops after unsubscribe', async () => {
         const store = new CollectionsStore();

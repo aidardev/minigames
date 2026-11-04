@@ -9,6 +9,7 @@ import type { Collection } from '@/types/collection.types';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
 import {
     AUTH_PARAM,
+    COLLECTION_PICKER_PARAM,
     CREATE_COLLECTION_PARAM,
     EDIT_COLLECTION_PARAM,
     GAME_PARAM,
@@ -72,10 +73,20 @@ export class DialogController {
                 );
             }
         } else if (slug) {
-            this.show(`game:${slug}`, query, (): Omit<OpenDialog, 'key'> => ({
-                param: GAME_PARAM,
-                dialog: new GameDetailsDialog({ slug }),
-            }));
+            this.show(`game:${slug}`, query, (): Omit<OpenDialog, 'key'> => {
+                const dialog = new GameDetailsDialog({
+                    slug,
+                    isCollectionPickerOpen: query.get(COLLECTION_PICKER_PARAM) === 'true',
+                });
+                return {
+                    param: GAME_PARAM,
+                    dialog,
+                    update: (next): void =>
+                        dialog.setCollectionPickerOpen(
+                            next.get(COLLECTION_PICKER_PARAM) === 'true',
+                        ),
+                };
+            });
         } else {
             this.closeCurrent();
         }
@@ -203,7 +214,11 @@ export class DialogController {
 
         // Closed by the user (Escape, backdrop, close button): reflect it in the URL.
         this.current = undefined;
-        this.router.removeQuery(entry.param);
+        if (entry.param === GAME_PARAM) {
+            this.router.removeQuery(GAME_PARAM, COLLECTION_PICKER_PARAM);
+        } else {
+            this.router.removeQuery(entry.param);
+        }
     }
 
     // Success closes the dialog the same way the URL does: by dropping the auth param.

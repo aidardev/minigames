@@ -17,6 +17,7 @@ import { GameDetailsSkeleton } from './game-details-skeleton';
 
 export interface GameDetailsDialogProperties {
     slug: string;
+    isCollectionPickerOpen?: boolean;
 }
 
 export class GameDetailsDialog extends Dialog {
@@ -24,6 +25,8 @@ export class GameDetailsDialog extends Dialog {
     private readonly commentsRegion: AsyncRegion<GameComments>;
     private readonly unsubscribeSession: () => void;
     private session: AppSession | undefined = appSession.getActiveSession();
+    private gameContent: GameDetailsContent | undefined;
+    private isCollectionPickerOpen: boolean;
 
     private readonly handleActionClick = (event: MouseEvent): void => {
         if (!(event.target instanceof Element)) return;
@@ -32,21 +35,24 @@ export class GameDetailsDialog extends Dialog {
     };
 
     private readonly handleSessionChange = (session: AppSession | undefined): void => {
-        const isSameUser = session?.email === this.session?.email;
+        const isSameUser =
+            session?.uid === this.session?.uid && session?.email === this.session?.email;
 
         this.session = session;
 
         if (isSameUser) return;
 
+        this.gameContent = undefined;
         this.detailsRegion.load();
         this.commentsRegion.load();
     };
 
-    constructor({ slug }: GameDetailsDialogProperties) {
+    constructor({ slug, isCollectionPickerOpen = false }: GameDetailsDialogProperties) {
         super({
             label: 'Game Details',
             modifier: 'dialog--game-details',
         });
+        this.isCollectionPickerOpen = isCollectionPickerOpen;
 
         this.setContent(html`
             <div class="game-details">
@@ -67,8 +73,13 @@ export class GameDetailsDialog extends Dialog {
                     load: (signal: AbortSignal): Promise<GameDetails> =>
                         getGameDetails(slug, { signal, userEmail: this.session?.email }),
                     renderSkeleton: (): GameDetailsSkeleton => new GameDetailsSkeleton(),
-                    renderSuccess: (game: GameDetails): GameDetailsContent =>
-                        new GameDetailsContent(game),
+                    renderSuccess: (game: GameDetails): GameDetailsContent => {
+                        this.gameContent = new GameDetailsContent(
+                            game,
+                            this.isCollectionPickerOpen,
+                        );
+                        return this.gameContent;
+                    },
                     renderError: (error: unknown): EmptyState | undefined =>
                         isNotFoundError(error) ? this.createGameNotFound() : undefined,
                 },
@@ -108,6 +119,11 @@ export class GameDetailsDialog extends Dialog {
             description: 'This game doesn’t exist or may have been removed.',
             action: { label: 'Close', onClick: (): void => this.close() },
         });
+    }
+
+    public setCollectionPickerOpen(isOpen: boolean): void {
+        this.isCollectionPickerOpen = isOpen;
+        this.gameContent?.setCollectionPickerOpen(isOpen);
     }
 
     public override destroy(): void {

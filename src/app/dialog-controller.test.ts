@@ -2,6 +2,7 @@
 
 import type { AuthDialogOptions } from '@/components/dialogs/auth-dialog/auth-dialog';
 import type { CollectionDialogOptions } from '@/components/dialogs/collection-dialog/collection-dialog';
+import type { GameDetailsDialogProperties } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
 import type { CollectionsState } from '@/services/collections/collections-store';
 import { collectionsStore } from '@/services/collections/collections-store';
@@ -21,6 +22,8 @@ const opened = vi.hoisted(() => ({
     authClose: undefined as ReturnType<typeof vi.fn> | undefined,
     gameClose: undefined as ReturnType<typeof vi.fn> | undefined,
     gameElement: undefined as HTMLElement | undefined,
+    gameOptions: undefined as GameDetailsDialogProperties | undefined,
+    gameSetCollectionPickerOpen: undefined as ReturnType<typeof vi.fn> | undefined,
     collection: 0,
     collectionOptions: undefined as CollectionDialogOptions | undefined,
     collectionElement: undefined as HTMLElement | undefined,
@@ -82,13 +85,16 @@ vi.mock('@/components/dialogs/auth-dialog/auth-dialog', () => {
 vi.mock('@/components/dialogs/game-details-dialog/game-details-dialog', () => {
     class GameDetailsDialog {
         public element = document.createElement('div');
+        public setCollectionPickerOpen = vi.fn();
         public close = vi.fn((): void => {
             this.element.dispatchEvent(new Event('close'));
         });
 
-        constructor() {
+        constructor(options: GameDetailsDialogProperties) {
             opened.gameClose = this.close;
             opened.gameElement = this.element;
+            opened.gameOptions = options;
+            opened.gameSetCollectionPickerOpen = this.setCollectionPickerOpen;
         }
         public open(): void {
             opened.game += 1;
@@ -330,13 +336,41 @@ describe('DialogController auth guard', () => {
         expect(router.removeQuery).not.toHaveBeenCalled();
     });
 
-    it('removes only the game query when the user closes Game Details', () => {
+    it('removes the game and its picker state when the user closes Game Details', () => {
         const { go, router } = setup();
         go('?game=cat-mail-co');
 
         opened.gameElement?.dispatchEvent(new Event('close'));
 
-        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('game');
+        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('game', 'collectionPicker');
+    });
+
+    it('updates the picker in place and restores it after auth and collection creation', () => {
+        const { go, router } = setup();
+        const gameQuery = '?game=cat-mail-co&collectionPicker=true';
+        go('?game=cat-mail-co');
+        go(gameQuery);
+        expect(opened.game).toBe(1);
+        expect(opened.gameSetCollectionPickerOpen).toHaveBeenCalledExactlyOnceWith(true);
+
+        go(`${gameQuery}&auth=login`);
+        expect(opened.auth).toBe(1);
+        vi.mocked(appSession.getActiveSession).mockReturnValue({
+            uid: 'user-1',
+            displayName: 'Alex',
+            email: 'a@b.c',
+            authenticatedAt: Date.now(),
+        });
+        go(gameQuery);
+        expect(opened.gameOptions).toEqual({ slug: 'cat-mail-co', isCollectionPickerOpen: true });
+
+        go(`${gameQuery}&createCollection=true`);
+        expect(opened.collectionOptions?.mode).toBe('create');
+        opened.collectionElement?.dispatchEvent(new Event('close'));
+        expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('createCollection');
+        go(gameQuery);
+        expect(opened.gameOptions?.isCollectionPickerOpen).toBe(true);
+        expect(opened.game).toBe(3);
     });
 
     describe('collection creation', () => {

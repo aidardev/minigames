@@ -1,0 +1,102 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .collection-picker {
+        &__trigger {
+            width: var(--size-full);
+        }
+
+        &__panel {
+            margin-top: var(--size-2);
+            padding: var(--size-2);
+            border: var(--border-width-thin) solid var(--color-outline-variant);
+            border-radius: var(--corner-medium);
+            background: var(--color-white);
+        }
+
+        &__title {
+            font-size: var(--fs-body-medium);
+            margin-bottom: var(--size-2);
+        }
+
+        &__body,
+        &__list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-1);
+        }
+
+        &__list {
+            max-height: styles.rem(280px);
+            overflow-y: auto;
+            padding: var(--size-05);
+            margin: 0;
+        }
+
+        &__option {
+            width: var(--size-full);
+            justify-content: space-between;
+            padding: var(--size-1-5);
+            text-align: left;
+            background: var(--color-white);
+            border: var(--border-width-thin) solid var(--color-outline-variant);
+
+            @include styles.hover {
+                background: var(--color-surface);
+                border-color: var(--color-on-primary);
+            }
+
+            &:disabled {
+                background: color-mix(in srgb, var(--color-outline) 60%, var(--color-white));
+                border-color: var(--color-outline);
+                color: var(--color-on-bg);
+            }
+
+            &:not(:disabled) .collection-picker__status {
+                background: var(--color-primary);
+                color: var(--color-on-primary);
+                font-weight: var(--font-weight-bold);
+            }
+
+            @include styles.max-width(styles.$br-sm) {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
+        &__name {
+            overflow-wrap: anywhere;
+        }
+
+        &__status {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--size-05);
+            flex-shrink: 0;
+            min-height: var(--size-3);
+            padding: var(--size-05) var(--size-1);
+            border-radius: var(--corner-extra-small);
+            font-size: var(--fs-label-medium);
+            font-weight: var(--font-weight-regular);
+        }
+
+        &__check {
+            display: inline-flex;
+
+            svg {
+                width: var(--size-2);
+                height: var(--size-2);
+            }
+        }
+
+        &__message {
+            margin: 0 0 var(--size-1);
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-small);
+        }
+
+        &__skeleton {
+            height: var(--size-6);
+        }
+    }
+}
