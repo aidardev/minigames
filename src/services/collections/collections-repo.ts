@@ -8,10 +8,10 @@ import type {
 import { FirebaseError } from 'firebase/app';
 import {
     collection,
-    deleteDoc,
     doc,
     getDoc,
     getDocs,
+    getDocsFromServer,
     limit,
     orderBy,
     query,
@@ -20,12 +20,11 @@ import {
     setDoc,
     Timestamp,
     updateDoc,
-    writeBatch,
     type CollectionReference,
     type DocumentData,
     type DocumentReference,
 } from 'firebase/firestore';
-import { CollectionNotFoundError } from './collection-errors';
+import { CollectionDeletionError, CollectionNotFoundError } from './collection-errors';
 
 const BATCH_SIZE = 500;
 
@@ -128,7 +127,28 @@ export async function updateCollection(
     uid: string,
     collectionId: string,
     input: CollectionInput,
+    removedSlugs: readonly string[] = [],
 ): Promise<void> {
+    const slugs = [...new Set(removedSlugs)];
+    if (slugs.length > 0) {
+        await runTransaction(database, async (transaction): Promise<void> => {
+            const parent = collectionReference(uid, collectionId);
+            const parentSnapshot = await transaction.get(parent);
+            if (!parentSnapshot.exists()) throw new CollectionNotFoundError();
+            const snapshots = await Promise.all(
+                slugs.map((slug) => transaction.get(itemReference(uid, collectionId, slug))),
+            );
+            const existing = snapshots.filter((snapshot) => snapshot.exists());
+            const itemsCount = requireItemsCount(parentSnapshot.data()?.itemsCount);
+            for (const snapshot of existing) transaction.delete(snapshot.ref);
+            transaction.update(parent, {
+                ...normalize(input),
+                itemsCount: Math.max(0, itemsCount - existing.length),
+                updatedAt: serverTimestamp(),
+            });
+        });
+        return;
+    }
     try {
         await updateDoc(collectionReference(uid, collectionId), {
             ...normalize(input),
@@ -144,18 +164,38 @@ export async function updateCollection(
 
 export async function deleteCollection(uid: string, collectionId: string): Promise<void> {
     const items = itemsReference(uid, collectionId);
-
-    let snapshot = await getDocs(query(items, limit(BATCH_SIZE)));
-
-    while (!snapshot.empty) {
-        const batch = writeBatch(database);
-        for (const item of snapshot.docs) batch.delete(item.ref);
-        await batch.commit();
-
-        snapshot = await getDocs(query(items, limit(BATCH_SIZE)));
+    const parent = collectionReference(uid, collectionId);
+    let isDeleted = false;
+    let hasDeletedGames = false;
+    try {
+        while (!isDeleted) {
+            isDeleted = await runTransaction(database, async (transaction): Promise<boolean> => {
+                // App writes also update the parent: concurrent additions make this transaction retry.
+                const parentSnapshot = await transaction.get(parent);
+                const snapshot = await getDocsFromServer(query(items, limit(BATCH_SIZE)));
+                const hasMore = snapshot.size === BATCH_SIZE;
+                const games = hasMore ? snapshot.docs.slice(0, BATCH_SIZE - 1) : snapshot.docs;
+                for (const game of games) transaction.delete(game.ref);
+                if (!hasMore) {
+                    transaction.delete(parent);
+                    return true;
+                }
+                const count = readItemsCount(parentSnapshot.data()?.itemsCount);
+                if (count !== undefined && parentSnapshot.exists()) {
+                    // Keep remaining collections consistent even if a later chunk fails.
+                    transaction.update(parent, {
+                        itemsCount: Math.max(0, count - games.length),
+                        updatedAt: serverTimestamp(),
+                    });
+                }
+                return false;
+            });
+            hasDeletedGames = !isDeleted;
+        }
+    } catch (error) {
+        if (hasDeletedGames) throw new CollectionDeletionError(error);
+        throw error;
     }
-
-    await deleteDoc(collectionReference(uid, collectionId));
 }
 
 export async function listItems(uid: string, collectionId: string): Promise<CollectionItem[]> {
@@ -190,35 +230,6 @@ export function addGame(uid: string, collectionId: string, preview: GamePreview)
         });
 
         return true;
-    });
-}
-
-export function removeGames(
-    uid: string,
-    collectionId: string,
-    slugs: readonly string[],
-): Promise<void> {
-    const uniqueSlugs = [...new Set(slugs)];
-    if (uniqueSlugs.length === 0) return Promise.resolve();
-
-    return runTransaction(database, async (transaction): Promise<void> => {
-        const parent = collectionReference(uid, collectionId);
-        const parentSnapshot = await transaction.get(parent);
-        if (!parentSnapshot.exists()) throw new CollectionNotFoundError();
-
-        const snapshots = await Promise.all(
-            uniqueSlugs.map((slug) => transaction.get(itemReference(uid, collectionId, slug))),
-        );
-        const existing = snapshots.filter((snapshot) => snapshot.exists());
-        if (existing.length === 0) return;
-
-        const itemsCount = requireItemsCount(parentSnapshot.data()?.itemsCount);
-
-        for (const snapshot of existing) transaction.delete(snapshot.ref);
-        transaction.update(parent, {
-            itemsCount: Math.max(0, itemsCount - existing.length),
-            updatedAt: serverTimestamp(),
-        });
     });
 }
 

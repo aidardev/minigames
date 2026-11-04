@@ -3,15 +3,19 @@ import {
     doc,
     getDoc,
     getDocs,
+    getDocsFromServer,
+    runTransaction,
     serverTimestamp,
     setDoc,
     Timestamp,
     updateDoc,
+    type Transaction,
 } from 'firebase/firestore';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { CollectionNotFoundError } from './collection-errors';
+import { CollectionDeletionError, CollectionNotFoundError } from './collection-errors';
 import {
     createCollection,
+    deleteCollection,
     getCollection,
     listCollections,
     listItems,
@@ -27,6 +31,9 @@ vi.mock('firebase/firestore', async (importOriginal) => ({
     orderBy: vi.fn(),
     getDoc: vi.fn(),
     getDocs: vi.fn(),
+    getDocsFromServer: vi.fn(),
+    runTransaction: vi.fn(),
+    limit: vi.fn(),
     setDoc: vi.fn(),
     updateDoc: vi.fn(),
 }));
@@ -137,6 +144,18 @@ describe('collections repository reads', () => {
     });
 });
 
+function mockTransaction() {
+    const transaction = { get: vi.fn(), delete: vi.fn(), update: vi.fn() };
+    vi.mocked(runTransaction).mockImplementation((_database, action) =>
+        action(transaction as unknown as Transaction),
+    );
+    vi.mocked(doc).mockImplementation(
+        (_database, ...segments: string[]) =>
+            ({ path: segments.join('/') }) as ReturnType<typeof doc>,
+    );
+    return transaction;
+}
+
 describe('collection creation', () => {
     beforeEach(() => vi.clearAllMocks());
 
@@ -213,4 +232,102 @@ describe('collection updates', () => {
             updateCollection('user-1', 'existing-id', { name: 'Name', description: '' }),
         ).rejects.toBe(error);
     });
+
+    it('saves metadata and unique existing game removals in one transaction', async () => {
+        const transaction = mockTransaction();
+        const gameReference = { path: 'users/user-1/collections/existing-id/items/sudoku' };
+        transaction.get
+            .mockResolvedValueOnce({ exists: () => true, data: () => ({ itemsCount: 2 }) })
+            .mockResolvedValueOnce({ exists: () => true, ref: gameReference })
+            .mockResolvedValueOnce({ exists: () => false });
+
+        await updateCollection(
+            'user-1',
+            'existing-id',
+            { name: ' New name ', description: ' Notes ' },
+            ['sudoku', 'sudoku', 'gone'],
+        );
+        expect(runTransaction).toHaveBeenCalledOnce();
+        expect(transaction.get).toHaveBeenCalledTimes(3);
+        expect(transaction.delete).toHaveBeenCalledExactlyOnceWith(gameReference);
+        expect(transaction.update).toHaveBeenCalledExactlyOnceWith(
+            { path: 'users/user-1/collections/existing-id' },
+            { name: 'New name', description: 'Notes', itemsCount: 1, updatedAt: serverTimestamp() },
+        );
+        expect(updateDoc).not.toHaveBeenCalled();
+    });
+
+    it('does not recreate or modify a missing collection when removing games', async () => {
+        const transaction = mockTransaction();
+        transaction.get.mockResolvedValueOnce({ exists: () => false });
+        await expect(
+            updateCollection('user-1', 'missing', { name: 'Name', description: '' }, ['sudoku']),
+        ).rejects.toBeInstanceOf(CollectionNotFoundError);
+        expect(transaction.update).not.toHaveBeenCalled();
+        expect(transaction.delete).not.toHaveBeenCalled();
+    });
+});
+
+describe('collection deletion', () => {
+    beforeEach(() => vi.resetAllMocks());
+
+    it('deletes a small collection and its games in one transaction', async () => {
+        const transaction = mockTransaction();
+        transaction.get.mockResolvedValueOnce({
+            exists: () => true,
+            data: () => ({ itemsCount: 1 }),
+        });
+        vi.mocked(getDocsFromServer).mockResolvedValueOnce({
+            size: 1,
+            docs: [{ ref: { path: 'game-1' } }],
+        } as unknown as Awaited<ReturnType<typeof getDocsFromServer>>);
+        await deleteCollection('user-1', 'existing-id');
+        expect(runTransaction).toHaveBeenCalledOnce();
+        expect(transaction.delete).toHaveBeenCalledWith({ path: 'game-1' });
+        expect(transaction.delete).toHaveBeenLastCalledWith({
+            path: 'users/user-1/collections/existing-id',
+        });
+        expect(transaction.update).not.toHaveBeenCalled();
+    });
+
+    it.each([false, true])(
+        'keeps counters consistent across chunks, with later failure: %s',
+        async (fails) => {
+            const transaction = mockTransaction();
+            transaction.get.mockResolvedValue({
+                exists: () => true,
+                data: () => ({ itemsCount: 500 }),
+            });
+            const documents = Array.from({ length: 500 }, (_, index) => ({
+                ref: { path: `game-${index}` },
+            }));
+            vi.mocked(getDocsFromServer).mockResolvedValueOnce({
+                empty: false,
+                size: 500,
+                docs: documents,
+            } as unknown as Awaited<ReturnType<typeof getDocsFromServer>>);
+            if (fails) vi.mocked(getDocsFromServer).mockRejectedValueOnce(new Error('Offline'));
+            else
+                vi.mocked(getDocsFromServer).mockResolvedValueOnce({
+                    empty: true,
+                    size: 0,
+                    docs: [],
+                } as unknown as Awaited<ReturnType<typeof getDocsFromServer>>);
+
+            const deleting = deleteCollection('user-1', 'existing-id');
+            if (fails) await expect(deleting).rejects.toBeInstanceOf(CollectionDeletionError);
+            else await deleting;
+            expect(transaction.update).toHaveBeenCalledExactlyOnceWith(
+                { path: 'users/user-1/collections/existing-id' },
+                { itemsCount: 1, updatedAt: serverTimestamp() },
+            );
+            expect(transaction.delete).toHaveBeenCalledWith(documents[0]?.ref);
+            expect(transaction.delete).toHaveBeenCalledWith(documents[1]?.ref);
+            if (fails) expect(transaction.delete).toHaveBeenCalledTimes(499);
+            else
+                expect(transaction.delete).toHaveBeenLastCalledWith({
+                    path: 'users/user-1/collections/existing-id',
+                });
+        },
+    );
 });
