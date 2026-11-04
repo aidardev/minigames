@@ -1,9 +1,11 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
-import type { Collection } from '@/types/collection.types';
-import { listCollections } from './collections-repo';
+import type { Collection, CollectionInput } from '@/types/collection.types';
+import { createCollection, listCollections, updateCollection } from './collections-repo';
 
 export interface CollectionsState {
-    readonly collections: readonly Collection[];
+    readonly uid: string | undefined;
+    // undefined means no successful response yet; [] is a loaded, empty list.
+    readonly collections: readonly Collection[] | undefined;
     readonly status: 'idle' | 'loading' | 'ready' | 'error';
     readonly error: Error | undefined;
 }
@@ -12,10 +14,11 @@ type CollectionsListener = (state: CollectionsState) => void;
 
 export class CollectionsStore {
     private readonly listeners = new Set<CollectionsListener>();
-    private uid: string | undefined;
     private requestId = 0;
+    private userVersion = 0;
     private state: CollectionsState = {
-        collections: [],
+        uid: undefined,
+        collections: undefined,
         status: 'idle',
         error: undefined,
     };
@@ -24,6 +27,28 @@ export class CollectionsStore {
         this.state = state;
 
         for (const listener of this.listeners) listener(state);
+    }
+
+    private async write(operation: (uid: string) => Promise<string>): Promise<string | undefined> {
+        const { uid } = this.state;
+        if (uid === undefined) throw new Error('Sign in to save a collection.');
+        const userVersion = this.userVersion;
+
+        let id: string;
+        try {
+            const authUid = await waitForAuthUid();
+            if (userVersion !== this.userVersion) return;
+            if (authUid !== uid) throw new Error('Please sign in again to save a collection.');
+
+            id = await operation(uid);
+        } catch (error) {
+            if (userVersion !== this.userVersion) return;
+            throw error;
+        }
+
+        if (userVersion !== this.userVersion) return;
+        void this.reload();
+        return id;
     }
 
     public getState(): CollectionsState {
@@ -40,18 +65,29 @@ export class CollectionsStore {
     }
 
     public setUser(uid: string | undefined): void {
-        if (this.uid === uid) return;
+        if (this.state.uid === uid) return;
 
-        this.uid = uid;
         // Invalidate pending requests even if the next account has the same uid later.
         this.requestId += 1;
-        this.setState({ collections: [], status: 'idle', error: undefined });
+        this.userVersion += 1;
+        this.setState({ uid, collections: undefined, status: 'idle', error: undefined });
 
         if (uid !== undefined) void this.reload();
     }
 
+    public create(input: Readonly<CollectionInput>): Promise<string | undefined> {
+        return this.write((uid) => createCollection(uid, input));
+    }
+
+    public update(id: string, input: Readonly<CollectionInput>): Promise<string | undefined> {
+        return this.write(async (uid) => {
+            await updateCollection(uid, id, input);
+            return id;
+        });
+    }
+
     public async reload(): Promise<void> {
-        const uid = this.uid;
+        const { uid } = this.state;
         if (uid === undefined) return;
 
         const requestId = ++this.requestId;
@@ -84,7 +120,7 @@ export class CollectionsStore {
 
         if (requestId !== this.requestId) return;
 
-        this.setState({ collections, status: 'ready', error: undefined });
+        this.setState({ uid, collections, status: 'ready', error: undefined });
     }
 }
 

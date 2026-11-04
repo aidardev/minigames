@@ -5,6 +5,7 @@ import type {
     CollectionItem,
     GamePreview,
 } from '@/types/collection.types';
+import { FirebaseError } from 'firebase/app';
 import {
     collection,
     deleteDoc,
@@ -17,34 +18,16 @@ import {
     runTransaction,
     serverTimestamp,
     setDoc,
+    Timestamp,
     updateDoc,
     writeBatch,
     type CollectionReference,
     type DocumentData,
     type DocumentReference,
-    type Timestamp,
 } from 'firebase/firestore';
+import { CollectionNotFoundError } from './collection-errors';
 
 const BATCH_SIZE = 500;
-
-export class CollectionNotFoundError extends Error {
-    constructor() {
-        super('Collection not found.');
-        this.name = 'CollectionNotFoundError';
-    }
-}
-
-interface CollectionDocument {
-    name: string;
-    description: string;
-    itemsCount: number;
-    createdAt: Timestamp | undefined;
-    updatedAt: Timestamp | undefined;
-}
-
-interface ItemDocument extends GamePreview {
-    addedAt: Timestamp | undefined;
-}
 
 function collectionsReference(uid: string): CollectionReference {
     return collection(database, 'users', uid, 'collections');
@@ -62,27 +45,51 @@ function itemReference(uid: string, collectionId: string, slug: string): Documen
     return doc(database, 'users', uid, 'collections', collectionId, 'items', slug);
 }
 
-function toDate(timestamp: Timestamp | undefined): Date {
-    return timestamp?.toDate() ?? new Date();
+function toDate(timestamp: unknown): Date {
+    if (!(timestamp instanceof Timestamp)) throw new Error('Invalid collection timestamp.');
+    return timestamp.toDate();
+}
+
+function readItemsCount(value: unknown): number | undefined {
+    return typeof value === 'number' && Number.isSafeInteger(value) && value >= 0
+        ? value
+        : undefined;
+}
+
+function requireItemsCount(value: unknown): number {
+    const count = readItemsCount(value);
+    if (count === undefined) throw new Error('Invalid collection item count.');
+    return count;
 }
 
 function toCollection(id: string, data: DocumentData): Collection {
-    const { name, description, itemsCount, createdAt, updatedAt } = data as CollectionDocument;
+    const { name, description, itemsCount, createdAt, updatedAt } = data;
+    if (typeof name !== 'string' || typeof description !== 'string' || name.trim() === '') {
+        throw new Error('Invalid collection document.');
+    }
 
     return {
         id,
         name,
         description,
-        itemsCount,
+        itemsCount: readItemsCount(itemsCount),
         createdAt: toDate(createdAt),
         updatedAt: toDate(updatedAt),
     };
 }
 
-function toItem(data: DocumentData): CollectionItem {
-    const { slug, title, image, addedAt } = data as ItemDocument;
+function toItem(id: string, data: DocumentData): CollectionItem {
+    const { slug, title, image, addedAt } = data;
+    if (
+        slug !== id ||
+        typeof title !== 'string' ||
+        typeof image !== 'string' ||
+        title.trim() === ''
+    ) {
+        throw new Error('Invalid collection item document.');
+    }
 
-    return { slug, title, image, addedAt: toDate(addedAt) };
+    return { slug: id, title, image, addedAt: toDate(addedAt) };
 }
 
 function normalize({ name, description }: CollectionInput): CollectionInput {
@@ -122,10 +129,17 @@ export async function updateCollection(
     collectionId: string,
     input: CollectionInput,
 ): Promise<void> {
-    await updateDoc(collectionReference(uid, collectionId), {
-        ...normalize(input),
-        updatedAt: serverTimestamp(),
-    });
+    try {
+        await updateDoc(collectionReference(uid, collectionId), {
+            ...normalize(input),
+            updatedAt: serverTimestamp(),
+        });
+    } catch (error) {
+        if (error instanceof FirebaseError && error.code === 'not-found') {
+            throw new CollectionNotFoundError();
+        }
+        throw error;
+    }
 }
 
 export async function deleteCollection(uid: string, collectionId: string): Promise<void> {
@@ -149,7 +163,7 @@ export async function listItems(uid: string, collectionId: string): Promise<Coll
         query(itemsReference(uid, collectionId), orderBy('addedAt', 'desc')),
     );
 
-    return snapshot.docs.map((item) => toItem(item.data()));
+    return snapshot.docs.map((item) => toItem(item.id, item.data()));
 }
 
 export function addGame(uid: string, collectionId: string, preview: GamePreview): Promise<boolean> {
@@ -162,7 +176,7 @@ export function addGame(uid: string, collectionId: string, preview: GamePreview)
         const itemSnapshot = await transaction.get(reference);
         if (itemSnapshot.exists()) return false;
 
-        const { itemsCount } = parentSnapshot.data() as CollectionDocument;
+        const itemsCount = requireItemsCount(parentSnapshot.data()?.itemsCount);
 
         transaction.set(reference, {
             slug: preview.slug,
@@ -198,7 +212,7 @@ export function removeGames(
         const existing = snapshots.filter((snapshot) => snapshot.exists());
         if (existing.length === 0) return;
 
-        const { itemsCount } = parentSnapshot.data() as CollectionDocument;
+        const itemsCount = requireItemsCount(parentSnapshot.data()?.itemsCount);
 
         for (const snapshot of existing) transaction.delete(snapshot.ref);
         transaction.update(parent, {

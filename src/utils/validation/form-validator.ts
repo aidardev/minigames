@@ -17,10 +17,10 @@ export class FormValidator<V extends Record<keyof V, string>> {
     private values: V;
     private touched = new Set<keyof V>();
 
-    constructor(schema: FormSchema<V>) {
+    constructor(schema: FormSchema<V>, initialValues?: Readonly<V>) {
         this.schema = schema;
         this.fieldNames = Object.keys(schema) as Array<keyof V & string>;
-        this.values = this.createEmptyValues();
+        this.values = initialValues ? { ...initialValues } : this.createEmptyValues();
     }
 
     private createEmptyValues(): V {

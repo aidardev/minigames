@@ -1,0 +1,51 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .profile-skeleton {
+        &__title {
+            width: styles.rem(240px);
+            max-width: 100%;
+            height: var(--fs-headline-large);
+            margin-bottom: var(--size-1-5);
+        }
+
+        &__description {
+            width: styles.rem(360px);
+            max-width: 100%;
+            height: var(--fs-body-small);
+        }
+
+        &__button {
+            width: styles.rem(176px);
+            height: var(--size-6);
+            flex-shrink: 0;
+
+            @include styles.max-width(styles.$br-sm) {
+                width: 100%;
+            }
+        }
+
+        &__collection-title {
+            width: styles.rem(200px);
+            max-width: 100%;
+            height: var(--fs-headline-medium);
+            margin-bottom: var(--size-2);
+        }
+
+        &__date {
+            width: styles.rem(140px);
+            height: var(--fs-label-medium);
+            flex-shrink: 0;
+        }
+
+        &__edit {
+            width: styles.rem(160px);
+            height: var(--size-5);
+        }
+
+        &__game-title {
+            width: 70%;
+            height: calc(var(--fs-body-large) * var(--lh-normal));
+        }
+    }
+}

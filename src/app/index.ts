@@ -3,6 +3,7 @@ import { Header } from '@/components/header/header';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
+import { ProfilePage } from '@/pages/profile/profile';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
 import { DialogController } from './dialog-controller';
@@ -32,6 +33,7 @@ export function startApp(): void {
         {
             '/': HomePage,
             '/library': LibraryPage,
+            '/profile': ProfilePage,
         },
         NotFoundPage,
         (): void => {
