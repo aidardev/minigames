@@ -1,5 +1,6 @@
 import { Footer } from '@/components/footer/footer';
 import { Header } from '@/components/header/header';
+import { CollectionPage } from '@/pages/collection/collection';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
@@ -34,6 +35,7 @@ export function startApp(): void {
             '/': HomePage,
             '/library': LibraryPage,
             '/profile': ProfilePage,
+            '/profile/collections/:id': CollectionPage,
         },
         NotFoundPage,
         (): void => {

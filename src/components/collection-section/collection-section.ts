@@ -2,8 +2,8 @@ import editIcon from '@/assets/icons/edit.svg?raw';
 import { BaseComponent } from '@/components/base-component';
 import type { Collection, GamePreview } from '@/types/collection.types';
 import { html, unsafeHtml } from '@/utils/html';
-import { CollectionGame } from '../collection-game/collection-game';
 import { CollectionEmptyState } from './collection-empty-state';
+import { CollectionGame } from './collection-game';
 import './collection-section.scss';
 
 export interface CollectionSectionData {
@@ -12,6 +12,7 @@ export interface CollectionSectionData {
 }
 
 export interface CollectionSectionProperties extends CollectionSectionData {
+    variant?: 'preview' | 'full';
     onGameClick: (slug: string) => void;
     onEdit: (id: string) => void;
 }
@@ -39,8 +40,15 @@ export class CollectionSection extends BaseComponent<'section'> {
         }
     };
 
-    constructor({ collection, games, onGameClick, onEdit }: CollectionSectionProperties) {
+    constructor({
+        collection,
+        games,
+        onGameClick,
+        onEdit,
+        variant = 'preview',
+    }: CollectionSectionProperties) {
         super('section', 'collection-section');
+        this.element.classList.toggle('collection-section--full', variant === 'full');
         this.element.setAttribute('aria-label', collection.name);
 
         this.onGameClick = onGameClick;
@@ -52,7 +60,18 @@ export class CollectionSection extends BaseComponent<'section'> {
             <header class="collection-section__header">
                 <div class="collection-section__details">
                     <div class="collection-section__heading">
-                        <h3 class="collection-section__title">${name}</h3>
+                        ${
+                            variant === 'full'
+                                ? html`<h1 class="collection-section__title">${name}</h1>`
+                                : html`<h3 class="collection-section__title">
+                                      <a
+                                          class="collection-section__link"
+                                          href="/profile/collections/${encodeURIComponent(collection.id)}"
+                                          data-link
+                                          >${name}</a
+                                      >
+                                  </h3>`
+                        }
                         <span class="collection-section__count">
                             ${gamesCount} ${gamesCount === 1 ? 'game' : 'games'}
                         </span>

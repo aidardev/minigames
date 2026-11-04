@@ -7,6 +7,9 @@
     $empty-min-height: styles.rem(340px);
 
     .collection-section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--size-3);
         min-width: 0;
         padding-bottom: var(--size-5);
         border-bottom: var(--border-width-thin) solid
@@ -23,19 +26,21 @@
 
         &__header {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: space-between;
             gap: var(--size-4);
-            margin-bottom: var(--size-3);
 
             @include styles.max-width(styles.$br-sm) {
                 flex-direction: column;
+                align-items: stretch;
                 gap: var(--size-1-5);
-                margin-bottom: var(--size-3);
             }
         }
 
         &__details {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-1-5);
             min-width: 0;
         }
 
@@ -44,7 +49,6 @@
             align-items: center;
             flex-wrap: wrap;
             gap: var(--size-05) var(--size-1-5);
-            margin-bottom: var(--size-1-5);
         }
 
         &__title {
@@ -54,6 +58,27 @@
 
             @include styles.max-width(styles.$br-sm) {
                 font-size: var(--fs-headline-small);
+            }
+        }
+
+        &__link {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-color: transparent;
+            text-underline-offset: var(--size-05);
+            transition:
+                color var(--transition-base),
+                text-decoration-color var(--transition-base);
+
+            @include styles.hover {
+                color: var(--color-tertiary);
+                text-decoration-color: currentColor;
+            }
+
+            &:focus-visible {
+                outline: var(--border-width-medium) solid var(--color-tertiary);
+                outline-offset: var(--outline-offset);
+                border-radius: var(--corner-extra-small);
             }
         }
 
@@ -137,6 +162,29 @@
         &__game {
             min-width: 0;
             scroll-snap-align: start;
+        }
+
+        &--full {
+            padding-bottom: 0;
+            border-bottom: 0;
+
+            .collection-section__title {
+                font-size: var(--fs-display-medium);
+
+                @include styles.max-width(styles.$br-sm) {
+                    font-size: var(--fs-display-small);
+                }
+            }
+
+            .collection-section__games {
+                grid-auto-flow: row;
+                grid-auto-columns: auto;
+                grid-template-columns: repeat(auto-fill, minmax(min(100%, #{$game-width}), 1fr));
+                overflow: visible;
+                margin-inline: 0;
+                padding: var(--size-1);
+                scroll-snap-type: none;
+            }
         }
 
         &__empty {

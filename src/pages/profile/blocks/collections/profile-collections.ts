@@ -1,9 +1,9 @@
 import { BaseComponent } from '@/components/base-component';
+import type { CollectionSectionData } from '@/components/collection-section/collection-section';
 import { ErrorBanner } from '@/components/error-banner/error-banner';
 import { listItems } from '@/services/collections/collections-repo';
 import { collectionsStore, type CollectionsState } from '@/services/collections/collections-store';
 import type { Collection } from '@/types/collection.types';
-import type { CollectionSectionData } from '../collection-section/collection-section';
 import type { ProfileStatistics } from '../profile-summary/profile-summary';
 import { CollectionsSection } from './collections';
 import { CollectionsSkeleton } from './collections-skeleton';

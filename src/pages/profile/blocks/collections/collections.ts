@@ -1,12 +1,12 @@
 import { openCreateCollection, openEditCollection, openGameDetails } from '@/app/navigation';
 import addIcon from '@/assets/icons/add.svg?raw';
 import { BaseComponent } from '@/components/base-component';
-import { html, unsafeHtml } from '@/utils/html';
-import { CollectionEmptyState } from '../collection-section/collection-empty-state';
+import { CollectionEmptyState } from '@/components/collection-section/collection-empty-state';
 import {
     CollectionSection,
     type CollectionSectionData,
-} from '../collection-section/collection-section';
+} from '@/components/collection-section/collection-section';
+import { html, unsafeHtml } from '@/utils/html';
 import './collections.scss';
 
 export class CollectionsSection extends BaseComponent<'section'> {

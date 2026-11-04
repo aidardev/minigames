@@ -1,8 +1,8 @@
 import { BaseComponent } from '@/components/base-component';
+import '@/components/collection-section/collection-game.scss';
+import '@/components/collection-section/collection-section.scss';
 import { skeletonHtml } from '@/components/skeleton/skeleton';
 import { html, type SafeHtml } from '@/utils/html';
-import '../collection-game/collection-game.scss';
-import '../collection-section/collection-section.scss';
 import './collections-skeleton.scss';
 import './collections.scss';
 
