@@ -149,6 +149,9 @@ describe('ProfilePage', () => {
         expect(listItems).toHaveBeenCalledWith(USER.uid, OTHER_COLLECTION.id);
         expect(page.element.textContent).toContain(COLLECTION.name);
         expect(page.element.textContent).toContain(COLLECTION.description);
+        const collectionLink = page.element.querySelector('.collection-section__link');
+        expect(collectionLink?.getAttribute('href')).toBe(`/profile/collections/${COLLECTION.id}`);
+        expect(collectionLink?.hasAttribute('data-link')).toBe(true);
         expect(page.element.querySelector('time')?.dateTime).toBe(
             COLLECTION.updatedAt.toISOString(),
         );
