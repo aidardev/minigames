@@ -3,6 +3,7 @@ import type { NavigateOptions } from './router';
 
 export const NAVIGATE_EVENT = 'app:navigate';
 export const GAME_PARAM = 'game';
+export const COLLECTION_PICKER_PARAM = 'collectionPicker';
 export const AUTH_PARAM = 'auth';
 export const CREATE_COLLECTION_PARAM = 'createCollection';
 export const EDIT_COLLECTION_PARAM = 'editCollection';
@@ -52,7 +53,17 @@ export function setQueryParameter(key: string, value: string, options?: Navigate
 }
 
 export function openGameDetails(slug: string): void {
-    setQueryParameter(GAME_PARAM, slug);
+    const parameters = new URLSearchParams(location.search);
+    parameters.delete(COLLECTION_PICKER_PARAM);
+    parameters.set(GAME_PARAM, slug);
+    navigate(`${location.pathname}?${parameters.toString()}`);
+}
+
+export function setCollectionPickerOpen(isOpen: boolean): void {
+    const parameters = new URLSearchParams(location.search);
+    if (isOpen) parameters.set(COLLECTION_PICKER_PARAM, 'true');
+    else parameters.delete(COLLECTION_PICKER_PARAM);
+    navigate(`${location.pathname}?${parameters.toString()}`);
 }
 
 export function openCreateCollection(): void {

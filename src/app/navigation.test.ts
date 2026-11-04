@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
     AUTH_PARAM,
+    COLLECTION_PICKER_PARAM,
     CREATE_COLLECTION_PARAM,
     EDIT_COLLECTION_PARAM,
     GAME_PARAM,
@@ -14,6 +15,7 @@ import {
     openEditCollection,
     openGameDetails,
     setAuthGuard,
+    setCollectionPickerOpen,
     setQueryParameter,
     setQueryParameters,
     type NavigateEventDetail,
@@ -93,6 +95,7 @@ describe('navigation helpers', () => {
     });
 
     it('opens Game Details through the game query parameter', () => {
+        history.replaceState(undefined, '', '/library?collectionPicker=true&keep=value');
         openGameDetails('cat-mail-co');
 
         const event = receivedEvents[0];
@@ -102,6 +105,20 @@ describe('navigation helpers', () => {
         const destination = new URL(event.detail.to, location.origin);
         expect(destination.searchParams.get(GAME_PARAM)).toBe('cat-mail-co');
         expect(destination.searchParams.get('keep')).toBe('value');
+        expect(destination.searchParams.has(COLLECTION_PICKER_PARAM)).toBe(false);
+    });
+
+    it('opens and closes the picker while preserving the game query', () => {
+        history.replaceState(undefined, '', '/library?game=cat-mail-co');
+        for (const isOpen of [true, false]) {
+            setCollectionPickerOpen(isOpen);
+            const event = receivedEvents.at(-1);
+            if (!event || !isNavigateEvent(event)) throw new Error('Missing navigation event');
+            const destination = new URL(event.detail.to, location.origin);
+            expect(destination.searchParams.get(GAME_PARAM)).toBe('cat-mail-co');
+            expect(destination.searchParams.has(COLLECTION_PICKER_PARAM)).toBe(isOpen);
+            history.replaceState(undefined, '', destination);
+        }
     });
 
     it('opens an editor by collection ID while preserving game context and removing creation', () => {
