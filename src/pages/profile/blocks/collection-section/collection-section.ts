@@ -61,7 +61,7 @@ export class CollectionSection extends BaseComponent<'section'> {
                 </div>
                 <div class="collection-section__actions">
                     <button
-                        class="collection-section__edit btn btn--small btn--outline-on-primary"
+                        class="collection-section__edit btn btn--small btn--white"
                         type="button"
                         aria-label="Edit collection ${name}"
                     >

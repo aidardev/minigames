@@ -20,7 +20,8 @@
             box-shadow var(--transition-base),
             transform var(--transition-base),
             outline-offset var(--transition-fast),
-            opacity var(--transition-base);
+            opacity var(--transition-base),
+            border var(--transition-base);
 
         &:focus-visible {
             outline: var(--border-width-medium) solid var(--color-tertiary);
@@ -51,8 +52,8 @@
         }
 
         // Styles
-        &--outline-on-primary {
-            background-color: transparent;
+        &--outline-on-primary,
+        &--white {
             box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
             @include styles.hover {
@@ -62,6 +63,12 @@
             &:active {
                 background-color: var(--color-primary);
             }
+        }
+        &--outline-on-primary {
+            background-color: transparent;
+        }
+        &--white {
+            background-color: var(--color-white);
         }
         &--primary {
             background-color: var(--color-primary);
