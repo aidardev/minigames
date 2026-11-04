@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import { CollectionPage } from '@/pages/collection/collection';
 import { HomePage } from '@/pages/home/home';
 import { LibraryPage } from '@/pages/library/library';
 import { NotFoundPage } from '@/pages/not-found/not-found';
@@ -45,6 +46,7 @@ vi.mock('@/components/footer/footer', () => ({
 }));
 
 vi.mock('@/pages/home/home', () => ({ HomePage: class {} }));
+vi.mock('@/pages/collection/collection', () => ({ CollectionPage: class {} }));
 vi.mock('@/pages/library/library', () => ({ LibraryPage: class {} }));
 vi.mock('@/pages/not-found/not-found', () => ({ NotFoundPage: class {} }));
 vi.mock('@/pages/profile/profile', () => ({ ProfilePage: class {} }));
@@ -108,7 +110,12 @@ describe('startApp', () => {
 
         expect(mocks.routerConstructor).toHaveBeenCalledExactlyOnceWith(
             app?.children[1],
-            { '/': HomePage, '/library': LibraryPage, '/profile': ProfilePage },
+            {
+                '/': HomePage,
+                '/library': LibraryPage,
+                '/profile': ProfilePage,
+                '/profile/collections/:id': CollectionPage,
+            },
             NotFoundPage,
             expect.any(Function),
         );
