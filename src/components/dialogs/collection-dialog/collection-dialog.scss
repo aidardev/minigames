@@ -1,20 +1,16 @@
 @use '@/styles/index' as styles;
 
 @layer components {
-    .dialog--collection {
-        --dialog-width: #{styles.rem(480px)};
-        background-color: var(--color-white);
-        max-width: calc(100% - var(--size-4));
-        border: var(--border-width-medium) solid var(--color-on-primary);
-        box-shadow: var(--shadow-level-2);
-    }
-
     .collection-form {
         --field-background: var(--color-surface-low);
         display: flex;
         flex-direction: column;
         gap: var(--size-3);
         padding: var(--size-4);
+
+        [hidden] {
+            display: none;
+        }
 
         &__header {
             display: flex;
@@ -50,6 +46,28 @@
             gap: var(--size-1-5);
             padding-top: var(--size-3);
             border-top: var(--border-width-thin) solid var(--color-outline-variant);
+        }
+
+        &__danger {
+            padding-top: var(--size-3);
+            border-top: var(--border-width-thin) solid var(--color-outline);
+        }
+
+        &__danger-title {
+            margin-bottom: var(--size-1);
+            font-size: var(--fs-body-medium);
+        }
+
+        &__danger-description {
+            margin-bottom: var(--size-2);
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-small);
+        }
+
+        &__delete {
+            padding: var(--size-1-25);
+            margin-left: calc(var(--size-1-25) * -1);
+            font-size: var(--fs-body-small);
         }
 
         @include styles.max-width(styles.$br-sm) {

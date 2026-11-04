@@ -4,6 +4,7 @@ import type { AuthDialogOptions } from '@/components/dialogs/auth-dialog/auth-di
 import type { CollectionDialogOptions } from '@/components/dialogs/collection-dialog/collection-dialog';
 import type { GameDetailsDialogProperties } from '@/components/dialogs/game-details-dialog/game-details-dialog';
 import { showSnackbar } from '@/components/snackbar/snackbar';
+import { listItems } from '@/services/collections/collections-repo';
 import type { CollectionsState } from '@/services/collections/collections-store';
 import { collectionsStore } from '@/services/collections/collections-store';
 import { appSession } from '@/services/session/app-session';
@@ -11,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { handleGoogleLogin, handleLogin, handleRegister } from './auth-flow';
 import { DialogController } from './dialog-controller';
 import { NAVIGATE_EVENT, openAuth, setAuthGuard } from './navigation';
-import type { Route, Router } from './router';
+import type { Route, RouteParameters, Router } from './router';
 
 const opened = vi.hoisted(() => ({
     auth: 0,
@@ -35,8 +36,15 @@ vi.mock('@/services/session/app-session', () => ({
     appSession: { getActiveSession: vi.fn(), subscribe: vi.fn() },
 }));
 vi.mock('@/services/collections/collections-store', () => ({
-    collectionsStore: { create: vi.fn(), update: vi.fn(), getState: vi.fn(), subscribe: vi.fn() },
+    collectionsStore: {
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        getState: vi.fn(),
+        subscribe: vi.fn(),
+    },
 }));
+vi.mock('@/services/collections/collections-repo', () => ({ listItems: vi.fn() }));
 vi.mock('@/components/dialogs/collection-dialog/collection-dialog', () => ({
     CollectionDialog: class {
         public element = document.createElement('div');
@@ -111,8 +119,8 @@ afterEach(() => {
 });
 
 function setup(): {
-    router: Pick<Router, 'removeQuery' | 'removeQueryInPlace'>;
-    go: (search: string) => void;
+    router: Pick<Router, 'removeQuery' | 'removeQueryInPlace' | 'navigate'>;
+    go: (search: string, path?: string, parameters?: RouteParameters) => void;
 } {
     let listener: (route: Route) => void = noopListener;
     const router = {
@@ -121,14 +129,15 @@ function setup(): {
         }),
         removeQuery: vi.fn(),
         removeQueryInPlace: vi.fn(),
+        navigate: vi.fn(),
     };
 
     new DialogController(router as unknown as Router).start();
 
     return {
         router,
-        go: (search: string): void =>
-            listener({ path: '/', query: new URLSearchParams(search), params: {} }),
+        go: (search: string, path = '/', parameters = {}): void =>
+            listener({ path, query: new URLSearchParams(search), params: parameters }),
     };
 }
 
@@ -484,6 +493,7 @@ describe('collection editing', () => {
         opened.collectionElement = undefined;
         opened.collectionClose = undefined;
         vi.mocked(appSession.getActiveSession).mockReturnValue(user);
+        vi.mocked(listItems).mockResolvedValue([]);
         vi.mocked(collectionsStore.getState).mockReturnValue({
             uid: user.uid,
             collections: [collection],
@@ -503,13 +513,34 @@ describe('collection editing', () => {
             description: collection.description,
         });
         const values = { name: 'New name', description: 'New notes' };
-        await expect(options.onSave(values)).resolves.toBe(collection.id);
-        expect(collectionsStore.update).toHaveBeenCalledExactlyOnceWith(collection.id, values);
+        await expect(options.loadGames()).resolves.toEqual([]);
+        expect(listItems).toHaveBeenCalledExactlyOnceWith(user.uid, collection.id);
+        await expect(options.onSave(values, ['sudoku'])).resolves.toBe(collection.id);
+        expect(collectionsStore.update).toHaveBeenCalledExactlyOnceWith(collection.id, values, [
+            'sudoku',
+        ]);
         expect(collectionsStore.create).not.toHaveBeenCalled();
         opened.collectionElement?.dispatchEvent(new Event('close'));
         expect(router.removeQuery).toHaveBeenCalledExactlyOnceWith('editCollection');
         go('?game=sudoku');
         expect(opened.game).toBe(1);
+    });
+
+    it('returns to the profile only after deletion succeeds on the collection page', async () => {
+        const { go, router } = setup();
+        go('?editCollection=collection-1', '/profile/collections/collection-1', {
+            id: collection.id,
+        });
+        const options = opened.collectionOptions;
+        if (options?.mode !== 'edit') throw new Error('Missing editor');
+        vi.mocked(collectionsStore.delete).mockResolvedValueOnce(collection.id);
+        await expect(options.onDelete()).resolves.toBe(collection.id);
+        expect(collectionsStore.delete).toHaveBeenCalledExactlyOnceWith(collection.id);
+        expect(router.navigate).not.toHaveBeenCalled();
+        if (!opened.collectionElement) throw new Error('Missing dialog');
+        Object.defineProperty(opened.collectionElement, 'returnValue', { value: 'deleted' });
+        opened.collectionElement.dispatchEvent(new Event('close'));
+        expect(router.navigate).toHaveBeenCalledExactlyOnceWith('/profile', { replace: true });
     });
 
     it('waits for the list on a deep link before opening an editor', () => {

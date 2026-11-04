@@ -1,6 +1,12 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import type { Collection, CollectionInput, GamePreview } from '@/types/collection.types';
-import { addGame, createCollection, listCollections, updateCollection } from './collections-repo';
+import {
+    addGame,
+    createCollection,
+    deleteCollection,
+    listCollections,
+    updateCollection,
+} from './collections-repo';
 
 export interface CollectionsState {
     readonly uid: string | undefined;
@@ -79,9 +85,27 @@ export class CollectionsStore {
         return this.write((uid) => createCollection(uid, input));
     }
 
-    public update(id: string, input: Readonly<CollectionInput>): Promise<string | undefined> {
+    public update(
+        id: string,
+        input: Readonly<CollectionInput>,
+        removedSlugs: readonly string[] = [],
+    ): Promise<string | undefined> {
         return this.write(async (uid) => {
-            await updateCollection(uid, id, input);
+            await updateCollection(uid, id, input, removedSlugs);
+            return id;
+        });
+    }
+
+    public delete(id: string): Promise<string | undefined> {
+        const userVersion = this.userVersion;
+        return this.write(async (uid) => {
+            try {
+                await deleteCollection(uid, id);
+            } catch (error) {
+                // A large deletion can have committed earlier chunks before failing.
+                if (userVersion === this.userVersion) void this.reload();
+                throw error;
+            }
             return id;
         });
     }

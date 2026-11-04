@@ -1,7 +1,13 @@
 import { waitForAuthUid } from '@/services/firebase/firebase';
 import type { Collection } from '@/types/collection.types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { addGame, createCollection, listCollections, updateCollection } from './collections-repo';
+import {
+    addGame,
+    createCollection,
+    deleteCollection,
+    listCollections,
+    updateCollection,
+} from './collections-repo';
 import { CollectionsStore } from './collections-store';
 
 vi.mock('@/services/firebase/firebase', () => ({ waitForAuthUid: vi.fn() }));
@@ -10,6 +16,7 @@ vi.mock('./collections-repo', () => ({
     createCollection: vi.fn(),
     updateCollection: vi.fn(),
     addGame: vi.fn(),
+    deleteCollection: vi.fn(),
 }));
 
 const COLLECTION: Collection = {
@@ -266,7 +273,9 @@ describe('CollectionsStore', () => {
             const store = await readyStore();
             vi.mocked(listCollections).mockResolvedValueOnce([{ ...COLLECTION, ...input }]);
 
-            await expect(store.update(COLLECTION.id, input)).resolves.toBe(COLLECTION.id);
+            await expect(store.update(COLLECTION.id, input, ['sudoku'])).resolves.toBe(
+                COLLECTION.id,
+            );
             await vi.waitFor(() =>
                 expect(store.getState().collections?.[0]?.name).toBe(input.name),
             );
@@ -274,6 +283,7 @@ describe('CollectionsStore', () => {
                 'user-1',
                 COLLECTION.id,
                 input,
+                ['sudoku'],
             );
             expect(createCollection).not.toHaveBeenCalled();
         });
@@ -306,6 +316,15 @@ describe('CollectionsStore', () => {
                 expect(listCollections).toHaveBeenCalledTimes(2);
             },
         );
+    });
+
+    it('deletes for the current owner and refreshes the list after confirmation succeeds', async () => {
+        const store = await readyStore();
+        vi.mocked(deleteCollection).mockResolvedValueOnce(undefined);
+        vi.mocked(listCollections).mockResolvedValueOnce([]);
+        await expect(store.delete(COLLECTION.id)).resolves.toBe(COLLECTION.id);
+        expect(deleteCollection).toHaveBeenCalledExactlyOnceWith('user-1', COLLECTION.id);
+        await vi.waitFor(() => expect(store.getState().collections).toEqual([]));
     });
 
     describe('creation', () => {
