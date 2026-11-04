@@ -70,6 +70,35 @@
         &--white {
             background-color: var(--color-white);
         }
+        &--danger-text {
+            --btn-icon-size: var(--size-2);
+            background-color: transparent;
+            color: var(--color-error);
+
+            @include styles.hover {
+                background-color: color-mix(in srgb, var(--color-error) 8%, transparent);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+            }
+
+            span[aria-hidden] {
+                display: inline-flex;
+            }
+        }
+        &--danger {
+            background-color: var(--color-error);
+            color: var(--color-white);
+
+            @include styles.hover {
+                background-color: color-mix(in srgb, var(--color-error) 85%, var(--color-black));
+            }
+
+            &:disabled {
+                opacity: 0.5;
+            }
+        }
         &--primary {
             background-color: var(--color-primary);
             box-shadow: var(--ring-medium-on-primary);
@@ -101,8 +130,8 @@
         // Button icon
         svg {
             flex-shrink: 0;
-            width: var(--size-3);
-            height: var(--size-3);
+            width: var(--btn-icon-size, var(--size-3));
+            height: var(--btn-icon-size, var(--size-3));
             transition: color var(--transition-base);
         }
     }
