@@ -1,6 +1,7 @@
 import heartIcon from '@/assets/icons/favorite.svg?raw';
 import starIcon from '@/assets/icons/star.svg?raw';
 import { BaseComponent } from '@/components/base-component';
+import { toGamePreview } from '@/services/collections/game-preview';
 import type { GameDetails, TopRecord } from '@/types/game-details.types';
 import { formatRelativeDate } from '@/utils/date';
 import { formatCompactNumber } from '@/utils/formatters';
@@ -31,10 +32,7 @@ export class GameDetailsContent extends BaseComponent<'div'> {
             ).element,
         );
         this.collectionPicker = this.adopt(
-            new GameCollectionPicker(
-                { slug: game.slug, title: game.name, image: game.heroImage },
-                isCollectionPickerOpen,
-            ),
+            new GameCollectionPicker(toGamePreview(game), isCollectionPickerOpen),
         );
         this.getElement('[data-collection-picker-slot]').replaceWith(this.collectionPicker.element);
     }
