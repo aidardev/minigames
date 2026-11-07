@@ -16,7 +16,7 @@ vi.mock('@/services/firebase/email-auth', () => ({
 }));
 vi.mock('@/services/firebase/google-auth', () => ({ signInWithGoogle: vi.fn() }));
 
-const PROFILE = { displayName: 'Alex', email: 'alex@minigames.com' };
+const PROFILE = { uid: 'user-1', displayName: 'Alex', email: 'alex@minigames.com' };
 const LOGIN = { email: 'alex@minigames.com', password: 'secret1' };
 const REGISTER = {
     username: 'Alex',
@@ -56,7 +56,7 @@ describe('handleLogin', () => {
         ['', '', 'Player'],
         ['  Alex Doe  ', 'alex@minigames.com', 'Alex Doe'],
     ])('greets with the same resolved name as the header: %j', async (displayName, email, name) => {
-        vi.mocked(signInWithEmail).mockResolvedValue({ displayName, email });
+        vi.mocked(signInWithEmail).mockResolvedValue({ uid: 'user-1', displayName, email });
 
         await expect(handleLogin(LOGIN)).resolves.toBe(true);
         expect(showSnackbar).toHaveBeenCalledExactlyOnceWith(`Welcome back, ${name}!`, 'success');

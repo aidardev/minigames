@@ -1,0 +1,70 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .profile-collections {
+        &__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--size-3);
+            margin-bottom: var(--size-5);
+
+            @include styles.max-width(styles.$br-sm) {
+                flex-direction: column;
+                align-items: stretch;
+                gap: var(--size-2);
+                margin-bottom: var(--size-4);
+            }
+        }
+
+        &__heading {
+            display: flex;
+            align-items: center;
+            gap: var(--size-1-5);
+            margin-bottom: var(--size-1);
+        }
+
+        &__title {
+            margin-bottom: 0;
+            font-size: var(--fs-headline-large);
+
+            @include styles.max-width(styles.$br-lg) {
+                font-size: var(--fs-headline-medium);
+            }
+        }
+
+        &__total {
+            display: grid;
+            place-items: center;
+            min-width: var(--size-4);
+            height: var(--size-4);
+            padding-inline: var(--size-1);
+            background: var(--color-primary);
+            color: var(--color-on-primary);
+            border-radius: var(--corner-full);
+            font-size: var(--fs-body-small);
+            font-weight: var(--font-weight-bold);
+        }
+
+        &__subtitle {
+            margin-bottom: 0;
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-small);
+        }
+
+        &__create {
+            flex-shrink: 0;
+        }
+
+        &__list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-6);
+            min-width: 0;
+
+            @include styles.max-width(styles.$br-sm) {
+                gap: var(--size-5);
+            }
+        }
+    }
+}

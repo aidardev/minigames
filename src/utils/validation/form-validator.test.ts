@@ -15,6 +15,18 @@ function createValidator(): FormValidator<Values> {
 }
 
 describe('FormValidator', () => {
+    it('accepts initial values without touching fields and copies the supplied values', () => {
+        const initial = { name: 'Existing name', password: 'abc', confirm: 'different' };
+        const validator = new FormValidator(schema, initial);
+        initial.name = 'Changed outside';
+
+        expect(validator.getValues().name).toBe('Existing name');
+        expect(validator.getError('confirm')).toBe('mismatch');
+        expect(validator.getVisibleError('confirm')).toBeUndefined();
+        validator.setValue('confirm', 'abc');
+        expect(validator.isValid()).toBe(true);
+    });
+
     it('exposes field names and starts with empty values', () => {
         const validator = createValidator();
 

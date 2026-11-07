@@ -15,8 +15,10 @@ vi.mock('firebase/auth', () => ({
     updateProfile: vi.fn(),
 }));
 
-// Firebase declares these fields as string | null, but unicorn/no-null forbids writing null.
+const UID = 'user-1';
+
 interface FakeUser {
+    uid?: string;
     displayName?: string;
     email?: string;
     photoURL?: string;
@@ -36,6 +38,7 @@ describe('signInWithEmail', () => {
     it('signs in with the given credentials and maps the user to a profile', async () => {
         vi.mocked(signInWithEmailAndPassword).mockResolvedValue(
             credentialFor({
+                uid: UID,
                 displayName: 'Alex',
                 email: EMAIL,
                 photoURL: 'https://example.com/a.png',
@@ -46,6 +49,7 @@ describe('signInWithEmail', () => {
 
         expect(signInWithEmailAndPassword).toHaveBeenCalledWith(auth, EMAIL, PASSWORD);
         expect(profile).toStrictEqual({
+            uid: UID,
             displayName: 'Alex',
             email: EMAIL,
             avatarUrl: 'https://example.com/a.png',
@@ -53,11 +57,16 @@ describe('signInWithEmail', () => {
     });
 
     it('uses the part of the email before "@" when the account has no name', async () => {
-        vi.mocked(signInWithEmailAndPassword).mockResolvedValue(credentialFor({ email: EMAIL }));
+        vi.mocked(signInWithEmailAndPassword).mockResolvedValue(
+            credentialFor({
+                uid: UID,
+                email: EMAIL,
+            }),
+        );
 
         const profile = await signInWithEmail({ email: EMAIL, password: PASSWORD });
 
-        expect(profile).toStrictEqual({ displayName: 'alex', email: EMAIL });
+        expect(profile).toStrictEqual({ uid: UID, displayName: 'alex', email: EMAIL });
     });
 
     it('lets Firebase errors through', async () => {
@@ -69,10 +78,15 @@ describe('signInWithEmail', () => {
 
     it.each(['', ' '.repeat(3)])('uses email for an empty displayName: %j', async (displayName) => {
         vi.mocked(signInWithEmailAndPassword).mockResolvedValue(
-            credentialFor({ displayName, email: EMAIL }),
+            credentialFor({
+                uid: UID,
+                displayName,
+                email: EMAIL,
+            }),
         );
 
         await expect(signInWithEmail({ email: EMAIL, password: PASSWORD })).resolves.toStrictEqual({
+            uid: UID,
             displayName: 'alex',
             email: EMAIL,
         });
@@ -81,7 +95,10 @@ describe('signInWithEmail', () => {
 
 describe('signUpWithEmail', () => {
     const registration = { username: 'Alex99', email: EMAIL, password: PASSWORD };
-    const created = credentialFor({ email: EMAIL });
+    const created = credentialFor({
+        uid: UID,
+        email: EMAIL,
+    });
 
     beforeEach(() => {
         vi.resetAllMocks();
@@ -94,7 +111,7 @@ describe('signUpWithEmail', () => {
 
         expect(createUserWithEmailAndPassword).toHaveBeenCalledWith(auth, EMAIL, PASSWORD);
         expect(updateProfile).toHaveBeenCalledWith(created.user, { displayName: 'Alex99' });
-        expect(profile).toStrictEqual({ displayName: 'Alex99', email: EMAIL });
+        expect(profile).toStrictEqual({ uid: UID, displayName: 'Alex99', email: EMAIL });
     });
 
     it('still succeeds when saving the name fails, because the account already exists', async () => {
@@ -102,6 +119,7 @@ describe('signUpWithEmail', () => {
         vi.mocked(updateProfile).mockRejectedValue(new Error('network'));
 
         await expect(signUpWithEmail(registration)).resolves.toStrictEqual({
+            uid: UID,
             displayName: 'Alex99',
             email: EMAIL,
         });

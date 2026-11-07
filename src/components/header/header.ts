@@ -106,10 +106,17 @@ export class Header extends BaseComponent {
                             <li><a href="/" data-link>Community</a></li>
                         </ul>
                     </nav>
-                    <div class="header__profile" data-header-auth hidden>
+                    <a
+                        href="/profile"
+                        class="header__profile"
+                        data-header-auth
+                        data-link
+                        data-route="/profile"
+                        hidden
+                    >
                         <span class="header__profile-name" data-profile-name></span>
                         <span data-profile-avatar></span>
-                    </div>
+                    </a>
                     <div class="header__btns">
                         <button
                             class="header__btn btn btn--medium btn--outline-on-primary"

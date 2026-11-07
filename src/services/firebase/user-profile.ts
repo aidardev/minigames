@@ -10,6 +10,7 @@ export function toProfile(user: User): AppSessionProfile {
     const email = user.email ?? '';
 
     return {
+        uid: user.uid,
         displayName: getProfileName({ displayName: user.displayName ?? '', email }) ?? '',
         email,
         ...(user.photoURL && { avatarUrl: user.photoURL }),

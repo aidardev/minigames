@@ -12,7 +12,12 @@ vi.mock('@/services/session/app-session', () => ({
 }));
 vi.mock('./navigation', () => ({ openAuth: vi.fn() }));
 
-const SESSION = { displayName: 'Alex', email: 'alex@minigames.com', authenticatedAt: 1 };
+const SESSION = {
+    uid: 'user-1',
+    displayName: 'Alex',
+    email: 'alex@minigames.com',
+    authenticatedAt: 1,
+};
 
 describe('requireSession', () => {
     beforeEach(() => {
