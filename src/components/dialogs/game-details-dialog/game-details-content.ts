@@ -1,16 +1,19 @@
 import heartIcon from '@/assets/icons/favorite.svg?raw';
 import starIcon from '@/assets/icons/star.svg?raw';
 import { BaseComponent } from '@/components/base-component';
+import { toGamePreview } from '@/services/collections/game-preview';
 import type { GameDetails, TopRecord } from '@/types/game-details.types';
 import { formatRelativeDate } from '@/utils/date';
 import { formatCompactNumber } from '@/utils/formatters';
 import { html, unsafeHtml, type SafeHtml } from '@/utils/html';
 import { FavoriteButton } from './favorite-button';
+import { GameCollectionPicker } from './game-collection-picker';
 
 export class GameDetailsContent extends BaseComponent<'div'> {
     private readonly game: GameDetails;
+    private readonly collectionPicker: GameCollectionPicker;
 
-    constructor(game: GameDetails) {
+    constructor(game: GameDetails, isCollectionPickerOpen = false) {
         super('div', 'game-details__content');
         this.game = game;
 
@@ -28,6 +31,10 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                 }),
             ).element,
         );
+        this.collectionPicker = this.adopt(
+            new GameCollectionPicker(toGamePreview(game), isCollectionPickerOpen),
+        );
+        this.getElement('[data-collection-picker-slot]').replaceWith(this.collectionPicker.element);
     }
 
     private showLikesCount(count: number): void {
@@ -88,6 +95,7 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                     </button>
                     <span data-favorite-slot></span>
                 </div>
+                <div data-collection-picker-slot></div>
             </section>
         `;
     }
@@ -146,5 +154,9 @@ export class GameDetailsContent extends BaseComponent<'div'> {
                 return String(position);
             }
         }
+    }
+
+    public setCollectionPickerOpen(isOpen: boolean): void {
+        this.collectionPicker.setOpen(isOpen);
     }
 }

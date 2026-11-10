@@ -20,7 +20,8 @@
             box-shadow var(--transition-base),
             transform var(--transition-base),
             outline-offset var(--transition-fast),
-            opacity var(--transition-base);
+            opacity var(--transition-base),
+            border var(--transition-base);
 
         &:focus-visible {
             outline: var(--border-width-medium) solid var(--color-tertiary);
@@ -51,8 +52,8 @@
         }
 
         // Styles
-        &--outline-on-primary {
-            background-color: transparent;
+        &--outline-on-primary,
+        &--white {
             box-shadow: var(--ring-medium-on-primary);
             color: var(--color-on-primary);
             @include styles.hover {
@@ -61,6 +62,41 @@
 
             &:active {
                 background-color: var(--color-primary);
+            }
+        }
+        &--outline-on-primary {
+            background-color: transparent;
+        }
+        &--white {
+            background-color: var(--color-white);
+        }
+        &--danger-text {
+            --btn-icon-size: var(--size-2);
+            background-color: transparent;
+            color: var(--color-error);
+
+            @include styles.hover {
+                background-color: color-mix(in srgb, var(--color-error) 8%, transparent);
+            }
+
+            &:disabled {
+                opacity: 0.5;
+            }
+
+            span[aria-hidden] {
+                display: inline-flex;
+            }
+        }
+        &--danger {
+            background-color: var(--color-error);
+            color: var(--color-white);
+
+            @include styles.hover {
+                background-color: color-mix(in srgb, var(--color-error) 85%, var(--color-black));
+            }
+
+            &:disabled {
+                opacity: 0.5;
             }
         }
         &--primary {
@@ -94,8 +130,8 @@
         // Button icon
         svg {
             flex-shrink: 0;
-            width: var(--size-3);
-            height: var(--size-3);
+            width: var(--btn-icon-size, var(--size-3));
+            height: var(--btn-icon-size, var(--size-3));
             transition: color var(--transition-base);
         }
     }

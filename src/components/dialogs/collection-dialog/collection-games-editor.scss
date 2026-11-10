@@ -1,0 +1,85 @@
+@use '@/styles/index' as styles;
+
+@layer components {
+    .collection-games-editor {
+        padding-top: var(--size-3);
+        border-top: var(--border-width-thin) solid var(--color-outline);
+
+        &__title {
+            font-size: var(--fs-body-medium);
+            margin-bottom: var(--size-1-5);
+        }
+
+        &__body,
+        &__list {
+            display: flex;
+            flex-direction: column;
+            gap: var(--size-1-5);
+            margin: 0;
+        }
+
+        &__list {
+            max-height: styles.rem(360px);
+            overflow-y: auto;
+            padding: var(--size-05);
+        }
+
+        &__game {
+            display: flex;
+            align-items: center;
+            gap: var(--size-1-5);
+            min-width: 0;
+            padding: var(--size-1-5);
+            border: var(--border-width-thin) solid var(--color-outline);
+            border-radius: var(--corner-medium);
+            background: var(--color-white);
+
+            &--removed {
+                background: var(--color-bg);
+                .collection-games-editor__image {
+                    opacity: 0.4;
+                }
+                .collection-games-editor__name {
+                    color: var(--color-on-bg-low);
+                    text-decoration: line-through;
+                }
+            }
+        }
+
+        &__image {
+            width: var(--size-10);
+            height: var(--size-6);
+            object-fit: cover;
+            border-radius: var(--corner-extra-small);
+            flex-shrink: 0;
+
+            @include styles.max-width(styles.$br-sm) {
+                width: var(--size-7);
+                height: var(--size-5);
+            }
+        }
+
+        &__name {
+            flex: 1;
+            min-width: 0;
+            font-size: var(--fs-body-small);
+            font-weight: var(--font-weight-medium);
+            overflow-wrap: anywhere;
+        }
+
+        &__remove {
+            flex-shrink: 0;
+            padding: var(--size-1-25);
+            line-height: var(--lh-relaxed);
+            font-size: var(--fs-label-medium);
+        }
+        &__empty {
+            margin: 0;
+            color: var(--color-on-bg);
+            font-size: var(--fs-body-small);
+        }
+        &__skeleton {
+            height: var(--size-5);
+        }
+    }
+}

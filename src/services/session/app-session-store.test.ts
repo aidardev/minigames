@@ -9,7 +9,7 @@ import {
 import type { AppSession } from './session.types';
 
 const START_TIME = new Date('2026-01-01T12:00:00Z').getTime();
-const PROFILE = { displayName: 'Forest Dweller', email: 'student@rs.school' };
+const PROFILE = { displayName: 'Forest Dweller', email: 'student@rs.school', uid: 'user-1' };
 
 interface TestContext {
     store: AppSessionStore;
@@ -123,7 +123,7 @@ describe('AppSessionStore', () => {
             );
         });
 
-        it('expires a restored session at the original deadline, not 5 minutes after reload', () => {
+        it('expires a restored session at the original deadline without restarting its lifetime', () => {
             storeRaw({ ...PROFILE, authenticatedAt: START_TIME - 60_000 });
             const { store, onExpired } = setup();
 
@@ -181,7 +181,7 @@ describe('AppSessionStore', () => {
     });
 
     describe('expiration', () => {
-        it('switches to Guest Mode exactly when the 5 minutes pass', () => {
+        it('switches to Guest Mode exactly when the session lifetime passes', () => {
             const { store, signOut, onExpired } = setup();
             store.createSession(PROFILE);
 

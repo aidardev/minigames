@@ -18,6 +18,7 @@ const SLUG = 'cat-mail-co';
 const MAX_LENGTH = 500;
 const MAX_HEIGHT_PX = 88;
 const SESSION: AppSession = {
+    uid: 'user-1',
     displayName: 'alex',
     email: 'alex@minigames.com',
     authenticatedAt: 1,

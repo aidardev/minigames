@@ -9,6 +9,7 @@ vi.mock('@/app/navigation', () => ({ openAuth: vi.fn() }));
 vi.mock('@/app/auth-flow', () => ({ handleLogout: vi.fn() }));
 
 const SESSION: AppSession = {
+    uid: 'user-1',
     displayName: 'Alex Doe',
     email: 'alex@minigames.com',
     authenticatedAt: 0,

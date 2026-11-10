@@ -19,6 +19,7 @@ vi.mock('@/components/snackbar/snackbar', () => ({ showSnackbar: vi.fn() }));
 
 const SLUG = 'cat-mail-co';
 const SESSION: AppSession = {
+    uid: 'user-1',
     displayName: 'Alex',
     email: 'alex@minigames.com',
     authenticatedAt: 1,
