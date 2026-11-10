@@ -31,7 +31,7 @@ function parseSession(raw: string): AppSession | undefined {
     if (typeof uid !== 'string' || uid === '') return;
     if (typeof displayName !== 'string' || typeof email !== 'string') return;
     if (typeof authenticatedAt !== 'number' || !Number.isFinite(authenticatedAt)) return;
-    // A timestamp from the future would make the session live longer than 5 minutes.
+    // A timestamp from the future would make the session live longer than its configured lifetime.
     if (authenticatedAt > Date.now()) return;
     if (avatarUrl !== undefined && typeof avatarUrl !== 'string') return;
 
